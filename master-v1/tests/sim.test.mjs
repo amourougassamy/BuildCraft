@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { LEVELS, ITEMS } from "../js/data.js";
+import { LEVELS, ITEMS, CAST } from "../js/data.js";
 import {
   defaultChoice, createRun, advance, simulate, reportCard, canRun, coinsLeft, isUnlocked, gradeFor, repair, TICK,
 } from "../js/sim.js";
@@ -91,7 +91,7 @@ test("repairs cost coins and close the doors while the crew works", () => {
 
 test("every site can be passed, and the first one gives an easy start", () => {
   const good = {
-    rocky: { roof: 1, furniture: 1, hvac: 1, garden: 1 },
+    rocky: { roof: 1, hvac: 1, garden: 1 },
     prairie: { windows: 1, roof: 1, hvac: 1, trees: 1 },
     breezy: { found: 1, windows: 1, roof: 1, raise: 1, hvac: 1 },
     shaky: { found: 2, frame: 1, iso: 1, shelves: 1, backup: 1 },
@@ -104,4 +104,10 @@ test("every site can be passed, and the first one gives an easy start", () => {
     assert.ok(r.pass, `${L.key} passes (got ${r.grade} ${r.score})`);
   }
   assert.ok(reportCard(simulate(lv("rocky"), defaultChoice())).pass, "Code Minimum passes the first site");
+});
+
+test("no Furniture choice, and everyone loves an upgrade that exists", () => {
+  assert.equal(ITEMS.furniture, undefined);
+  for (const c of CAST) assert.ok(ITEMS[c.loves] && ITEMS[c.loves].options.length > 1, `${c.name} loves ${c.loves}`);
+  assert.equal(CAST.find(c => c.key === "gus").loves, "lights");
 });

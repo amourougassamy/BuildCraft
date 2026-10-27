@@ -405,13 +405,13 @@ export function createSite(container) {
     parts.shelves.push(g);
     return g;
   }
-  function table(x, z, cozy, chairs = 2) {
+  function table(x, z, chairs = 2) {
     const g = new THREE.Group();
     g.add(rbox(1.6, 0.12, 0.9, 0xc69c6d, 0, 0.78, 0, 0.04));
     [[-0.65, -0.35], [0.65, -0.35], [-0.65, 0.35], [0.65, 0.35]].forEach(([a, b]) => g.add(rbox(0.1, 0.75, 0.1, 0x8d6e63, a, 0.38, b, 0.03)));
     for (let c = 0; c < chairs; c++) {
       const s = c % 2 ? 1 : -1;
-      g.add(rbox(0.55, 0.5, 0.5, cozy ? [0xff8fa3, 0x5b9bd5, 0xffd23f, 0x5cb85c][c % 4] : 0x9e9a96, (c > 1 ? 0.45 : -0.45), 0.25, s * 0.8, 0.12));
+      g.add(rbox(0.55, 0.5, 0.5, [0xff8fa3, 0x5b9bd5, 0xffd23f, 0x5cb85c][c % 4], (c > 1 ? 0.45 : -0.45), 0.25, s * 0.8, 0.12));
     }
     g.position.set(x, 0, z);
     return g;
@@ -435,21 +435,21 @@ export function createSite(container) {
     return g;
   }
 
-  function furnish(key, f, cozy) {
+  function furnish(key, f) {
     const g = new THREE.Group(), backZ = -D / 2 + 0.6;
-    if (cozy) g.add(rug(0, 0.3, 5, 2.6), plant(W / 2 - 0.8, D / 2 - 0.9), plant(-W / 2 + 0.8, D / 2 - 0.9));
-    if (key === "rocky") g.add(shelf(-3, backZ, 0), shelf(0, backZ, 0), shelf(3, backZ, 0), table(-2.4, 0.9, cozy, 4), table(2.4, 0.9, cozy, 4));
+    g.add(rug(0, 0.3, 5, 2.6), plant(W / 2 - 0.8, D / 2 - 0.9), plant(-W / 2 + 0.8, D / 2 - 0.9));
+    if (key === "rocky") g.add(shelf(-3, backZ, 0), shelf(0, backZ, 0), shelf(3, backZ, 0), table(-2.4, 0.9, 4), table(2.4, 0.9, 4));
     if (key === "prairie") {
       g.add(rbox(4, 1.5, 0.1, 0x2e5e3e, 0, 1.6, -D / 2 + 0.3, 0.04), shelf(-W / 2 + 0.6, -1.4, Math.PI / 2));
-      for (let r = 0; r < 2; r++) for (let c = -1; c <= 1; c++) g.add(table(c * 2.6, -0.6 + r * 1.9, cozy, 1));
+      for (let r = 0; r < 2; r++) for (let c = -1; c <= 1; c++) g.add(table(c * 2.6, -0.6 + r * 1.9, 1));
     }
-    if (key === "breezy") g.add(tank(-2.6, backZ + 0.2), tank(2.6, backZ + 0.2), shelf(-W / 2 + 0.6, 0.8, Math.PI / 2), table(0, 1, cozy, 2));
+    if (key === "breezy") g.add(tank(-2.6, backZ + 0.2), tank(2.6, backZ + 0.2), shelf(-W / 2 + 0.6, 0.8, Math.PI / 2), table(0, 1, 2));
     if (key === "shaky") {
       g.add(bed(-3, -1.6, 0x81c995), bed(-0.6, -1.6, 0x81c995), bed(1.8, -1.6, 0x81c995), shelf(W / 2 - 0.6, 0.8, -Math.PI / 2));
       g.add(rbox(0.9, 0.9, 0.08, 0xffffff, 3.9, 2, -D / 2 + 0.25, 0.04), rbox(0.6, 0.15, 0.1, 0xe53935, 3.9, 2, -D / 2 + 0.31, 0.03), rbox(0.15, 0.6, 0.1, 0xe53935, 3.9, 2, -D / 2 + 0.31, 0.03));
     }
     if (key === "mega") {
-      g.add(rbox(2.6, 0.6, 0.9, cozy ? 0x5b9bd5 : 0x9e9a96, -2.6, 0.3, 0.6, 0.25), rbox(2.6, 0.7, 0.3, cozy ? 0x5b9bd5 : 0x9e9a96, -2.6, 0.6, 1.0, 0.12));
+      g.add(rbox(2.6, 0.6, 0.9, 0x5b9bd5, -2.6, 0.3, 0.6, 0.25), rbox(2.6, 0.7, 0.3, 0x5b9bd5, -2.6, 0.6, 1.0, 0.12));
       g.add(rbox(1.8, 1, 0.1, 0x2d2a32, -2.6, 1.4, -D / 2 + 0.35, 0.04), bed(2.8, -1.4, f % 2 ? 0xffd23f : 0xa77bd1), shelf(0.2, -D / 2 + 0.6, 0));
     }
     g.position.y = f * FH + SLAB;
@@ -490,8 +490,8 @@ export function createSite(container) {
     const H = floors * FH;
     for (let i = 0; i < floors; i++) {
       body.add(rbox(W + 0.4, SLAB, D + 0.4, palette[1], 0, i * FH + SLAB / 2, 0, 0.08));
-      body.add(rbox(W - 0.4, 0.04, D - 0.4, choice.furniture ? 0xe8c9a0 : 0xd4d0cb, 0, i * FH + SLAB + 0.02, 0, 0.02));
-      body.add(furnish(lv.key, i, !!choice.furniture));
+      body.add(rbox(W - 0.4, 0.04, D - 0.4, 0xe8c9a0, 0, i * FH + SLAB + 0.02, 0, 0.02));
+      body.add(furnish(lv.key, i));
       for (const x of [-2.5, 2.5]) {
         const l = rbox(1.6, 0.08, 0.6, lightMat, x, (i + 1) * FH - 0.04, 0, 0.03);
         l.castShadow = false;

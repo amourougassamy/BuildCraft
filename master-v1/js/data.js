@@ -82,9 +82,6 @@ export const SECTIONS = [
       { label: "Raised Floor", ico: "⬆️", cost: 3, flood: 2, tip: "Lift the floor up high so flood water flows underneath." } ] },
   ]},
   { key: "inside", name: "Inside", ico: "🛋️", color: "#a77bd1", items: [
-    { key: "furniture", name: "Furniture", options: [
-      { label: "Basic", ico: "🪑", cost: 1, tip: "Simple chairs and tables." },
-      { label: "Cozy & Colorful", ico: "🛋️", cost: 3, happy: 10, tip: "Comfy couches, bright colors and plants make people smile." } ] },
     { key: "shelves", name: "Shelves", options: [
       { label: "Standing", ico: "📚", cost: 0, tip: "Shelves just stand against the wall." },
       { label: "Bolted to Wall", ico: "🔩", cost: 1, bolted: true, tip: "Bolted shelves can't tip over on anyone in an earthquake." } ] },
@@ -118,7 +115,7 @@ export const ECO_MAX = Object.values(ITEMS).reduce((n, i) => n + Math.max(...i.o
 
 // The regulars. loves: option keys (index > 0) that make them extra happy. worries: hazard that scares them most.
 export const CAST = [
-  { key: "gus", name: "Grandpa Gus", shirt: 0x7fb3d5, skin: 0xf1c27d, loves: "furniture", worries: "heat" },
+  { key: "gus", name: "Grandpa Gus", shirt: 0x7fb3d5, skin: 0xf1c27d, loves: "lights", worries: "heat" },
   { key: "rosa", name: "Rosa", shirt: 0xf28b82, skin: 0xc68642, loves: "garden", worries: "quake" },
   { key: "zoe", name: "Zoe", shirt: 0xfdd663, skin: 0xffdbac, loves: "energy", worries: "wind" },
   { key: "leo", name: "Leo", shirt: 0x81c995, skin: 0x8d5524, loves: "hvac", worries: "flood" },
@@ -128,25 +125,26 @@ export const CAST = [
 
 // Sites on the world map, easiest first. Each one is a given scenario.
 // events: [hazard, power, month]. Fixed per site so a retry plays the same year.
+// shell: what the building itself costs, basic chairs and tables included.
 export const LEVELS = [
   { key: "rocky", name: "Rocky Ridge", region: "Mountain Valley", ico: "🏔️", building: "Library", bico: "📚",
-    floors: 1, soil: "rock", budget: 28, shell: 8, visitors: 3, perCoin: 140, map: [-14, 9],
+    floors: 1, soil: "rock", budget: 28, shell: 9, visitors: 3, perCoin: 140, map: [-14, 9],
     brief: "the mountain town of Rocky Ridge needs a cozy little library",
     events: [["wind", 2, 3], ["heat", 1, 6], ["quake", 1, 9]] },
   { key: "prairie", name: "Prairie Plains", region: "Big Sky Farms", ico: "🌾", building: "School", bico: "🏫",
-    floors: 2, soil: "firm", budget: 32, shell: 10, visitors: 4, perCoin: 180, map: [-4, 13], windWord: "tornado",
+    floors: 2, soil: "firm", budget: 32, shell: 11, visitors: 4, perCoin: 180, map: [-4, 13], windWord: "tornado",
     brief: "the farm kids of Prairie Plains need a new school",
     events: [["wind", 3, 4], ["heat", 2, 6], ["wind", 2, 9]] },
   { key: "breezy", name: "Breezy Bay", region: "Sunny Coast", ico: "🏖️", building: "Aquarium", bico: "🐠",
-    floors: 2, soil: "clay", budget: 38, shell: 10, visitors: 4, perCoin: 180, map: [8, 10], windWord: "hurricane",
+    floors: 2, soil: "clay", budget: 38, shell: 11, visitors: 4, perCoin: 180, map: [8, 10], windWord: "hurricane",
     brief: "the beach town of Breezy Bay wants an aquarium by the sea",
     events: [["heat", 2, 5], ["wind", 3, 7], ["flood", 2, 8]] },
   { key: "shaky", name: "Shaky Hills", region: "Rumble Valley", ico: "🌋", building: "Hospital", bico: "🏥",
-    floors: 2, soil: "sand", budget: 46, shell: 12, visitors: 3, perCoin: 140, map: [12, -2], hospital: true,
+    floors: 2, soil: "sand", budget: 46, shell: 13, visitors: 3, perCoin: 140, map: [12, -2], hospital: true,
     brief: "Shaky Hills needs a hospital that stays open even after an earthquake",
     events: [["quake", 3, 2], ["wind", 1, 5], ["quake", 4, 9]] },
   { key: "mega", name: "Mega City", region: "Mega City", ico: "🏙️", building: "Apartment Tower", bico: "🏢",
-    floors: 3, soil: "clay", budget: 56, shell: 16, visitors: 5, perCoin: 220, map: [0, -10], tall: true, windWord: "hurricane",
+    floors: 3, soil: "clay", budget: 56, shell: 17, visitors: 5, perCoin: 220, map: [0, -10], tall: true, windWord: "hurricane",
     brief: "Mega City needs a tall apartment tower ready for anything",
     events: [["quake", 3, 3], ["heat", 3, 6], ["wind", 3, 7], ["flood", 2, 8]] },
 ];
