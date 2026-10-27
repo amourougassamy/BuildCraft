@@ -92,6 +92,20 @@ header { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding
 .iconBtn.peek.on { background: var(--yellow); }
 #fixPop { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); font-size: 22px; animation: bounce .7s infinite; }
 @keyframes bounce { 50% { transform: translateX(-50%) translateY(-8px) scale(1.06); } }
+/* People's speech bubbles: float over their heads in the 3D view (placed each frame by main.js) */
+.talkLayer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.talk {
+  --bg: #fff; position: absolute; left: 0; top: 0; background: var(--bg); color: var(--ink); border-radius: 16px;
+  padding: 5px 11px; font-size: 15px; font-weight: 600; line-height: 1.2; white-space: nowrap; transform-origin: 50% 100%;
+  box-shadow: inset -2px -3px 5px rgba(60, 40, 30, .08), inset 2px 2px 4px rgba(255, 255, 255, .8), 0 5px 12px rgba(90, 60, 50, .22);
+  animation: talkPop .35s cubic-bezier(.3, 1.8, .5, 1); will-change: transform;
+}
+.talk::after { content: ""; position: absolute; left: calc(50% + var(--tail, 0px)); bottom: -9px; margin-left: -7px; border: 7px solid transparent; border-top: 10px solid var(--bg); border-bottom: 0; }
+.talk.bad { --bg: #ffe1dc; }
+.talk.good { --bg: #dcf5e3; }
+.talk.ghost { --bg: #eef0ff; color: #6b6f8f; font-style: italic; }
+.talk.bye { opacity: 0; transition: opacity .25s; }
+@keyframes talkPop { from { scale: .4; opacity: 0; } }
 .status { padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; }
 .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 #phase { flex: 1; font-size: 19px; font-weight: 600; }
@@ -215,7 +229,9 @@ body.quake #play .stage { animation: quake .12s infinite; }
   .mo { font-size: 10px; }
   .stamp { font-size: 44px; }
   .bigLogo { font-size: 44px; }
+  .talk { font-size: 13px; padding: 4px 9px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition: none !important; }
+  .talk { animation: none; }
 }

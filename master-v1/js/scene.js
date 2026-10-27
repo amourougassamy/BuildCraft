@@ -984,8 +984,20 @@ export function createSite(container) {
     } else renderer.render(scene, camera);
   });
 
+  // Speech bubbles (main.js): the pixel spot just above a person's emoji face, relative to the canvas.
+  // null when that person is hidden (inside with no window seat) or off screen.
+  const headV = new THREE.Vector3();
+  function headPos(key) {
+    const p = people.find(q => q.c.key === key);
+    if (!p || !p.m.visible) return null;
+    p.m.localToWorld(headV.set(0, p.c.pet ? 2.5 : 3.2, 0)).project(camera); // local units, so the 1.3 scale counts
+    if (headV.z > 1 || Math.abs(headV.x) > 1 || Math.abs(headV.y) > 1) return null;
+    const el = renderer.domElement;
+    return { x: (headV.x + 1) / 2 * el.clientWidth, y: (1 - headV.y) / 2 * el.clientHeight };
+  }
+
   return {
-    setLevel, setDesign, setRun, startHazard, endHazard, doCollapse, reset,
+    setLevel, setDesign, setRun, startHazard, endHazard, doCollapse, reset, headPos,
     setGentle: g => { gentle = g; people.forEach(p => p.m.userData.faceKey = ""); },
     setPeek, tipShelves,
     setSpin: on => { controls.autoRotate = on && !reduceMotion; },
