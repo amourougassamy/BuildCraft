@@ -292,8 +292,14 @@ export function createSite(container) {
   const world = new THREE.Group();   // everything that shakes in a quake
   scene.add(world);
 
-  // Platform: grass on top, see-through soil so the foundation shows, rock at the bottom.
-  const grass = rbox(28, 0.8, 22, 0x9fd27a, 0, -0.4, 0, 0.35);
+  // Fog fades the far ground into the stage's sky (the CSS gradient behind the see-through canvas),
+  // so the edge of the world never shows (PLAN.md B4). three.js mixes fog in screen colours,
+  // so this hex is simply the top of the .stage gradient.
+  scene.fog = new THREE.Fog(0xd9eefe, 70, 220);
+
+  // The lot: grass on top, see-through soil so the foundation shows, rock at the bottom.
+  const LOT_W = 28, LOT_D = 22, DIG = 6.2; // DIG: from the grass down to the bottom of the rock
+  const grass = rbox(LOT_W, 0.8, LOT_D, 0x9fd27a, 0, -0.4, 0, 0.35);
   world.add(grass);
   const soilMat = new THREE.MeshStandardMaterial({ color: 0xb08f80, roughness: 1, transparent: true, opacity: 0.55 });
   const soil = rbox(27.6, 4, 21.6, soilMat, 0, -2.8, 0, 0.3);
@@ -302,13 +308,44 @@ export function createSite(container) {
   const rock = rbox(27.6, 1.4, 21.6, 0x8d8a94, 0, -5.5, 0, 0.3);
   world.add(rock);
 
-  const water = mesh(new RoundedBoxGeometry(30, 1, 24, 3, 0.4),
+  // Ground: one big grass field around the lot that runs out into the fog. It has a hole for the
+  // lot plus a sloped "cutaway" trench on the lot's left and right, so you can still look into the
+  // see-through soil and watch the foundation reach down.
+  const TRENCH = 9, PIT = 1.5;                       // trench width at the top / flat floor at the bottom
+  const HOLE_X = LOT_W / 2 + TRENCH, HOLE_Z = LOT_D / 2, FOOT_X = LOT_W / 2 + PIT;
+  const field = new THREE.Shape().absarc(0, 0, 400, 0, Math.PI * 2);
+  field.holes.push(new THREE.Path([[-HOLE_X, -HOLE_Z], [HOLE_X, -HOLE_Z], [HOLE_X, HOLE_Z], [-HOLE_X, HOLE_Z]].map(([x, y]) => new THREE.Vector2(x, y))));
+  const fieldGeo = new THREE.ShapeGeometry(field, 48).rotateX(-Math.PI / 2);
+  const ground = mesh(fieldGeo, clay(0x9fd27a));
+  ground.castShadow = false;
+  world.add(ground);
+  const cutMat = new THREE.MeshStandardMaterial({ color: 0x9a7b62, roughness: 1, side: THREE.DoubleSide }); // trench walls, tinted per soil
+  const bankGeo = new THREE.PlaneGeometry(Math.hypot(TRENCH - PIT, DIG), LOT_D).rotateX(-Math.PI / 2);
+  for (const s of [1, -1]) {
+    const bank = mesh(bankGeo, cutMat, s * (FOOT_X + (TRENCH - PIT) / 2), -DIG / 2, 0);
+    bank.rotation.z = s * Math.atan2(DIG, TRENCH - PIT);
+    bank.castShadow = false;
+    world.add(bank);
+  }
+  const endGeo = new THREE.ShapeGeometry(new THREE.Shape([[-HOLE_X, 0], [HOLE_X, 0], [FOOT_X, -DIG], [-FOOT_X, -DIG]].map(([x, y]) => new THREE.Vector2(x, y))));
+  for (const z of [-HOLE_Z, HOLE_Z]) { const e = mesh(endGeo, cutMat, 0, 0, z); e.castShadow = false; world.add(e); }
+  const pitFloor = mesh(new THREE.PlaneGeometry(FOOT_X * 2, LOT_D).rotateX(-Math.PI / 2), clay(0x8d8a94), 0, -DIG - 0.02, 0);
+  pitFloor.castShadow = false;
+  world.add(pitFloor);
+
+  // Flood water: a wide flat sheet, so a flood fills the trenches first, then covers the whole
+  // neighbourhood with no edge in sight. The surface sits 0.5 above water.position.y.
+  const water = mesh(new THREE.CircleGeometry(380, 48).rotateX(-Math.PI / 2).translate(0, 0.5, 0),
     new THREE.MeshStandardMaterial({ color: 0x5aa9e6, roughness: 0.3, transparent: true, opacity: 0.7 }), 0, -1.5, 0);
+  water.castShadow = false;
   water.visible = false;
   scene.add(water);
 
   const backdrop = new THREE.Group();
   scene.add(backdrop);
+  // Breezy Bay's beach and sea are flat sheets that run out to the foggy horizon.
+  const sandGeo = new THREE.PlaneGeometry(800, 12).rotateX(-Math.PI / 2);
+  const seaGeo = new THREE.PlaneGeometry(800, 400).rotateX(-Math.PI / 2);
   const clouds = [cloud(-14, 15, -14, 1.6), cloud(10, 17, -18, 2), cloud(18, 13, 4, 1.3)];
   clouds.forEach(c => scene.add(c));
   const debris = new THREE.Group();
@@ -716,14 +753,15 @@ export function createSite(container) {
   function setLevel(lv) {
     level = lv;
     soilMat.color.setHex(SOILS[lv.soil].color);
+    cutMat.color.setHex(SOILS[lv.soil].color).multiplyScalar(0.78);
     backdrop.clear();
     if (lv.key === "rocky") { backdrop.add(mountain(-20, -22, 14), mountain(-6, -26, 18, 0x8f9aa6), mountain(12, -24, 12)); }
     if (lv.key === "prairie") {
-      backdrop.add(rbox(10, 0.3, 6, 0xf2d27a, -18, -0.2, -18, 0.2), rbox(8, 0.3, 6, 0xe8c25a, 8, -0.2, -20, 0.2));
+      backdrop.add(rbox(10, 0.3, 6, 0xf2d27a, -18, 0.05, -18, 0.2), rbox(8, 0.3, 6, 0xe8c25a, 8, 0.05, -20, 0.2));
       const barn = rbox(5, 4, 4, 0xd9534f, 18, 2, -18, 0.3); backdrop.add(barn);
     }
     if (lv.key === "breezy") {
-      backdrop.add(rbox(40, 0.4, 10, 0xf4dc9c, 0, -0.6, -18, 0.2), rbox(60, 0.3, 20, clay(0x5aa9e6, { roughness: 0.25 }), 0, -0.9, -32, 0.2));
+      backdrop.add(mesh(sandGeo, clay(0xf4dc9c), 0, 0.03, -19), mesh(seaGeo, clay(0x5aa9e6, { roughness: 0.25 }), 0, 0.06, -225));
       const palm = tree(-16, -16, 1.5, 0x4caf50); backdrop.add(palm);
     }
     if (lv.key === "shaky") {
