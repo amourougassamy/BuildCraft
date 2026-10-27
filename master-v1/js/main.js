@@ -205,6 +205,7 @@ function effectText(o) {
   if (o.wind) bits.push(`🌪️+${o.wind}`);
   if (o.flood) bits.push(`🌊+${o.flood}`);
   if (o.heat) bits.push(`❄️+${o.heat}`);
+  if (o.fire) bits.push(`🧯+${o.fire}`);
   if (o.happy) bits.push(`😊+${o.happy}`);
   if (o.eco) bits.push(`🌱+${o.eco}`);
   if (o.power) bits.push("⚡");

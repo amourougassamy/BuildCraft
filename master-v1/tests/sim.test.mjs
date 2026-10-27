@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { LEVELS, ITEMS, CAST } from "../js/data.js";
 import {
   defaultChoice, createRun, advance, simulate, reportCard, canRun, coinsLeft, isUnlocked, gradeFor, repair, TICK,
+  designStats, designCost, strength,
 } from "../js/sim.js";
 
 const lv = key => LEVELS.find(l => l.key === key);
@@ -119,4 +120,17 @@ test("no Furniture choice, and everyone loves an upgrade that exists", () => {
   assert.equal(ITEMS.furniture, undefined);
   for (const c of CAST) assert.ok(ITEMS[c.loves] && ITEMS[c.loves].options.length > 1, `${c.name} loves ${c.loves}`);
   assert.equal(CAST.find(c => c.key === "gus").loves, "lights");
+});
+
+test("Code Min (smoke alarms) has fire strength 1 on every site", () => {
+  for (const L of LEVELS) assert.equal(strength(L, designStats(defaultChoice()), "fire"), 1, L.key);
+});
+
+test("fire sprinklers add 2 fire strength and cost what data.js says", () => {
+  const opts = ITEMS.sprinklers.options, yes = pick("sprinklers", "Fire Sprinklers");
+  assert.equal(ITEMS.sprinklers.section, "inside");
+  const spr = design({ sprinklers: yes });
+  assert.equal(designStats(spr).fire, 2);
+  assert.equal(strength(lv("rocky"), designStats(spr), "fire"), 3);
+  assert.equal(designCost(spr) - designCost(defaultChoice()), opts[yes].cost - opts[0].cost);
 });
