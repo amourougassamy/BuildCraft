@@ -8,6 +8,7 @@ Each folder is a complete, playable version. Old folders are never edited, so ev
 
 | Folder | What's in it |
 | --- | --- |
+| [`buildcraft-v0.2/`](buildcraft-v0.2/) | Kid edition: toy-box look, six regulars with happy / sad / ghost moods, celebrations, Gentle mode, sound |
 | [`buildcraft-v0.1/`](buildcraft-v0.1/) | Starter: Riverside Library, Minneapolis weather, 9 decisions |
 
 Open `index.html` at the repo root for a launcher that links to every iteration. With GitHub Pages on, each one has its own link, such as `https://amourougassamy.github.io/BuildCraft/buildcraft-v0.1/`.
