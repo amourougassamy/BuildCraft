@@ -22,3 +22,4 @@ Open `index.html` at the repo root for a launcher that links to every iteration.
 Keep every path inside a folder relative (`js/ui.js`, not `/js/ui.js`) so each version runs from its own folder.
 
 Each iteration's own README explains how the game works and which squad owns which file.
+My link: https://ncseahackathon.ssoe.abacus.ai/
