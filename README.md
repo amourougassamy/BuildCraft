@@ -2,7 +2,11 @@
 
 A browser game that puts students in the client's seat: a budget, a building, every feature a cost decision, and a year of weather that tests the choices.
 
-Open `index.html` at the repo root for a launcher that links to everything below. With GitHub Pages on, each entry also has its own link, such as `https://amourougassamy.github.io/BuildCraft/buildcraft-v0.2/`.
+## ▶ Play it
+
+**https://amourougassamy.github.io/BuildCraft/**
+
+That page lists every version. Nothing to install; it runs in any modern browser. To play offline, open a folder's `index.html` in a browser.
 
 ## Repo layout
 
@@ -21,10 +25,10 @@ prototypes/              Individual explorations, one folder each
 
 Each `buildcraft-v*` folder is a complete, playable version. Old folders are never edited, so every iteration stays playable side by side.
 
-| Folder | What's in it |
-| --- | --- |
-| [`buildcraft-v0.2/`](buildcraft-v0.2/) | Kid edition: toy-box look, six regulars with happy / sad / ghost moods, celebrations, Gentle mode, sound |
-| [`buildcraft-v0.1/`](buildcraft-v0.1/) | Starter: Riverside Library, Minneapolis weather, 9 decisions |
+| Version | Play | What's in it | Source |
+| --- | --- | --- | --- |
+| v0.2 (latest) | [Play](https://amourougassamy.github.io/BuildCraft/buildcraft-v0.2/) | Kid edition: toy-box look, six regulars with happy / sad / ghost moods, celebrations, Gentle mode, sound | [`buildcraft-v0.2/`](buildcraft-v0.2/) |
+| v0.1 | [Play](https://amourougassamy.github.io/BuildCraft/buildcraft-v0.1/) | Starter: Riverside Library, Minneapolis weather, 9 decisions | [`buildcraft-v0.1/`](buildcraft-v0.1/) |
 
 Each iteration's own README explains how the game works and which squad owns which file.
 
@@ -32,12 +36,14 @@ Each iteration's own README explains how the game works and which squad owns whi
 
 Side explorations built in parallel. Ideas that work here can be pulled into the next mainline version.
 
-| Folder | Owner | What's in it | Runs on Pages? |
-| --- | --- | --- | --- |
-| [`prototypes/alex/`](prototypes/alex/) | Alex | Three single-file versions. Latest: pick a town, building type and floors; 90 s build, then a 12-month year of earthquakes and windstorms; foundations must match the soil. | Yes |
-| [`prototypes/sky-high-builders/`](prototypes/sky-high-builders/) | Logan | "The Wind Challenge": stack pieces on a grid to build a tower for a windy city. | Yes |
-| [`prototypes/buildcraft-3d/`](prototypes/buildcraft-3d/) | Logan | Orbitable 3D models, templates (tower, house, bridge, frame), six adjustable loads, demand/capacity score, JSON export/import. Loads Three.js from a CDN. | Yes (needs internet) |
-| [`prototypes/learning-hub-nextjs/`](prototypes/learning-hub-nextjs/) | nabdo | Next.js app: design a neighborhood learning hub in 3D against a budget, area target and a 12-hour hot-day cooling simulation. Live at https://ncseahackathon.ssoe.abacus.ai/ | No (needs Node) |
+| Prototype | Owner | Play | What's in it | Source |
+| --- | --- | --- | --- | --- |
+| Alex's latest (v3) | Alex | [Play](https://amourougassamy.github.io/BuildCraft/prototypes/alex/) | Pick a town, building type and floors; 90 s build, then a 12-month year of earthquakes and windstorms; foundations must match the soil | [`prototypes/alex/`](prototypes/alex/) |
+| Alex's v2 | Alex | [Play](https://amourougassamy.github.io/BuildCraft/prototypes/alex/v2.html) | Live scene with visitors; Code Minimum vs. Beyond Code choices in five categories | [`v2.html`](prototypes/alex/v2.html) |
+| Alex's v1: Build It Strong | Alex | [Play](https://amourougassamy.github.io/BuildCraft/prototypes/alex/v1-build-it-strong.html) | First slim prototype: four categories, a $100 budget, a happiness meter | [`v1-build-it-strong.html`](prototypes/alex/v1-build-it-strong.html) |
+| Sky High Builders | Logan | [Play](https://amourougassamy.github.io/BuildCraft/prototypes/sky-high-builders/) | "The Wind Challenge": stack pieces on a grid to build a tower for a windy city | [`prototypes/sky-high-builders/`](prototypes/sky-high-builders/) |
+| BuildCraft 3D | Logan | [Play](https://amourougassamy.github.io/BuildCraft/prototypes/buildcraft-3d/) | Orbitable 3D models, templates (tower, house, bridge, frame), six adjustable loads, demand/capacity score, JSON export/import. Needs internet for Three.js | [`prototypes/buildcraft-3d/`](prototypes/buildcraft-3d/) |
+| Neighborhood learning hub | nabdo | [Open](https://ncseahackathon.ssoe.abacus.ai/) (hosted on Abacus.AI) | Next.js app: design a learning hub in 3D against a budget, an area target and a 12-hour hot-day cooling simulation. Needs Node; does not run on GitHub Pages | [`prototypes/learning-hub-nextjs/`](prototypes/learning-hub-nextjs/) |
 
 All of these are games. Their numbers are illustrative and are not structural analysis or code checks.
 
@@ -47,14 +53,14 @@ All of these are games. Their numbers are illustrative and are not structural an
 
 1. Copy the newest folder and rename it: `cp -r buildcraft-v0.2 buildcraft-v0.3`
 2. Work only in the new folder.
-3. Add a row for it at the top of the mainline list in the root `index.html` and in the table above.
-4. Commit and push.
+3. Add a row for it at the top of the mainline list in the root `index.html` and in the table above (Play link: `https://amourougassamy.github.io/BuildCraft/<folder>/`).
+4. Commit and push. GitHub Pages republishes within a minute or two.
 
 **New prototype**
 
 1. Make a folder under `prototypes/` named for what it is (not `my-version` or `test`).
 2. Put an `index.html` at its root if it runs in the browser, plus a short `README.md`: what it is, who owns it, how to run it.
-3. Add a row to the launcher and to the Prototypes table above.
+3. Add a row to the launcher and to the Prototypes table above (Play link: `https://amourougassamy.github.io/BuildCraft/prototypes/<folder>/`).
 
 **House rules**
 
