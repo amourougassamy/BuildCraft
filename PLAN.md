@@ -21,10 +21,10 @@ Sizes: **S** is under an hour, **M** is 1–3 hours, **L** is half a day or more
 | --- | --- | --- | --- | --- | --- | --- |
 | 0 | Merge `master_V1` into `main` so Master V1 goes live | Setup | S | | Anand | ✅ |
 | U3 | Remove the Furniture option (Basic / Cozy & Colorful) | UI | S | | TK | ⬜ |
-| M4 | Level 1 can fail: running without changes should not pass | Levels | S | | | ⬜ |
-| M5 | Bigger buildings: at least 2 storeys and a larger footprint | Levels | M | | | ⬜ |
+| M4 | Level 1 can fail: running without changes should not pass | Levels | S | | ADAR | ⬜ |
+| M5 | Bigger buildings: at least 2 storeys and a larger footprint | Levels | M | | ADAR | ⬜ |
 | M6 | L-shaped building (re-entrant corner) on a later level | Levels | M | M5 | | ⬜ |
-| M3 | Soil profiles: show the ground layers under each site | Levels | M | | | ⬜ |
+| M3 | Soil profiles: show the ground layers under each site | Levels | M | | ADAR | ⬜ |
 | M2 | River site on really bad soil (river next to Breezy Bay) | Levels | M | M3 | | ⬜ |
 | M1 | World map shows what each site sits on: mountain, city, river | Map | M | | TK | ⬜ |
 | B1 | Building turns see-through when you hover over it | Building | M | | | ⬜ |
@@ -34,10 +34,10 @@ Sizes: **S** is under an hour, **M** is 1–3 hours, **L** is half a day or more
 | B5 | City around the site: neighbouring buildings, streets, lane markings | Site | M | B4 | TK | ⬜ |
 | B6 | Cars drive up and drop people off | Site | M | B5 | TK | ⬜ |
 | P1 | People say things (speech bubbles), not only emoji faces | People | M | | TK | ⬜ |
-| U1 | Clean up the cluttered right panel on the design screen | UI | M | | | ⬜ |
+| U1 | Clean up the cluttered right panel on the design screen | UI | M | | ADAR | ⬜ |
 | U2 | Drawing sheet: a plan-view mini drawing that updates as you choose | UI | L | U1 | | ⬜ |
 | S1 | Elevators for taller buildings | Systems | M | | | ⬜ |
-| S2 | Number of restrooms for bigger buildings | Systems | S | | | ⬜ |
+| S2 | Number of restrooms for bigger buildings | Systems | S | | ADAR | ⬜ |
 | S3 | Fire sprinklers: yes / no option | Systems | S | | TK | ⬜ |
 | S4 | Fire event (and a MEGA "flaming tornado") | Systems | M | S3 | | ⬜ |
 | S5 | A helicopter flies in the rooftop HVAC unit | Systems | M | | TK | ✅ |
