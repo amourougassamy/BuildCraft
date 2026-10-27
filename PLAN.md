@@ -26,7 +26,7 @@ Sizes: **S** is under an hour, **M** is 1–3 hours, **L** is half a day or more
 | M6 | L-shaped building (re-entrant corner) on a later level | Levels | M | M5 | | ⬜ |
 | M3 | Soil profiles: show the ground layers under each site | Levels | M | | ADAR | ⬜ |
 | M2 | River site on really bad soil (river next to Breezy Bay) | Levels | M | M3 | | ⬜ |
-| M1 | World map shows what each site sits on: mountain, city, river | Map | M | | TK | ⬜ |
+| M1 | World map shows what each site sits on: mountain, city, river | Map | M | | TK | ✅ |
 | B1 | Building turns see-through when you hover over it | Building | M | | | ⬜ |
 | B2 | People doing activities inside (reading at desks in the library…) | Building | L | B1 | | ⬜ |
 | B3 | Buildings look more structural and realistic, less like a box | Building | L | M5 | | ⬜ |
