@@ -16,11 +16,6 @@ Each folder is a complete, playable version. Old folders are never edited, so ev
 | --- | --- | --- | --- |
 | v0.2 (latest) | [Play](https://amourougassamy.github.io/BuildCraft/buildcraft-v0.2/) | Kid edition: toy-box look, six regulars with happy / sad / ghost moods, celebrations, Gentle mode, sound | [`buildcraft-v0.2/`](buildcraft-v0.2/) |
 | v0.1 | [Play](https://amourougassamy.github.io/BuildCraft/buildcraft-v0.1/) | Starter: Riverside Library, Minneapolis weather, 9 decisions | [`buildcraft-v0.1/`](buildcraft-v0.1/) |
-
-### Other versions in this repo
-
-| Version | Play | Source |
-| --- | --- | --- |
 | BuildCraft 3D, Version 3 web edition | [Play](https://amourougassamy.github.io/BuildCraft/my-version/) | [`my-version/`](my-version/) |
 | Alex's latest (v3) | [Play](https://amourougassamy.github.io/BuildCraft/alex/) | [`alex/`](alex/) |
 | Alex's v2 | [Play](https://amourougassamy.github.io/BuildCraft/alex/v2.html) | [`alex/v2.html`](alex/v2.html) |
