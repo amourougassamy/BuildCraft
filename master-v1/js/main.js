@@ -362,6 +362,7 @@ function drain() {
     }
     if (f.type === "calm") { $("banner").hidden = true; document.body.classList.remove("quake"); site.endHazard(); }
     if (f.type === "settle") { sound("sad"); say(`⬇️ Uh oh, ${name()}! The building is sinking into the ${SOILS[lv.soil].name.toLowerCase()}. A stronger foundation would stop this.`); }
+    if (f.type === "shelves") site.tipShelves();
     if (f.type === "shelves") say(`📚 CRASH! The shelves tipped over. Bolting them to the wall stops that, ${name()}.`);
     if (f.type === "outage" && !f.backed) say(`🔌 The power lines are down! No lights, so the doors are closed. A generator or solar + battery would keep them open.`);
     if (f.type === "outage" && f.backed) say(`⚡ The power lines went down, but your backup power kept the lights on. Nice, ${name()}!`);
@@ -484,7 +485,13 @@ function syncToggles() {
   $("gentleBtn").title = save.gentle ? "Gentle mode is ON (no ghosts)" : "Gentle mode: no ghosts";
   FX && FX.setMuted(save.muted);
 }
-$("soundBtn").onclick = () => { save.muted = !save.muted; persist(); syncToggles(); };
+$("peekBtn").onclick = () => {
+  const on = !$("peekBtn").classList.contains("on");
+  $("peekBtn").classList.toggle("on", on);
+  site && site.setPeek(on);
+  sound("pop");
+};
+$("soundBtn").onclick =() => { save.muted = !save.muted; persist(); syncToggles(); };
 $("gentleBtn").onclick = () => { save.gentle = !save.gentle; persist(); syncToggles(); site && site.setGentle(save.gentle); };
 
 // ---------- boot ----------
