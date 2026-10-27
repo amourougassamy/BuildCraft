@@ -15,6 +15,7 @@ index.html               Launcher for every playable version
 buildcraft-v0.1/         Team mainline: starter (Riverside Library)
 buildcraft-v0.2/         Team mainline: kid edition (latest)
 prototypes/              Individual explorations, one folder each
+  building-tycoon/         Isometric 3D building-systems tycoon (Tom)
   alex/                    Alex's single-file versions (v1-v3)
   sky-high-builders/       Wind-challenge tower builder (Logan)
   buildcraft-3d/           3D frame builder with loads (Logan)
@@ -38,6 +39,7 @@ Side explorations built in parallel. Ideas that work here can be pulled into the
 
 | Prototype | Owner | Play | What's in it | Source |
 | --- | --- | --- | --- | --- |
+| Building Tycoon | Tom | [Play](https://amourougassamy.github.io/BuildCraft/prototypes/building-tycoon/) | Isometric 3D office (orbit, zoom, rotate). Tenants' moods follow the design; windows, structure, envelope, HVAC and electrical all affect each other; a helicopter delivers rooftop units. Needs internet for Three.js | [`prototypes/building-tycoon/`](prototypes/building-tycoon/) |
 | Alex's latest (v3) | Alex | [Play](https://amourougassamy.github.io/BuildCraft/prototypes/alex/) | Pick a town, building type and floors; 90 s build, then a 12-month year of earthquakes and windstorms; foundations must match the soil | [`prototypes/alex/`](prototypes/alex/) |
 | Alex's v2 | Alex | [Play](https://amourougassamy.github.io/BuildCraft/prototypes/alex/v2.html) | Live scene with visitors; Code Minimum vs. Beyond Code choices in five categories | [`v2.html`](prototypes/alex/v2.html) |
 | Alex's v1: Build It Strong | Alex | [Play](https://amourougassamy.github.io/BuildCraft/prototypes/alex/v1-build-it-strong.html) | First slim prototype: four categories, a $100 budget, a happiness meter | [`v1-build-it-strong.html`](prototypes/alex/v1-build-it-strong.html) |
