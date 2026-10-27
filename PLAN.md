@@ -30,10 +30,10 @@ Sizes: **S** is under an hour, **M** is 1–3 hours, **L** is half a day or more
 | B1 | Building turns see-through when you hover over it | Building | M | | | ⬜ |
 | B2 | People doing activities inside (reading at desks in the library…) | Building | L | B1 | | ⬜ |
 | B3 | Buildings look more structural and realistic, less like a box | Building | L | M5 | | ⬜ |
-| B4 | Bigger ground so the edges of the grass never show | Site | S | | TK | ⬜ |
+| B4 | Bigger ground so the edges of the grass never show | Site | S | | TK | ✅ |
 | B5 | City around the site: neighbouring buildings, streets, lane markings | Site | M | B4 | TK | ⬜ |
 | B6 | Cars drive up and drop people off | Site | M | B5 | TK | ⬜ |
-| P1 | People say things (speech bubbles), not only emoji faces | People | M | | TK | ⬜ |
+| P1 | People say things (speech bubbles), not only emoji faces | People | M | | TK | ✅ |
 | U1 | Clean up the cluttered right panel on the design screen | UI | M | | ADAR | ⬜ |
 | U2 | Drawing sheet: a plan-view mini drawing that updates as you choose | UI | L | U1 | | ⬜ |
 | S1 | Elevators for taller buildings | Systems | M | | | ⬜ |
