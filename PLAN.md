@@ -36,7 +36,7 @@ Sizes: **S** is under an hour, **M** is 1–3 hours, **L** is half a day or more
 | S2 | Number of restrooms for bigger buildings | Systems | S | | | ⬜ |
 | S3 | Fire sprinklers: yes / no option | Systems | S | | | ⬜ |
 | S4 | Fire event (and a MEGA "flaming tornado") | Systems | M | S3 | | ⬜ |
-| S5 | A helicopter flies in the rooftop HVAC unit | Systems | M | | TK | ⬜ |
+| S5 | A helicopter flies in the rooftop HVAC unit | Systems | M | | TK | ✅ |
 
 **Suggested order:** do **0** and **U3** first. U3 touches `data.js`, `sim.js` and the tests that everyone else builds on. After that, tasks in different areas can run in parallel.
 
