@@ -20,6 +20,11 @@ prototypes/              Individual explorations, one folder each
   sky-high-builders/       Wind-challenge tower builder (Logan)
   buildcraft-3d/           3D frame builder with loads (Logan)
   learning-hub-nextjs/     Next.js app: 3D design + hot-day cooling check (nabdo)
+interactive/             3D click-to-build with load testing (Logan)
+earthquake-tower/        Five-storey tower, basic vs braced, in an earthquake (Logan)
+AGENTS.md                Instructions for coding agents: repo map, rules, gotchas
+PLAN.md                  Master V1 task board: claim with initials, tick when merged
+docs/REPO_GUIDE.md       How each game is wired (for agents and developers)
 ```
 
 ## Team mainline
@@ -45,11 +50,15 @@ Side explorations built in parallel. Ideas that work here can be pulled into the
 | Alex's v1: Build It Strong | Alex | [Play](https://amourougassamy.github.io/BuildCraft/prototypes/alex/v1-build-it-strong.html) | First slim prototype: four categories, a $100 budget, a happiness meter | [`v1-build-it-strong.html`](prototypes/alex/v1-build-it-strong.html) |
 | Sky High Builders | Logan | [Play](https://amourougassamy.github.io/BuildCraft/prototypes/sky-high-builders/) | "The Wind Challenge": stack pieces on a grid to build a tower for a windy city | [`prototypes/sky-high-builders/`](prototypes/sky-high-builders/) |
 | BuildCraft 3D | Logan | [Play](https://amourougassamy.github.io/BuildCraft/prototypes/buildcraft-3d/) | Orbitable 3D models, templates (tower, house, bridge, frame), six adjustable loads, demand/capacity score, JSON export/import. Needs internet for Three.js | [`prototypes/buildcraft-3d/`](prototypes/buildcraft-3d/) |
+| BuildCraft Interactive | Logan | [Play](https://amourougassamy.github.io/BuildCraft/interactive/) | Newer BuildCraft 3D: click on the ground to build, elevation, delete, undo, load test. Needs internet for Three.js | [`interactive/`](interactive/) |
+| Earthquake Tower | Logan | [Play](https://amourougassamy.github.io/BuildCraft/earthquake-tower/) | Five-storey tower, basic vs braced, under an earthquake with an intensity slider. Needs internet for Three.js | [`earthquake-tower/`](earthquake-tower/) |
 | Neighborhood learning hub | nabdo | [Open](https://ncseahackathon.ssoe.abacus.ai/) (hosted on Abacus.AI) | Next.js app: design a learning hub in 3D against a budget, an area target and a 12-hour hot-day cooling simulation. Needs Node; does not run on GitHub Pages | [`prototypes/learning-hub-nextjs/`](prototypes/learning-hub-nextjs/) |
 
 All of these are games. Their numbers are illustrative and are not structural analysis or code checks.
 
 ## Contributing
+
+**Working on Master V1?** Pick a task in [`PLAN.md`](PLAN.md), put your initials on it, and tick it when it's merged. Master V1 grows in place through those tasks; the copy-a-folder steps below are for new standalone versions. Using a coding agent? It reads [`AGENTS.md`](AGENTS.md), which links to the deeper [`docs/REPO_GUIDE.md`](docs/REPO_GUIDE.md).
 
 **New mainline iteration**
 
