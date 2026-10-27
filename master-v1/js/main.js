@@ -329,6 +329,13 @@ function pickSite(i) {
 }
 
 // ---------- 3. brief ----------
+// The dig-down picture of the ground (PLAN.md M3): grass, then each soil layer, sized by thickness.
+const hex = c => "#" + c.toString(16).padStart(6, "0");
+function soilBars(soil) {
+  const rows = [{ name: "Grass", h: 0.8, color: 0x9fd27a }, ...soil.layers];
+  return `<span class="profile">${rows.map(l =>
+    `<span style="flex:${l.h};background:${hex(l.color)}">${l.rock ? "🪨 " : ""}${l.name}</span>`).join("")}</span>`;
+}
 function openBrief(i) {
   levelIdx = i;
   const lv = L();

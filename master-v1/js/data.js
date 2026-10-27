@@ -32,12 +32,21 @@ export const GRADES = [[90, "A+"], [85, "A"], [75, "B"], [65, "C"], [50, "D"], [
 export const PASS_SCORE = 65;      // C or better unlocks the next site
 export const GHOST_CAP = 84;       // any ghost caps the overall score just below an A
 
+// layers: the ground under the grass, top first (PLAN.md M3). h is in site-scene units and the
+// layers add up to SOIL_DEPTH. Footings reach 0.1 into the top layer, a mat slab 0.3,
+// and deep piles 4.7, so a soil that needs piles must have rock: true starting above 4.7.
+export const SOIL_DEPTH = 5.4;
 export const SOILS = {
-  rock: { name: "Solid Rock", need: 1, color: 0xa7a3a0, desc: "Super strong ground. Shallow footings work great!" },
-  firm: { name: "Firm Gravel", need: 1, color: 0xcfa86c, desc: "Strong packed ground. Shallow footings are fine for short buildings." },
-  clay: { name: "Soft Clay", need: 2, color: 0xb08f80, desc: "Squishy ground! Heavy buildings sink unless the foundation spreads out (mat slab) or goes deep (piles)." },
+  rock: { name: "Solid Rock", need: 1, color: 0xa7a3a0, desc: "Super strong ground. Shallow footings work great!",
+          layers: [{ name: "Solid rock", h: 2.4, color: 0xa7a3a0, rock: true }, { name: "Deep bedrock", h: 3, color: 0x8d8a94, rock: true }] },
+  firm: { name: "Firm Gravel", need: 1, color: 0xcfa86c, desc: "Strong packed ground. Shallow footings are fine for short buildings.",
+          layers: [{ name: "Packed gravel", h: 3.2, color: 0xcfa86c }, { name: "Solid rock", h: 2.2, color: 0x8d8a94, rock: true }] },
+  clay: { name: "Soft Clay", need: 2, color: 0xb08f80, desc: "Squishy ground! Heavy buildings sink unless the foundation spreads out (mat slab) or goes deep (piles).",
+          layers: [{ name: "Soft squishy clay", h: 4, color: 0xb08f80 }, { name: "Solid rock", h: 1.4, color: 0x8d8a94, rock: true }] },
   sand: { name: "Wet Sand", need: 3, color: 0xe8cf86, liquefy: true,
-          desc: "In an earthquake, wet sand turns soupy like a milkshake (liquefaction)! Only deep piles reach the solid rock below." },
+          desc: "In an earthquake, wet sand turns soupy like a milkshake (liquefaction)! Only deep piles reach the solid rock below.",
+          layers: [{ name: "Wet sand", h: 2.2, color: 0xe8cf86 }, { name: "Soupy mud", h: 1.8, color: 0x9c8a6a },
+                   { name: "Solid rock", h: 1.4, color: 0x8d8a94, rock: true }] },
 };
 
 export const HAZARDS = {
@@ -147,20 +156,20 @@ export const CAST = [
 // shell: what the building itself costs, basic chairs and tables included.
 export const LEVELS = [
   { key: "rocky", name: "Rocky Ridge", region: "Mountain Valley", ico: "🏔️", building: "Library", bico: "📚",
-    floors: 1, soil: "rock", budget: 28, shell: 9, visitors: 3, perCoin: 140, map: [-14, 9],
+    floors: 1, soil: "rock", budget: 28, shell: 9, visitors: 3, perCoin: 140, map: [-15, 4],
     brief: "the mountain town of Rocky Ridge needs a cozy little library",
     // A BIG windstorm beats Code Minimum by 2 (fail); one wind upgrade cuts that to 1 (pass).
     events: [["wind", 3, 3], ["heat", 1, 6], ["quake", 1, 9]] },
   { key: "prairie", name: "Prairie Plains", region: "Big Sky Farms", ico: "🌾", building: "School", bico: "🏫",
-    floors: 2, soil: "firm", budget: 32, shell: 11, visitors: 4, perCoin: 180, map: [-4, 13], windWord: "tornado",
+    floors: 2, soil: "firm", budget: 32, shell: 11, visitors: 4, perCoin: 180, map: [-5, 13], windWord: "tornado",
     brief: "the farm kids of Prairie Plains need a new school",
     events: [["wind", 3, 4], ["heat", 2, 6], ["wind", 2, 9]] },
   { key: "breezy", name: "Breezy Bay", region: "Sunny Coast", ico: "🏖️", building: "Aquarium", bico: "🐠",
-    floors: 2, soil: "clay", budget: 38, shell: 11, visitors: 4, perCoin: 180, map: [8, 10], windWord: "hurricane",
+    floors: 2, soil: "clay", budget: 38, shell: 11, visitors: 4, perCoin: 180, map: [14, 15.5], windWord: "hurricane",
     brief: "the beach town of Breezy Bay wants an aquarium by the sea",
     events: [["heat", 2, 5], ["wind", 3, 7], ["flood", 2, 8]] },
   { key: "shaky", name: "Shaky Hills", region: "Rumble Valley", ico: "🌋", building: "Hospital", bico: "🏥",
-    floors: 2, soil: "sand", budget: 46, shell: 13, visitors: 3, perCoin: 140, map: [12, -2], hospital: true,
+    floors: 2, soil: "sand", budget: 46, shell: 13, visitors: 3, perCoin: 140, map: [15, 1], hospital: true,
     brief: "Shaky Hills needs a hospital that stays open even after an earthquake",
     events: [["quake", 3, 2], ["wind", 1, 5], ["quake", 4, 9]] },
   { key: "mega", name: "Mega City", region: "Mega City", ico: "🏙️", building: "Apartment Tower", bico: "🏢",
