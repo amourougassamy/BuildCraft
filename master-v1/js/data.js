@@ -132,7 +132,8 @@ export const LEVELS = [
   { key: "rocky", name: "Rocky Ridge", region: "Mountain Valley", ico: "🏔️", building: "Library", bico: "📚",
     floors: 1, soil: "rock", budget: 28, shell: 8, visitors: 3, perCoin: 140, map: [-14, 9],
     brief: "the mountain town of Rocky Ridge needs a cozy little library",
-    events: [["wind", 2, 3], ["heat", 1, 6], ["quake", 1, 9]] },
+    // A BIG windstorm beats Code Minimum by 2 (fail); one wind upgrade cuts that to 1 (pass).
+    events: [["wind", 3, 3], ["heat", 1, 6], ["quake", 1, 9]] },
   { key: "prairie", name: "Prairie Plains", region: "Big Sky Farms", ico: "🌾", building: "School", bico: "🏫",
     floors: 2, soil: "firm", budget: 32, shell: 10, visitors: 4, perCoin: 180, map: [-4, 13], windWord: "tornado",
     brief: "the farm kids of Prairie Plains need a new school",
