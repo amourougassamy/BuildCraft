@@ -1,6 +1,6 @@
 # Master V1 upgrade plan
 
-The task board for the next round of work on **Master V1** (`master-v1/`, built by Anand, on branch `master_V1`). It comes from the team's review meeting on 2026-10-27. Pick a task, claim it with your initials, and tick it when it's merged.
+The task board for the next round of work on **Master V1** (`master-v1/`, built by Anand, merged into `main` in PR #4). It comes from the team's review meeting on 2026-10-27. Pick a task, claim it with your initials, and tick it when it's merged.
 
 ## How to use this board
 
@@ -15,26 +15,26 @@ Sizes: **S** is under an hour, **M** is 1–3 hours, **L** is half a day or more
 
 | ID | Task | Area | Size | Needs | Who | Done |
 | --- | --- | --- | --- | --- | --- | --- |
-| 0 | Merge `master_V1` into `main` so Master V1 goes live | Setup | S | | | ⬜ |
-| U3 | Remove the Furniture option (Basic / Cozy & Colorful) | UI | S | | | ⬜ |
+| 0 | Merge `master_V1` into `main` so Master V1 goes live | Setup | S | | Anand | ✅ |
+| U3 | Remove the Furniture option (Basic / Cozy & Colorful) | UI | S | | TK | ⬜ |
 | M4 | Level 1 can fail: running without changes should not pass | Levels | S | | | ⬜ |
 | M5 | Bigger buildings: at least 2 storeys and a larger footprint | Levels | M | | | ⬜ |
 | M6 | L-shaped building (re-entrant corner) on a later level | Levels | M | M5 | | ⬜ |
 | M3 | Soil profiles: show the ground layers under each site | Levels | M | | | ⬜ |
 | M2 | River site on really bad soil (river next to Breezy Bay) | Levels | M | M3 | | ⬜ |
-| M1 | World map shows what each site sits on: mountain, city, river | Map | M | | | ⬜ |
+| M1 | World map shows what each site sits on: mountain, city, river | Map | M | | TK | ⬜ |
 | B1 | Building turns see-through when you hover over it | Building | M | | | ⬜ |
 | B2 | People doing activities inside (reading at desks in the library…) | Building | L | B1 | | ⬜ |
 | B3 | Buildings look more structural and realistic, less like a box | Building | L | M5 | | ⬜ |
-| B4 | Bigger ground so the edges of the grass never show | Site | S | | | ⬜ |
-| B5 | City around the site: neighbouring buildings, streets, lane markings | Site | M | B4 | | ⬜ |
-| B6 | Cars drive up and drop people off | Site | M | B5 | | ⬜ |
-| P1 | People say things (speech bubbles), not only emoji faces | People | M | | | ⬜ |
+| B4 | Bigger ground so the edges of the grass never show | Site | S | | TK | ⬜ |
+| B5 | City around the site: neighbouring buildings, streets, lane markings | Site | M | B4 | TK | ⬜ |
+| B6 | Cars drive up and drop people off | Site | M | B5 | TK | ⬜ |
+| P1 | People say things (speech bubbles), not only emoji faces | People | M | | TK | ⬜ |
 | U1 | Clean up the cluttered right panel on the design screen | UI | M | | | ⬜ |
 | U2 | Drawing sheet: a plan-view mini drawing that updates as you choose | UI | L | U1 | | ⬜ |
 | S1 | Elevators for taller buildings | Systems | M | | | ⬜ |
 | S2 | Number of restrooms for bigger buildings | Systems | S | | | ⬜ |
-| S3 | Fire sprinklers: yes / no option | Systems | S | | | ⬜ |
+| S3 | Fire sprinklers: yes / no option | Systems | S | | TK | ⬜ |
 | S4 | Fire event (and a MEGA "flaming tornado") | Systems | M | S3 | | ⬜ |
 | S5 | A helicopter flies in the rooftop HVAC unit | Systems | M | | TK | ✅ |
 
@@ -121,11 +121,11 @@ Paths are inside `master-v1/`. Every task that changes `js/data.js` or `js/sim.j
 
 ## Workflow
 
-- **Base branch:** branch from `master_V1` and open your PR back into it until task 0 is done. After that, use `main`.
+- **Base branch:** `main` (Master V1 was merged into it in PR #4). Open your PR back into `main`.
 
   ```sh
   git fetch origin
-  git checkout -b <initials>/<task-id>-short-name origin/master_V1   # e.g. tk/b1-hover-see-through
+  git checkout -b <initials>/<task-id>-short-name origin/main   # e.g. tk/b1-hover-see-through
   ```
 
 - **Run it:** `python3 master-v1/tools/serve.py`, then open http://127.0.0.1:8765/master-v1/.
