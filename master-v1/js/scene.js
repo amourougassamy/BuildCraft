@@ -1005,6 +1005,132 @@ export function createSite(container) {
   };
 }
 
+// ---------- map terrain helpers ----------
+function sharedGeo(key, make) {
+  if (!geoCache.has(key)) geoCache.set(key, make());
+  return geoCache.get(key);
+}
+// A flat patch on the ground (sand, puddles, ponds). Flat things don't cast shadows.
+function flat(r, color, x, y, z, sz = 1, extra = {}) {
+  const m = mesh(sharedGeo("disc", () => new THREE.CircleGeometry(1, 24)), clay(color, extra), x, y, z);
+  m.rotation.x = -Math.PI / 2;
+  m.scale.set(r, r * sz, 1);
+  m.castShadow = false;
+  return m;
+}
+
+// River: a flat clay ribbon through points [[x, z] or [x, z, y]] that widens downstream,
+// over a pale bank, with a pond at the source. Returns a Group named "river";
+// userData.curve is the centre line and userData.onWater(x, z, pad) says if a point is on it.
+// Reusable for the river site (M2).
+export const RIVER_Y = 0.345;
+export const MAP_RIVER = [[-7.5, -2.5], [-5, -0.6], [-2, 1.6], [1.5, 2.8], [4.5, 4.6], [6.6, 7.6], [7.6, 11],
+  [8.4, 14.2], [8.9, 17.6], [9.3, 21.6], [9.5, 23.1, -0.7], [9.6, 24.6, -1.15]];
+function ribbonGeo(curve, w0, w1, n) {
+  const pos = [], idx = [];
+  for (let i = 0; i <= n; i++) {
+    const u = i / n, p = curve.getPointAt(u), t = curve.getTangentAt(u);
+    const len = Math.hypot(t.x, t.z) || 1, w = (w0 + (w1 - w0) * u) / 2;
+    const sx = (-t.z / len) * w, sz = (t.x / len) * w;
+    pos.push(p.x + sx, p.y, p.z + sz, p.x - sx, p.y, p.z - sz);
+    if (i) { const a = 2 * i - 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  return g;
+}
+export function river(points, { w0 = 0.9, w1 = 1.8, y = RIVER_Y } = {}) {
+  const g = new THREE.Group();
+  g.name = "river";
+  const curve = new THREE.CatmullRomCurve3(points.map(([x, z, py = y]) => new THREE.Vector3(x, py, z)));
+  const n = points.length * 10;
+  const bank = mesh(ribbonGeo(curve, w0 + 0.7, w1 + 0.7, n), clay(0xd9cf9a), 0, -0.02, 0);
+  const water = mesh(ribbonGeo(curve, w0, w1, n), clay(0x6cbcec, { roughness: 0.35 }));
+  [bank, water].forEach(m => { m.castShadow = false; g.add(m); });
+  const [sx, sz, sy = y] = points[0];
+  g.add(flat(1.95, 0xd9cf9a, sx, sy - 0.02, sz), flat(1.5, 0x6cbcec, sx, sy, sz, 1, { roughness: 0.35 }));
+  const samples = curve.getSpacedPoints(n);
+  g.userData = {
+    curve,
+    onWater(x, z, pad = 0) {
+      return samples.some((p, i) => {
+        const w = (w0 + (w1 - w0) * (i / n)) / 2 + pad;
+        return (p.x - x) ** 2 + (p.z - z) ** 2 < w * w;
+      });
+    },
+  };
+  return g;
+}
+
+function pine(x, y, z, s = 1) {
+  const g = new THREE.Group();
+  g.add(cyl(0.14, 0.18, 0.7, 0x9a6b4a, 0, 0.35, 0));
+  g.add(mesh(sharedGeo("pineLo", () => new THREE.ConeGeometry(0.85, 1.4, 8)), clay(0x4f9a6a), 0, 1.2, 0));
+  g.add(mesh(sharedGeo("pineHi", () => new THREE.ConeGeometry(0.6, 1.1, 8)), clay(0x4f9a6a), 0, 1.9, 0));
+  g.position.set(x, y, z);
+  g.scale.setScalar(s);
+  return g;
+}
+function palm(x, z) {
+  const g = new THREE.Group();
+  const trunk = mesh(sharedGeo("palmTrunk", () => new THREE.CylinderGeometry(0.13, 0.2, 2.4, 8)), clay(0xb08a5a), 0.15, 1.2, 0);
+  trunk.rotation.z = -0.12;
+  g.add(trunk);
+  const leafGeo = sharedGeo("palmLeaf", () => new THREE.SphereGeometry(0.75, 10, 6));
+  for (let i = 0; i < 5; i++) {
+    const a = (i / 5) * Math.PI * 2;
+    const leaf = mesh(leafGeo, clay(0x5cb85c), 0.3 + Math.cos(a) * 0.55, 2.35, Math.sin(a) * 0.55);
+    leaf.scale.set(1, 0.22, 0.45);
+    leaf.rotation.set(0, -a, -0.35);
+    g.add(leaf);
+  }
+  g.position.set(x, 0, z);
+  return g;
+}
+function barn(x, z) {
+  const g = new THREE.Group();
+  g.add(rbox(1.7, 1.3, 2.0, 0xd9534f, 0, 0.95, 0, 0.12));
+  const roof = mesh(sharedGeo("barnRoof", () => new THREE.CylinderGeometry(1.05, 1.05, 2.3, 3)), clay(0x8d4b3b), 0, 2.125, 0);
+  roof.rotation.x = -Math.PI / 2; // ridge up, running front to back
+  g.add(roof);
+  g.add(rbox(0.7, 0.8, 0.08, 0xf5f5f5, 0, 0.7, 1.02, 0.03));
+  g.add(cyl(0.5, 0.5, 2.6, 0xe9e4da, 1.6, 1.6, -0.6), ball(0.5, 0x8d4b3b, 1.6, 2.9, -0.6)); // silo
+  g.position.set(x, 0, z);
+  return g;
+}
+function tower(x, z, w, d, h, color) {
+  const g = new THREE.Group();
+  g.add(rbox(w, h, d, color, 0, 0.3 + h / 2, 0, 0.18));
+  for (let y = 1.1; y < h - 0.4; y += 1.2) g.add(rbox(w + 0.08, 0.32, d + 0.08, 0xdff1fb, 0, 0.3 + y, 0, 0.06));
+  g.add(rbox(w * 0.5, 0.35, d * 0.5, 0x8a8f96, 0, 0.47 + h, 0, 0.08));
+  g.position.set(x, 0, z);
+  return g;
+}
+function volcano(x, z, h = 7, r = 5) {
+  const g = new THREE.Group();
+  const top = r * 0.28;
+  g.add(mesh(new THREE.CylinderGeometry(top, r, h, 9), clay(0x8d6e63), 0, h / 2, 0));
+  const lava = clay(0xff8a3d, { emissive: 0xff5a1a, emissiveIntensity: 0.7 });
+  g.add(mesh(new THREE.CylinderGeometry(top * 0.75, top * 0.75, 0.12, 12), lava, 0, h + 0.02, 0));
+  // Two lava drips on the faces that look at the camera (face centres sit at ±20°).
+  const ti = top * 0.94, run = (r - top) * 0.94, slope = Math.hypot(run, h), tilt = Math.atan2(run, h);
+  [[-0.349, 0.5], [0.349, 0.35]].forEach(([az, frac]) => {
+    const pivot = new THREE.Group();
+    pivot.rotation.y = az;
+    const len = slope * frac, f = frac / 2;
+    const strip = rbox(0.42, len, 0.14, lava, 0, h * (1 - f) + Math.sin(tilt) * 0.07, ti + run * f + Math.cos(tilt) * 0.07, 0.06);
+    strip.rotation.x = -tilt;
+    strip.castShadow = false;
+    pivot.add(strip);
+    g.add(pivot);
+  });
+  g.position.set(x, 0, z);
+  g.userData.lava = lava;
+  return g;
+}
+
 // ============================================================
 // Map: a clay island with one pin per site
 // ============================================================
@@ -1039,23 +1165,131 @@ export function createMap(container, levels, onPick) {
   const beach = mesh(new THREE.CylinderGeometry(26.6, 27.6, 1.2, 48), clay(0xf4dc9c), 0, -1.4, 2);
   beach.scale.z = 0.86;
   island.add(beach);
-  island.add(mountain(-20, 0, 7), mountain(-17, -4, 9, 0x8f9aa6), mountain(17, -7, 8, 0x8d6e63));
-  [[-8, 2], [-19, 13], [3, 17], [14, 16], [-11, -9], [18, 4], [6, -3], [-2, 6], [20, -1]].forEach(([x, z], i) => island.add(tree(x, z, 0.9 + (i % 3) * 0.15)));
+  // Raised ground that pins, trees and paths climb onto: mesas (flat top, `top` radius) and domes.
+  const rises = [];
+  function groundAt(x, z) {
+    let y = 0;
+    for (const r of rises) {
+      const d = Math.hypot(x - r.x, z - r.z);
+      if (d >= r.r) continue;
+      y = Math.max(y, r.dome ? r.h * Math.sqrt(1 - (d / r.r) ** 2) : d <= r.top ? r.h : (r.h * (r.r - d)) / (r.r - r.top));
+    }
+    return y;
+  }
+  [[-20, 0, 7, 0x9aa5b1], [-17, -4, 9, 0x8f9aa6], [-13, -3, 8, 0x9aa5b1]].forEach(([x, z, h, c]) => {
+    island.add(mountain(x, z, h, c));
+    rises.push({ x, z, h, r: 0.7 * h * 0.9, top: 0 });
+  });
+
+  // Rocky Ridge: a grey rocky mesa on the mountains' shoulder, pines and boulders around it.
+  const [rx, rz] = levels[0].map;
+  island.add(mesh(new THREE.CylinderGeometry(4, 6.4, 2.8, 10), clay(0xa7a3a0), rx, 1.4, rz));
+  rises.push({ x: rx, z: rz, h: 2.8, r: 6.4 * 0.95, top: 4 * 0.95 });
+  [[-19.8, 8.8, 1], [-10.4, 7.2, 0.9], [-21.2, 4.5, 1.1], [-9.8, 1.8, 0.85]].forEach(([x, z, s]) => island.add(pine(x, groundAt(x, z), z, s)));
+  [[-20.6, 7.2, 0.7], [-9.4, 4.6, 0.55], [-16.8, 10.4, 0.6]].forEach(([x, z, s]) => {
+    const rock = mesh(sharedGeo("boulder", () => new THREE.DodecahedronGeometry(1)), clay(0x9aa5b1), x, groundAt(x, z) + s * 0.4, z);
+    rock.scale.setScalar(s);
+    island.add(rock);
+  });
+
+  // Prairie Plains: patchwork fields, a red barn with a silo, hay bales.
+  const [px, pz] = levels[1].map;
+  const fieldColors = [0xf2d36b, 0xa8d672, 0xd9b26f, 0x7fbf6a];
+  for (let r = 0; r < 4; r++) for (let c = 0; c < (r < 3 ? 4 : 3); c++) {
+    const fx = px - 4.125 + c * 2.75, fz = pz - 2.75 + r * 2.75, col = (c + 3 * r) % 4;
+    const tile = rbox(2.5, 0.12, 2.5, fieldColors[col], fx, 0.33, fz, 0.06);
+    tile.castShadow = false;
+    island.add(tile);
+    if (col === 1) for (let k = -1; k <= 1; k++) {
+      const row = rbox(2.1, 0.08, 0.22, 0x86bf5a, fx, 0.41, fz + k * 0.7, 0.04);
+      row.castShadow = false;
+      island.add(row);
+    }
+  }
+  island.add(barn(px + 6.4, pz - 3));
+  [[px - 4.6, pz + 2.4], [px - 3.5, pz + 3.2], [px - 1.4, pz + 5.5]].forEach(([x, z]) => {
+    const bale = mesh(sharedGeo("hay", () => new THREE.CylinderGeometry(0.4, 0.4, 0.6, 14)), clay(0xe8c45a), x, 0.79, z);
+    bale.rotation.z = Math.PI / 2;
+    island.add(bale);
+  });
+
+  // Breezy Bay: a sandy south-east coast, palms, and the river that runs from the mountain lake to the sea.
+  const coast = mesh(new THREE.RingGeometry(19.5, 24.9, 40, 1, THREE.MathUtils.degToRad(-80), THREE.MathUtils.degToRad(60)), clay(0xf4dc9c), 0, 0.31, 2);
+  coast.rotation.x = -Math.PI / 2;
+  coast.scale.y = 0.85; // match the island's squash (local y is world z once laid flat)
+  coast.castShadow = false;
+  island.add(coast);
+  const [bx0, bz0] = levels[2].map;
+  island.add(flat(4.4, 0xf4dc9c, bx0, 0.312, bz0));
+  [[11.8, 19.6], [17.6, 15.2], [20.6, 10.4]].forEach(([x, z]) => island.add(palm(x, z)));
+  const water = river(MAP_RIVER);
+  island.add(water);
+
+  // Shaky Hills: the volcano, lumpy hills, wet sand with puddles.
+  const [sx0, sz0] = levels[3].map;
+  const volc = volcano(15, -8);
+  island.add(volc);
+  rises.push({ x: 15, z: -8, h: 7, r: 5 * 0.94, top: 1.4 * 0.94 });
+  [[20, 4, 2.2, 0xa9c46c], [19.6, -2.2, 1.8, 0x9cb862], [20.5, 7.5, 1.6, 0xb5b26e], [9.5, 3.8, 1.6, 0xa9c46c], [11.2, -3.4, 1.6, 0x9cb862]].forEach(([x, z, r, c]) => {
+    const lump = ball(r, c, x, 0, z);
+    lump.scale.y = 0.5;
+    island.add(lump);
+    rises.push({ x, z, r, h: r * 0.5, dome: true });
+  });
+  [[0, 0, 4.6], [2.5, 2.2, 2.6], [-2.8, 1.6, 2.2]].forEach(([dx, dz, r]) => island.add(flat(r, 0xc9ad74, sx0 + dx, 0.315, sz0 + dz)));
+  [[3.2, 2.6, 0.7], [-3.4, 2.2, 0.55], [1.8, -2.9, 0.5]].forEach(([dx, dz, r]) => island.add(flat(r, 0x9fd0ea, sx0 + dx, 0.322, sz0 + dz, 0.7, { roughness: 0.25 })));
+
+  // Mega City: a skyline of clay towers behind the pin, a road cross and a few cars.
+  const [mx, mz] = levels[4].map;
+  [[mx, mz, 17, 1.5], [mx, mz - 1.75, 1.5, 12.5]].forEach(([x, z, w, d]) => {
+    const road = rbox(w, 0.08, d, 0x737a83, x, 0.34, z, 0.03);
+    road.castShadow = false;
+    island.add(road);
+  });
+  for (let k = -6; k <= 6; k++) {
+    if (Math.abs(k) < 3) continue;
+    [[mx + k * 1.3, mz, 0], [mx, mz + k * 1.3 - 1.75, Math.PI / 2]].forEach(([x, z, a]) => {
+      if (z - mz < -7.7 || z - mz > 4.2) return; // stay on the north-south road
+      const dash = rbox(0.55, 0.03, 0.14, 0xffffff, x, 0.39, z, 0.01);
+      dash.rotation.y = a;
+      dash.castShadow = false;
+      island.add(dash);
+    });
+  }
+  [[-4.4, -3.4, 2, 2, 7, 0x7fb3d5], [-1.9, -6, 1.7, 1.7, 8.6, 0x80cbc4], [2.2, -5.6, 2, 1.8, 6.4, 0xffcc80], [4.8, -3.2, 2.1, 2, 7.8, 0xf6a5a0],
+    [-7.2, -2.6, 1.8, 1.8, 4.8, 0xa5d6a7], [7.6, -2.4, 1.7, 1.7, 4.4, 0xfff59d], [-5.8, 2.7, 2, 1.8, 2.6, 0xffab91]]
+    .forEach(([dx, dz, w, d, h, c]) => island.add(tower(mx + dx, mz + dz, w, d, h, c)));
+  [[-4.8, 0.4, 0, 0xe5534b], [5.6, -0.4, 0, 0x5b9bd5], [0.35, -6.5, Math.PI / 2, 0xffd23f]].forEach(([dx, dz, a, c]) => {
+    const car = new THREE.Group();
+    car.add(rbox(1.0, 0.36, 0.55, c, 0, 0.58, 0, 0.12), rbox(0.55, 0.3, 0.5, 0xdff1fb, -0.05, 0.88, 0, 0.1));
+    car.position.set(mx + dx, 0, mz + dz);
+    car.rotation.y = a;
+    island.add(car);
+  });
+
+  [[-17, 13], [-14, 16.5], [1.5, 19.5], [-3, 6.5], [-7.5, 3.5], [4, -2], [-11, -9], [-12, -13.5], [10.5, -14.5], [4.2, 11.5]]
+    .forEach(([x, z], i) => island.add(tree(x, z, 0.9 + (i % 3) * 0.15)));
   const clouds = [cloud(-26, 12, -6, 2), cloud(22, 14, 18, 1.6), cloud(4, 16, -16, 2.2)];
   clouds.forEach(c => scene.add(c));
 
-  // Dotted path between pins
+  // Dotted path between pins: it climbs raised ground and crosses the river on a plank
+  const dotGeo = sharedGeo("pathDot", () => new THREE.SphereGeometry(0.32, 14, 10));
   for (let i = 0; i < levels.length - 1; i++) {
     const [ax, az] = levels[i].map, [bx, bz] = levels[i + 1].map;
     for (let k = 1; k < 8; k++) {
       const u = k / 8;
-      island.add(ball(0.32, 0xfff3c4, ax + (bx - ax) * u, 0.35, az + (bz - az) * u + Math.sin(u * Math.PI) * 2));
+      const x = ax + (bx - ax) * u, z = az + (bz - az) * u + Math.sin(u * Math.PI) * 2;
+      if (water.userData.onWater(x, z, 0.3)) {
+        const plank = rbox(2.8, 0.2, 0.9, 0xb07a4f, x, RIVER_Y + 0.12, z, 0.08);
+        plank.rotation.y = Math.atan2(-(bz - az + 2 * Math.PI * Math.cos(u * Math.PI)), bx - ax);
+        island.add(plank);
+      } else island.add(mesh(dotGeo, clay(0xfff3c4), x, 0.35 + groundAt(x, z), z));
     }
   }
 
   const pins = levels.map((lv, i) => {
     const g = new THREE.Group();
-    g.position.set(lv.map[0], 0, lv.map[1]);
+    g.position.set(lv.map[0], groundAt(lv.map[0], lv.map[1]), lv.map[1]);
     const pad = cyl(3.2, 3.4, 0.8, 0xf6f0e3, 0, 0.4, 0);
     g.add(pad);
     const house = new THREE.Group();
@@ -1132,7 +1366,8 @@ export function createMap(container, levels, onPick) {
       p.userData.icon.position.y = 3.6 + levels[i].floors * 1.3 + Math.sin(t * 2.5 + i) * 0.3;
     });
     const [cx, cz] = levels[current].map;
-    token.position.set(cx - 3, 3 + Math.abs(Math.sin(t * 4)) * 1.2, cz + 1.5);
+    token.position.set(cx - 3, pins[current].position.y + 3 + Math.abs(Math.sin(t * 4)) * 1.2, cz + 1.5);
+    if (!reduceMotion) volc.userData.lava.emissiveIntensity = 0.6 + 0.3 * Math.sin(t * 2.5);
     clouds.forEach((c, i) => { c.position.x += dt * (0.6 + i * 0.2); if (c.position.x > 40) c.position.x = -40; });
     // Keep the island on screen while panning
     const T = controls.target;
