@@ -45,6 +45,23 @@ test("you can't run over budget", () => {
   assert.equal(canRun(lv("rocky"), defaultChoice()), true);
 });
 
+test("a soil report costs 2 coins and changes nothing else about the year", () => {
+  const base = design({ found: 1 }), withReport = design({ found: 1, soil: pick("soil", "Soil Report") });
+  assert.equal(coinsLeft(lv("breezy"), base) - coinsLeft(lv("breezy"), withReport), 2);
+  const a = simulate(lv("breezy"), base), b = simulate(lv("breezy"), withReport);
+  assert.deepEqual(a.log, b.log);
+  assert.equal(a.daysOpen, b.daysOpen);
+  assert.equal(a.health, b.health);
+});
+
+test("tall buildings without an elevator are less happy; extra restrooms help", () => {
+  const happy = d => reportCard(simulate(lv("mega"), design({ found: 2, ...d }))).subjects.happy.score;
+  assert.ok(happy({ lift: 1 }) > happy({}), "an elevator makes a 3-storey tower happier");
+  assert.ok(happy({ wc: 1 }) > happy({}), "extra restrooms make it happier");
+  // A 1-storey site ignores both choices
+  assert.deepEqual(simulate(lv("rocky"), design({ lift: 1 })).happySum, simulate(lv("rocky"), defaultChoice()).happySum);
+});
+
 test("grade cutoffs", () => {
   assert.equal(gradeFor(100), "A+");
   assert.equal(gradeFor(90), "A+");

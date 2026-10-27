@@ -297,11 +297,13 @@ export function createSite(container) {
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.target.set(0, 3, 0);
   controls.enableDamping = true;
-  controls.enablePan = false;
+  // Pan (right-drag / two fingers) and orbit down to ground level so deep foundations can be seen.
+  controls.enablePan = true;
+  controls.screenSpacePanning = true;
   controls.minDistance = 14;
-  controls.maxDistance = 70;
+  controls.maxDistance = 80;
   controls.minPolarAngle = 0.35;
-  controls.maxPolarAngle = 1.35;
+  controls.maxPolarAngle = 1.75;
   controls.autoRotate = !reduceMotion;
   controls.autoRotateSpeed = 0.35;
   fit(container, renderer, camera);
@@ -316,12 +318,17 @@ export function createSite(container) {
   scene.fog = new THREE.Fog(0xd9eefe, 70, 220);
 
   // The lot: grass on top, then the site's soil layers, see-through so the foundation shows.
+  // Grass fades when the camera dips below ground, so you can look up at the piles.
   const LOT_W = 28, LOT_D = 22, DIG = 6.2; // DIG: from the grass down to the bottom of the rock
-  const grass = rbox(LOT_W, 0.8, LOT_D, 0x9fd27a, 0, -0.4, 0, 0.35);
+  const grassMat = new THREE.MeshStandardMaterial({ color: 0x9fd27a, roughness: 0.92, transparent: true });
+  const grass = rbox(LOT_W, 0.8, LOT_D, grassMat, 0, -0.4, 0, 0.35);
   world.add(grass);
   const newProfile = soil => soilProfile(SOILS[soil].layers, LOT_W - 0.4, LOT_D - 0.4, -0.8, -DIG);
   let profile = newProfile("clay"); // swapped per site in setLevel
   world.add(profile);
+  let soilKnown = false;
+  const neighbors = new THREE.Group();
+  scene.add(neighbors);
 
   // Ground: one big grass field around the lot that runs out into the fog. It has a hole for the
   // lot plus a sloped "cutaway" trench on the lot's left and right, so you can still look into the
@@ -495,14 +502,14 @@ export function createSite(container) {
       g.add(rbox(4, 1.5, 0.1, 0x2e5e3e, 0, 1.6, -D / 2 + 0.3, 0.04), shelf(-W / 2 + 0.6, -1.4, Math.PI / 2));
       for (let r = 0; r < 2; r++) for (let c = -1; c <= 1; c++) g.add(table(c * 2.6, -0.6 + r * 1.9, 1));
     }
-    if (key === "breezy") g.add(tank(-2.6, backZ + 0.2), tank(2.6, backZ + 0.2), shelf(-W / 2 + 0.6, 0.8, Math.PI / 2), table(0, 1, 2));
+    if (key === "breezy") g.add(tank(-2.6, backZ + 0.2), tank(1, backZ + 0.2), shelf(-W / 2 + 0.6, 0.8, Math.PI / 2), table(0, 1, 2));
     if (key === "shaky") {
       g.add(bed(-3, -1.6, 0x81c995), bed(-0.6, -1.6, 0x81c995), bed(1.8, -1.6, 0x81c995), shelf(W / 2 - 0.6, 0.8, -Math.PI / 2));
-      g.add(rbox(0.9, 0.9, 0.08, 0xffffff, 3.9, 2, -D / 2 + 0.25, 0.04), rbox(0.6, 0.15, 0.1, 0xe53935, 3.9, 2, -D / 2 + 0.31, 0.03), rbox(0.15, 0.6, 0.1, 0xe53935, 3.9, 2, -D / 2 + 0.31, 0.03));
+      g.add(rbox(0.9, 0.9, 0.08, 0xffffff, -4, 2, -D / 2 + 0.25, 0.04), rbox(0.6, 0.15, 0.1, 0xe53935, -4, 2, -D / 2 + 0.31, 0.03), rbox(0.15, 0.6, 0.1, 0xe53935, -4, 2, -D / 2 + 0.31, 0.03));
     }
     if (key === "mega") {
       g.add(rbox(2.6, 0.6, 0.9, 0x5b9bd5, -2.6, 0.3, 0.6, 0.25), rbox(2.6, 0.7, 0.3, 0x5b9bd5, -2.6, 0.6, 1.0, 0.12));
-      g.add(rbox(1.8, 1, 0.1, 0x2d2a32, -2.6, 1.4, -D / 2 + 0.35, 0.04), bed(2.8, -1.4, f % 2 ? 0xffd23f : 0xa77bd1), shelf(0.2, -D / 2 + 0.6, 0));
+      g.add(rbox(1.8, 1, 0.1, 0x2d2a32, -2.6, 1.4, -D / 2 + 0.35, 0.04), bed(1.6, -1.2, f % 2 ? 0xffd23f : 0xa77bd1), shelf(0.2, -D / 2 + 0.6, 0));
     }
     g.position.y = f * FH + SLAB;
     return g;
@@ -558,6 +565,16 @@ export function createSite(container) {
       [[-3, 1.4], [3, 1.4], [-1.2, -1.2], [1.4, 2.2]].forEach(([x, z]) => parts.slots.push(new THREE.Vector3(x, base + i * FH + SLAB, z)));
     }
     for (const [a, b] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) body.add(rbox(0.45, H, 0.45, palette[1], a * W / 2, H / 2, b * D / 2, 0.1));
+    // Elevator: a glass shaft in the back corner with a car that rides up and down
+    parts.lift = null;
+    if (choice.lift && floors >= 2) {
+      const sx = W / 2 - 1.3, sz = -D / 2 + 1.3;
+      const shaft = mesh(new THREE.BoxGeometry(1.6, H - SLAB, 1.6), new THREE.MeshStandardMaterial({ color: 0x9fd3e8, transparent: true, opacity: 0.35, depthWrite: false }), sx, (H + SLAB) / 2, sz);
+      shaft.castShadow = false;
+      const car = rbox(1.3, 1.9, 1.3, 0xf0a43a, sx, SLAB + 0.95, sz, 0.12);
+      body.add(shaft, car);
+      parts.lift = { car, top: H - FH + SLAB + 0.95, bottom: SLAB + 0.95 };
+    }
     if (choice.sprinklers) body.add(cyl(0.08, 0.08, H - SLAB, 0xe53935, W / 2 - 0.45, (H + SLAB) / 2, sprZ)); // riser feeds every floor
 
     // Four walls
@@ -765,29 +782,82 @@ export function createSite(container) {
     }
   }
 
+  function setSoilKnown(known) {
+    soilKnown = known;
+    if (!level) return;
+    // Until a soil report is bought the layers stay hidden and the trench walls are plain grey.
+    profile.visible = known;
+    cutMat.color.setHex(known ? SOILS[level.soil].color : 0x9e9aa2).multiplyScalar(0.78);
+  }
+
+  // ----- neighbours: a street out front and houses next door, styled per site -----
+  function house(x, z, w, h, d, wall, roof, rotY = 0) {
+    const g = new THREE.Group();
+    g.add(rbox(w, h, d, wall, 0, h / 2, 0, 0.25));
+    const top = mesh(new THREE.ConeGeometry(Math.max(w, d) * 0.75, h * 0.55, 4), clay(roof), 0, h + h * 0.27, 0);
+    top.rotation.y = Math.PI / 4;
+    top.scale.z = d / w;
+    g.add(top);
+    g.add(rbox(1, 1.6, 0.15, 0x8a5a35, 0, 0.8, d / 2 + 0.02, 0.05));
+    for (const s of [-1, 1]) g.add(rbox(1, 0.9, 0.15, 0xbfe3f5, s * w * 0.28, h * 0.6, d / 2 + 0.02, 0.05));
+    g.position.set(x, 0, z);
+    g.rotation.y = rotY;
+    return g;
+  }
+  function buildNeighbors(lv) {
+    neighbors.clear();
+    // Street with sidewalks, dashed centre line, lamp posts and a front walk to the door
+    // (starts at z = 12.2, just past the lot and its trenches, which end at z = 11)
+    neighbors.add(rbox(240, 0.08, 6, 0x5d5a66, 0, 0.02, 16, 0.03));
+    for (const z of [12.9, 19.6]) neighbors.add(rbox(240, 0.14, 1.4, 0xd8d2c8, 0, 0.05, z, 0.05));
+    for (let x = -110; x <= 110; x += 5) neighbors.add(rbox(2.4, 0.03, 0.25, 0xffd23f, x, 0.08, 16, 0.02));
+    neighbors.add(rbox(2.2, 0.1, 2, 0xd8d2c8, 0, 0.03, 11.9, 0.05));
+    for (let x = -42; x <= 42; x += 14) {
+      neighbors.add(cyl(0.12, 0.15, 4, 0x3a3340, x, 2, 20.2), ball(0.38, 0xfff3c4, x, 4.1, 20.2));
+    }
+    const style = {
+      rocky: { wall: [0xa1785a, 0x8d6e63], roof: 0x5d4037 },
+      prairie: { wall: [0xfff3e0, 0xffe0b2], roof: 0xc0392b },
+      breezy: { wall: [0x80deea, 0xffcdd2, 0xfff59d], roof: 0xf5f5f5 },
+      shaky: { wall: [0xf5f5f5, 0xe0e0e0], roof: 0x8d6e63 },
+      mega: { wall: [0xcfd8dc, 0xb0bec5], roof: 0x78909c },
+    }[lv.key];
+    // Houses sit beyond the cutaway trenches on the lot's left and right (|x| > 23)
+    const lots = [[-31, -3, 0], [-42, 4, 0], [31, -3, 0], [42, 3, 0], [-20, 25, Math.PI], [-6, 26, Math.PI], [10, 25, Math.PI], [26, 26, Math.PI]];
+    lots.forEach(([x, z, r], i) => {
+      const tall = lv.key === "mega" ? 2 + (i % 3) * 1.5 : 1;
+      neighbors.add(house(x, z, 7, 4 * tall, 6, style.wall[i % style.wall.length], style.roof, r));
+    });
+    // Fences, bushes and trees between the lots
+    [[-36, -12], [36, -12], [-50, -4], [50, -2], [-14, 30], [2, 31], [18, 31], [-54, 12], [54, 10]].forEach(([x, z], i) =>
+      neighbors.add(lv.key === "breezy" && i % 2 ? tree(x, z, 1.4, 0x4caf50) : tree(x, z, 1 + (i % 3) * 0.2)));
+    [[-28, 9], [29, 9], [-36, 9], [37, 9]].forEach(([x, z]) => neighbors.add(ball(0.8, 0x6cc070, x, 0.5, z)));
+  }
+
   function setLevel(lv) {
     level = lv;
     world.remove(profile);
     profile.traverse(o => o.material && o.material.dispose());
     profile = newProfile(lv.soil);
     world.add(profile);
-    cutMat.color.setHex(SOILS[lv.soil].color).multiplyScalar(0.78);
+    setSoilKnown(soilKnown);
+    buildNeighbors(lv);
     backdrop.clear();
-    if (lv.key === "rocky") { backdrop.add(mountain(-20, -22, 14), mountain(-6, -26, 18, 0x8f9aa6), mountain(12, -24, 12)); }
+    if (lv.key === "rocky") { backdrop.add(mountain(-24, -34, 18), mountain(-6, -40, 24, 0x8f9aa6), mountain(16, -36, 16)); }
     if (lv.key === "prairie") {
-      backdrop.add(rbox(10, 0.3, 6, 0xf2d27a, -18, 0.05, -18, 0.2), rbox(8, 0.3, 6, 0xe8c25a, 8, 0.05, -20, 0.2));
-      const barn = rbox(5, 4, 4, 0xd9534f, 18, 2, -18, 0.3); backdrop.add(barn);
+      backdrop.add(rbox(16, 0.1, 8, 0xf2d27a, -22, 0.05, -24, 0.05), rbox(12, 0.1, 8, 0xe8c25a, 8, 0.05, -26, 0.05), rbox(14, 0.1, 7, 0xc5e1a5, 30, 0.05, -22, 0.05));
+      backdrop.add(rbox(6, 4.5, 5, 0xd9534f, 26, 2.25, -32, 0.3), cyl(1.4, 1.4, 7, 0xb0bec5, 32, 3.5, -32));
     }
     if (lv.key === "breezy") {
       backdrop.add(mesh(sandGeo, clay(0xf4dc9c), 0, 0.03, -19), mesh(seaGeo, clay(0x5aa9e6, { roughness: 0.25 }), 0, 0.06, -225));
-      const palm = tree(-16, -16, 1.5, 0x4caf50); backdrop.add(palm);
+      backdrop.add(tree(-16, -24, 1.5, 0x4caf50), tree(14, -25, 1.4, 0x4caf50));
     }
     if (lv.key === "shaky") {
-      const v = mountain(-14, -26, 16, 0x8d6e63); v.children[1].material = clay(0xff7043); backdrop.add(v, mountain(10, -24, 10, 0xa1887f));
+      const v = mountain(-18, -40, 20, 0x8d6e63); v.children[1].material = clay(0xff7043); backdrop.add(v, mountain(14, -36, 12, 0xa1887f));
     }
     if (lv.key === "mega") {
-      [[-18, -20, 14], [-11, -24, 20], [-3, -26, 17], [7, -24, 24], [15, -21, 12], [21, -16, 16]].forEach(([x, z, h], i) =>
-        backdrop.add(rbox(5, h, 5, [0xb0bec5, 0xcfd8dc, 0x90a4ae][i % 3], x, h / 2 - 0.5, z, 0.4)));
+      [[-22, -28, 14], [-13, -32, 22], [-3, -34, 18], [8, -32, 26], [18, -29, 13], [26, -24, 18]].forEach(([x, z, h], i) =>
+        backdrop.add(rbox(6, h, 6, [0xb0bec5, 0xcfd8dc, 0x90a4ae][i % 3], x, h / 2, z, 0.4)));
     }
     camera.position.set(19, 12 + lv.floors * 2.5, 25);
     controls.target.set(0, 2.5 + lv.floors, 0);
@@ -992,6 +1062,21 @@ export function createSite(container) {
     const idle = 1 + Math.sin(t * 2) * 0.004;
     if (!bounce && !collapse) bld.scale.set(1, idle, 1);
 
+    // Elevator car rides between floors, pausing at the top and bottom; it stops in a blackout.
+    if (parts.lift && !dark) {
+      const k = (Math.sin(t * 0.8) + 1) / 2, e = Math.min(1, Math.max(0, (k - 0.15) / 0.7));
+      parts.lift.car.position.y = parts.lift.bottom + (parts.lift.top - parts.lift.bottom) * e;
+    }
+
+    // Keep panning near the site, and let the ground fade when the camera looks from below.
+    const T = controls.target, clamped = new THREE.Vector3(
+      Math.max(-8, Math.min(8, T.x)), Math.max(-4, Math.min(8, T.y)), Math.max(-8, Math.min(8, T.z)));
+    if (!clamped.equals(T)) { camera.position.add(clamped.clone().sub(T)); T.copy(clamped); }
+    const below = camera.position.y < 0.2;
+    grassMat.opacity = below ? 0.3 : 1;
+    grassMat.depthWrite = !below;
+    neighbors.visible = !below; // the street and houses would block the underground view
+
     controls.update();
     if (shakeAmt > 0 && !reduceMotion) {
       const o = new THREE.Vector3((Math.random() - 0.5) * shakeAmt, (Math.random() - 0.5) * shakeAmt, 0);
@@ -1017,7 +1102,7 @@ export function createSite(container) {
   return {
     setLevel, setDesign, setRun, startHazard, endHazard, doCollapse, reset, headPos,
     setGentle: g => { gentle = g; people.forEach(p => p.m.userData.faceKey = ""); },
-    setPeek, tipShelves,
+    setPeek, tipShelves, setSoilKnown,
     setSpin: on => { controls.autoRotate = on && !reduceMotion; },
     onDeliver: fn => { deliverCb = fn; }, // called with choice.hvac when the helicopter sets a unit down
   };

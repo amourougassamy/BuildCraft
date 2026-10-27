@@ -148,8 +148,18 @@ function isOpen(S) {
   return !S.over && !shaking && !S.repairing && S.health >= HEALTH_CLOSED && !(S.outage > 0 && !S.stats.power);
 }
 
+// Elevator and restrooms matter more the taller the building is (2+ storeys only).
+export function systemsHappy(level, choice, blackout = false) {
+  const fl = level.floors;
+  if (fl < 2) return 0;
+  let h = choice.lift ? (blackout ? -4 : 4) : (fl >= 3 ? -10 : -4);
+  if (choice.wc) h += 2 * fl;
+  return h;
+}
+
 function targetHappy(S) {
-  let t = START_HAPPY + S.stats.happy - 5 * S.broken.length;
+  const blackout = S.outage > 0 && !S.stats.power;
+  let t = START_HAPPY + S.stats.happy + systemsHappy(S.level, S.choice, blackout) - 5 * S.broken.length;
   if (S.hot > 0) t -= 8 * S.hotOver;
   if (S.outage > 0 && !S.stats.power) t -= 10;
   return clamp(t, 0, 100);
@@ -287,6 +297,7 @@ export function lessons(S) {
   if (S.hits.heat) out.push("Heat waves: a heat pump and shade trees keep people cool.");
   if (S.hits.outage) out.push("When the power lines go down, a generator or solar + battery keeps the doors open.");
   if (S.shelvesTipped) out.push("Bolt the shelves to the wall so they can't tip over in an earthquake.");
+  if (L.floors >= 2 && !S.choice.lift) out.push(`A ${L.floors}-storey building needs an elevator so everyone can reach every floor.`);
   if (st.eco < 4) out.push("Want more 🌱 eco points? Try LED lights, a heat pump, solar + battery, a rain garden or shade trees.");
   if (S.broken.length && !S.over) out.push("Broken parts make people sad. Keep some coins in the jar for repairs!");
   return out;
