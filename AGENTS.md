@@ -29,7 +29,7 @@ BuildCraft is a set of browser games built at the NCSEA hackathon (2026-10-27). 
 
 ## Before you edit
 
-- **Picking up work:** read `PLAN.md`, the team's task board for Master V1. It lives on `main`. Claim a task by putting your initials in its **Who** cell before you start, and change ⬜ to ✅ once it's merged.
+- **Picking up work:** read `PLAN.md`, the team's task board for Master V1. It lives on `main`. **Claim before you code:** your first step is to put your human's initials in the task's **Who** cell and push that change to `main`. If the cell already has someone else's initials, pick another task. Once the PR is merged, change ⬜ to ✅ and push.
 - **Before editing a folder, read its `README.md`:** owner, how to run it, and which squad owns which file. `interactive/` and `earthquake-tower/` have no README yet; this table and `docs/REPO_GUIDE.md` describe them.
 - **For architecture details**, read `docs/REPO_GUIDE.md`: load order, globals, data schemas, sim rules, file formats, and what the zip changes.
 

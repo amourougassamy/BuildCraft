@@ -4,7 +4,11 @@ The task board for the next round of work on **Master V1** (`master-v1/`, built 
 
 ## How to use this board
 
-1. **Claim a task:** put your initials in its **Who** cell (e.g. `TK`) and commit to `main`. This board always lives on `main`, and editing it on GitHub with the pencil icon is the quickest way. Add yourself to the [Team](#team) table the first time. Initials with no tick mean *in progress*. Two people can pair on a task: `TK+AM`.
+> **Claim first, then code.** The moment you start a task, put your initials on it here and push to `main`, before you write any code. That's how teammates see what's taken and avoid doing the same work twice. A task with no initials is free; a task with initials and ⬜ is in progress.
+>
+> **Agents:** your first step on any task is to pull `main` and check the **Who** cell. If it's empty, put your human's initials in it and commit and push that one-line change to `main` right away. If someone else's initials are there, pick a different task. Your last step, once the PR is merged, is to change ⬜ to ✅ and push.
+
+1. **Claim a task:** put your initials in its **Who** cell (e.g. `TK`) and commit to `main`. This board always lives on `main`, and editing it on GitHub with the pencil icon is the quickest way. Add yourself to the [Team](#team) table the first time. Two people can pair on a task: `TK+AM`.
 2. **Build it** on your own branch (see [Workflow](#workflow)), one task per PR, with the task ID at the start of the PR title (`B1: see-through building on hover`).
 3. **Finish:** once your PR is merged, change the task's **Done** cell from ⬜ to ✅.
 4. **New idea?** Add a row at the bottom of the right section with the next free ID, and describe it under [Task details](#task-details).
