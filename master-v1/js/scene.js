@@ -330,30 +330,15 @@ export function createSite(container) {
   const neighbors = new THREE.Group();
   scene.add(neighbors);
 
-  // Ground: one big grass field around the lot that runs out into the fog. It has a hole for the
-  // lot plus a sloped "cutaway" trench on the lot's left and right, so you can still look into the
-  // see-through soil and watch the foundation reach down.
-  const TRENCH = 9, PIT = 1.5;                       // trench width at the top / flat floor at the bottom
-  const HOLE_X = LOT_W / 2 + TRENCH, HOLE_Z = LOT_D / 2, FOOT_X = LOT_W / 2 + PIT;
+  // Ground: one big grass field around the lot that runs out into the fog, with a hole the size of
+  // the lot. It is one-sided, so orbiting below ground still shows the soil and the foundation.
+  const HOLE_X = LOT_W / 2, HOLE_Z = LOT_D / 2;
   const field = new THREE.Shape().absarc(0, 0, 400, 0, Math.PI * 2);
   field.holes.push(new THREE.Path([[-HOLE_X, -HOLE_Z], [HOLE_X, -HOLE_Z], [HOLE_X, HOLE_Z], [-HOLE_X, HOLE_Z]].map(([x, y]) => new THREE.Vector2(x, y))));
   const fieldGeo = new THREE.ShapeGeometry(field, 48).rotateX(-Math.PI / 2);
   const ground = mesh(fieldGeo, clay(0x9fd27a));
   ground.castShadow = false;
   world.add(ground);
-  const cutMat = new THREE.MeshStandardMaterial({ color: 0x9a7b62, roughness: 1, side: THREE.DoubleSide }); // trench walls, tinted per soil
-  const bankGeo = new THREE.PlaneGeometry(Math.hypot(TRENCH - PIT, DIG), LOT_D).rotateX(-Math.PI / 2);
-  for (const s of [1, -1]) {
-    const bank = mesh(bankGeo, cutMat, s * (FOOT_X + (TRENCH - PIT) / 2), -DIG / 2, 0);
-    bank.rotation.z = s * Math.atan2(DIG, TRENCH - PIT);
-    bank.castShadow = false;
-    world.add(bank);
-  }
-  const endGeo = new THREE.ShapeGeometry(new THREE.Shape([[-HOLE_X, 0], [HOLE_X, 0], [FOOT_X, -DIG], [-FOOT_X, -DIG]].map(([x, y]) => new THREE.Vector2(x, y))));
-  for (const z of [-HOLE_Z, HOLE_Z]) { const e = mesh(endGeo, cutMat, 0, 0, z); e.castShadow = false; world.add(e); }
-  const pitFloor = mesh(new THREE.PlaneGeometry(FOOT_X * 2, LOT_D).rotateX(-Math.PI / 2), clay(0x8d8a94), 0, -DIG - 0.02, 0);
-  pitFloor.castShadow = false;
-  world.add(pitFloor);
 
   // Flood water: a wide flat sheet, so a flood fills the trenches first, then covers the whole
   // neighbourhood with no edge in sight. The surface sits 0.5 above water.position.y.
@@ -785,9 +770,8 @@ export function createSite(container) {
   function setSoilKnown(known) {
     soilKnown = known;
     if (!level) return;
-    // Until a soil report is bought the layers stay hidden and the trench walls are plain grey.
+    // Until a soil report is bought the soil layers stay hidden.
     profile.visible = known;
-    cutMat.color.setHex(known ? SOILS[level.soil].color : 0x9e9aa2).multiplyScalar(0.78);
   }
 
   // ----- neighbours: a street out front and houses next door, styled per site -----
