@@ -2,19 +2,46 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Build It!</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BuildCraft Iterations</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap">
-  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    :root { --paper:#eef3f6; --sheet:#fff; --ink:#14232f; --muted:#566b7b; --rule:#c7d4dd; --line:#1f5a8c; --hazard:#f5b800; }
+    @media (prefers-color-scheme: dark) { :root { --paper:#0d1a26; --sheet:#13263a; --ink:#e5eef5; --muted:#93a9ba; --rule:#26405a; --line:#7fb6e8; color-scheme: dark; } }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); font:16px/1.5 "Atkinson Hyperlegible", system-ui, sans-serif; padding:32px max(16px, env(safe-area-inset-left)); }
+    main { max-width: 820px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+    h1 { font-family:"Archivo", "Arial Narrow", sans-serif; font-stretch:75%; font-weight:900; font-size:2.6rem; text-transform:uppercase; margin:0; line-height:1; }
+    .sub { color:var(--muted); margin:6px 0 0; }
+    ul { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px; }
+    a.iter { display:grid; grid-template-columns: 110px 1fr auto; gap:16px; align-items:center; text-decoration:none; color:inherit;
+      background:var(--sheet); border:1.5px solid var(--rule); border-radius:6px; padding:14px 16px; }
+    a.iter:hover, a.iter:focus-visible { border-color:var(--line); outline:none; }
+    .ver { font-family:"JetBrains Mono", monospace; font-weight:600; }
+    .name { font-weight:700; }
+    .note { color:var(--muted); font-size:.9rem; }
+    .play { font-weight:700; background:var(--hazard); color:#1b1400; border-radius:4px; padding:6px 12px; white-space:nowrap; }
+    .latest { font-family:"JetBrains Mono", monospace; font-size:.7rem; text-transform:uppercase; letter-spacing:.1em; color:var(--line); margin-left:8px; }
+    @media (max-width: 520px) { a.iter { grid-template-columns: 1fr; gap:6px; } }
+  </style>
 </head>
 <body>
-  <div id="app"></div>
-  <!-- Load order matters: data -> simulation -> drawing -> screens -->
-  <script src="js/data.js"></script>
-  <script src="js/sim.js"></script>
-  <script src="js/building.js"></script>
-  <script src="js/ui.js"></script>
+  <main>
+    <header>
+      <h1>BuildCraft</h1>
+      <p class="sub">Hackathon iterations. Each folder is a complete, playable version; newest first.</p>
+    </header>
+    <!-- To add an iteration: copy the newest folder, rename it (buildcraft-v0.2), and add a row at the top. -->
+    <ul>
+      <li>
+        <a class="iter" href="buildcraft-v0.1/">
+          <span class="ver">v0.1</span>
+          <span><span class="name">Starter: Riverside Library</span><span class="latest">latest</span><br>
+            <span class="note">One brief, Minneapolis weather, 9 decisions, demo year and random year.</span></span>
+          <span class="play">Play</span>
+        </a>
+      </li>
+    </ul>
+  </main>
 </body>
 </html>
