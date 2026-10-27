@@ -30,12 +30,21 @@ export const GRADES = [[90, "A+"], [85, "A"], [75, "B"], [65, "C"], [50, "D"], [
 export const PASS_SCORE = 65;      // C or better unlocks the next site
 export const GHOST_CAP = 84;       // any ghost caps the overall score just below an A
 
+// layers: the ground under the grass, top first (PLAN.md M3). h is in site-scene units and the
+// layers add up to SOIL_DEPTH. Footings reach 0.1 into the top layer, a mat slab 0.3,
+// and deep piles 4.7, so a soil that needs piles must have rock: true starting above 4.7.
+export const SOIL_DEPTH = 5.4;
 export const SOILS = {
-  rock: { name: "Solid Rock", need: 1, color: 0xa7a3a0, desc: "Super strong ground. Shallow footings work great!" },
-  firm: { name: "Firm Gravel", need: 1, color: 0xcfa86c, desc: "Strong packed ground. Shallow footings are fine for short buildings." },
-  clay: { name: "Soft Clay", need: 2, color: 0xb08f80, desc: "Squishy ground! Heavy buildings sink unless the foundation spreads out (mat slab) or goes deep (piles)." },
+  rock: { name: "Solid Rock", need: 1, color: 0xa7a3a0, desc: "Super strong ground. Shallow footings work great!",
+          layers: [{ name: "Solid rock", h: 2.4, color: 0xa7a3a0, rock: true }, { name: "Deep bedrock", h: 3, color: 0x8d8a94, rock: true }] },
+  firm: { name: "Firm Gravel", need: 1, color: 0xcfa86c, desc: "Strong packed ground. Shallow footings are fine for short buildings.",
+          layers: [{ name: "Packed gravel", h: 3.2, color: 0xcfa86c }, { name: "Solid rock", h: 2.2, color: 0x8d8a94, rock: true }] },
+  clay: { name: "Soft Clay", need: 2, color: 0xb08f80, desc: "Squishy ground! Heavy buildings sink unless the foundation spreads out (mat slab) or goes deep (piles).",
+          layers: [{ name: "Soft squishy clay", h: 4, color: 0xb08f80 }, { name: "Solid rock", h: 1.4, color: 0x8d8a94, rock: true }] },
   sand: { name: "Wet Sand", need: 3, color: 0xe8cf86, liquefy: true,
-          desc: "In an earthquake, wet sand turns soupy like a milkshake (liquefaction)! Only deep piles reach the solid rock below." },
+          desc: "In an earthquake, wet sand turns soupy like a milkshake (liquefaction)! Only deep piles reach the solid rock below.",
+          layers: [{ name: "Wet sand", h: 2.2, color: 0xe8cf86 }, { name: "Soupy mud", h: 1.8, color: 0x9c8a6a },
+                   { name: "Solid rock", h: 1.4, color: 0x8d8a94, rock: true }] },
 };
 
 export const HAZARDS = {

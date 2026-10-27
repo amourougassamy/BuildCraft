@@ -268,6 +268,24 @@ function makePerson(c) {
   return g;
 }
 
+// ---------- soil profile (PLAN.md M3) ----------
+// The ground under the lot as stacked see-through slabs, top layer first, so the cut face shows
+// each layer and the foundation still shows through. The last layer runs down to `bottom`.
+function soilProfile(layers, w, d, top, bottom) {
+  const g = new THREE.Group();
+  let y = top;
+  layers.forEach((l, i) => {
+    const h = i === layers.length - 1 ? y - bottom : Math.min(l.h, y - bottom);
+    if (h < 0.05) return;
+    const mat = new THREE.MeshStandardMaterial({ color: l.color, roughness: 1, transparent: true, opacity: l.rock ? 0.65 : 0.55 });
+    const s = rbox(w, h, d, mat, 0, y - h / 2, 0, 0.3);
+    s.castShadow = false;
+    g.add(s);
+    y -= h;
+  });
+  return g;
+}
+
 // ============================================================
 // Site: one building on a clay platform
 // ============================================================
@@ -297,16 +315,13 @@ export function createSite(container) {
   // so this hex is simply the top of the .stage gradient.
   scene.fog = new THREE.Fog(0xd9eefe, 70, 220);
 
-  // The lot: grass on top, see-through soil so the foundation shows, rock at the bottom.
+  // The lot: grass on top, then the site's soil layers, see-through so the foundation shows.
   const LOT_W = 28, LOT_D = 22, DIG = 6.2; // DIG: from the grass down to the bottom of the rock
   const grass = rbox(LOT_W, 0.8, LOT_D, 0x9fd27a, 0, -0.4, 0, 0.35);
   world.add(grass);
-  const soilMat = new THREE.MeshStandardMaterial({ color: 0xb08f80, roughness: 1, transparent: true, opacity: 0.55 });
-  const soil = rbox(27.6, 4, 21.6, soilMat, 0, -2.8, 0, 0.3);
-  soil.castShadow = false;
-  world.add(soil);
-  const rock = rbox(27.6, 1.4, 21.6, 0x8d8a94, 0, -5.5, 0, 0.3);
-  world.add(rock);
+  const newProfile = soil => soilProfile(SOILS[soil].layers, LOT_W - 0.4, LOT_D - 0.4, -0.8, -DIG);
+  let profile = newProfile("clay"); // swapped per site in setLevel
+  world.add(profile);
 
   // Ground: one big grass field around the lot that runs out into the fog. It has a hole for the
   // lot plus a sloped "cutaway" trench on the lot's left and right, so you can still look into the
@@ -752,7 +767,10 @@ export function createSite(container) {
 
   function setLevel(lv) {
     level = lv;
-    soilMat.color.setHex(SOILS[lv.soil].color);
+    world.remove(profile);
+    profile.traverse(o => o.material && o.material.dispose());
+    profile = newProfile(lv.soil);
+    world.add(profile);
     cutMat.color.setHex(SOILS[lv.soil].color).multiplyScalar(0.78);
     backdrop.clear();
     if (lv.key === "rocky") { backdrop.add(mountain(-20, -22, 14), mountain(-6, -26, 18, 0x8f9aa6), mountain(12, -24, 12)); }
