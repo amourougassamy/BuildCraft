@@ -8,89 +8,53 @@
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #4e342e; --yellow: #ffd23f; --red: #ef5350; --blue: #42a5f5;
-    --green: #66bb6a; --orange: #ffa726; --purple: #ab47bc; --paper: #f6e7d3; --card: #fffaf2;
-    --clay-out: 0 8px 18px rgba(93, 64, 55, .22);
-    --clay-in: inset 0 -6px 0 rgba(0, 0, 0, .09), inset 0 4px 0 rgba(255, 255, 255, .6);
+    --ink: #2d2a32; --yellow: #ffd23f; --red: #e53935; --blue: #1e88e5;
+    --green: #43a047; --orange: #fb8c00; --purple: #8e24aa; --paper: #fff8e1;
   }
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
-  body { margin: 0; font-family: "Fredoka", "Trebuchet MS", sans-serif; color: var(--ink);
-    background: radial-gradient(circle at 15% 10%, #fbefdf 0 20%, transparent 40%), radial-gradient(circle at 85% 90%, #f1dcc2 0 25%, transparent 50%), var(--paper); min-height: 100vh; }
-  .card { background: var(--card); border-radius: 26px; box-shadow: var(--clay-out), var(--clay-in); }
-  h2, h3, h4 { margin: 0; }
+  body { margin: 0; font-family: "Fredoka", "Trebuchet MS", sans-serif; background: var(--paper); color: var(--ink); }
+  .card { background: #fff; border: 3px solid var(--ink); border-radius: 16px; box-shadow: 0 4px 0 var(--ink); }
 
-  header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 12px 16px;
-    background: linear-gradient(#ffe082, #ffca28); box-shadow: 0 6px 14px rgba(93, 64, 55, .25), inset 0 -6px 0 rgba(0, 0, 0, .08); }
-  .logo { font-size: 34px; font-weight: 700; background: var(--card); border-radius: 22px; padding: 2px 16px; box-shadow: var(--clay-out), var(--clay-in); }
+  header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 10px 16px;
+    background: repeating-linear-gradient(-45deg, var(--yellow) 0 24px, #ffc107 24px 48px); border-bottom: 4px solid var(--ink); }
+  .logo { font-size: 34px; font-weight: 700; background: #fff; border: 3px solid var(--ink); border-radius: 14px; padding: 2px 14px; box-shadow: 0 4px 0 var(--ink); }
   .logo span { color: var(--red); }
-  .stat { display: flex; align-items: center; gap: 8px; background: var(--card); border-radius: 30px; padding: 6px 14px; font-size: 18px; font-weight: 600; box-shadow: var(--clay-out), var(--clay-in); }
-  .stat.happy { flex: 1 1 200px; max-width: 360px; }
-  .stat.jar { flex: 1 1 220px; max-width: 340px; }
-  .stat small { font-size: 13px; font-weight: 400; }
+  .stat { display: flex; align-items: center; gap: 8px; background: #fff; border: 3px solid var(--ink); border-radius: 30px; padding: 4px 14px; font-size: 20px; font-weight: 600; }
+  .stat.happy { flex: 1 1 240px; max-width: 420px; }
   .neg { color: var(--red); }
-  .meter { flex: 1; height: 22px; border-radius: 12px; overflow: hidden; background: #e8dccd; box-shadow: inset 0 3px 6px rgba(0, 0, 0, .2); min-width: 60px; }
-  .meter i, .bar i { display: block; height: 100%; border-radius: 12px; transition: width .4s, background .6s;
-    background-image: linear-gradient(rgba(255, 255, 255, .45), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, .12)); }
-  #jarFill { background-color: #ffca28; }
-  #face { font-size: 28px; }
-  .coins { font-weight: 700; color: #2e7d32; letter-spacing: 1px; word-break: break-all; }
-  .wallet { display: flex; flex-direction: column; gap: 2px; font-size: 14px; max-width: 320px; line-height: 1.1; }
+  .coins { font-weight: 700; color: var(--green); letter-spacing: 1px; word-break: break-all; }
+  .wallet { display: flex; flex-direction: column; gap: 2px; font-size: 14px; max-width: 360px; line-height: 1.1; }
   .wallet .coins { font-size: 16px; }
-  .wallet .spent { color: #bcaaa4; }
+  .wallet .spent { color: #b0a8a0; }
   .wallet .owe { color: var(--red); }
+  .meter { flex: 1; height: 22px; border: 3px solid var(--ink); border-radius: 12px; overflow: hidden; background: #eee; }
+  #fill { height: 100%; width: 50%; transition: width .6s, background .6s; }
+  #face { font-size: 28px; }
 
-  .btn { font: inherit; font-size: 17px; font-weight: 600; padding: 9px 16px; border: none; border-radius: 18px; cursor: pointer; color: #fff; background: var(--blue);
-    box-shadow: 0 6px 0 rgba(0, 0, 0, .18), 0 8px 14px rgba(0, 0, 0, .15), inset 0 -4px 0 rgba(0, 0, 0, .15), inset 0 3px 0 rgba(255, 255, 255, .4);
-    text-shadow: 0 1px 0 rgba(0, 0, 0, .2); transition: transform .08s; }
-  .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0, 0, 0, .18), inset 0 -2px 0 rgba(0, 0, 0, .15), inset 0 3px 0 rgba(255, 255, 255, .4); }
-  .btn:disabled { opacity: .45; cursor: not-allowed; }
-  .btn.go { background: var(--green); font-size: 20px; }
+  .btn { font: inherit; font-size: 18px; font-weight: 600; padding: 8px 14px; border: 3px solid var(--ink); border-radius: 12px; cursor: pointer; color: #fff; box-shadow: 0 3px 0 var(--ink); background: var(--blue); }
+  .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn.go { background: var(--green); font-size: 22px; padding: 10px 22px; }
   .btn.repair { background: var(--orange); }
-  .btn.pause { background: #a1887f; }
+  .btn.pause { background: #757575; }
   .btn.ff { background: var(--purple); }
-  .btn.buy { background: #fff; color: var(--ink); text-shadow: none; font-size: 15px; padding: 6px 12px; }
-  .btn.danger { background: var(--red); font-size: 20px; }
 
   /* Setup screen */
-  #setup { max-width: 1150px; margin: 0 auto; padding: 16px; }
+  #setup { max-width: 1100px; margin: 0 auto; padding: 16px; }
   .intro { padding: 12px 18px; display: flex; gap: 14px; align-items: center; }
-  .avatar { font-size: 46px; width: 76px; height: 76px; flex: none; display: grid; place-items: center; border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, #fff3c4, #ffca28 70%); box-shadow: var(--clay-out), inset 0 -5px 0 rgba(0, 0, 0, .12); }
+  .intro .fran { font-size: 60px; }
+  .intro h2 { margin: 0; }
   .intro p { margin: 4px 0 0; font-size: 18px; }
-  .step { margin: 20px 0 10px; }
-  .mapRow { display: flex; flex-wrap: wrap; gap: 14px; }
-  .mapCard { flex: 3 1 480px; padding: 10px; }
-  .mapCard svg { display: block; width: 100%; height: auto; }
-  .pin { cursor: pointer; }
-  .pin .bob { transition: transform .2s; transform-box: fill-box; transform-origin: center; }
-  .pin:hover .bob { transform: scale(1.1); }
-  .pin.sel .bob { animation: bob .9s ease-in-out infinite alternate; }
-  @keyframes bob { from { transform: translateY(0) scale(1.15); } to { transform: translateY(-8px) scale(1.15); } }
-  .townInfo { flex: 2 1 300px; padding: 14px 18px; }
-  .townInfo .big { font-size: 46px; }
-  .townInfo p { margin: 6px 0; }
-  .townInfo .like { color: #8d6e63; font-style: italic; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
-  .pick { font: inherit; color: inherit; text-align: left; padding: 12px 16px; cursor: pointer; border: none; }
-  .pick.sel { background: #e3f2fd; box-shadow: 0 0 0 4px var(--blue), var(--clay-out), var(--clay-in); }
-  .pick .big { font-size: 40px; }
+  .step { margin: 18px 0 8px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .pick { font: inherit; text-align: left; padding: 10px 14px; cursor: pointer; background: #fff; }
+  .pick.sel { background: #e3f2fd; outline: 4px solid var(--blue); }
+  .pick .big { font-size: 44px; }
   .pick h3 { margin: 2px 0; font-size: 22px; }
   .pick p { margin: 4px 0; font-size: 15px; }
-  .startRow { text-align: center; margin: 24px 0 30px; }
-
-  /* Dice */
-  .dice { width: 72px; height: 72px; padding: 10px; border-radius: 18px; background: #fff; display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); flex: none;
-    box-shadow: 0 7px 0 #d7ccc8, 0 12px 18px rgba(0, 0, 0, .22), inset 0 -5px 0 rgba(0, 0, 0, .06), inset 0 4px 0 #fff; }
-  .dice i { width: 13px; height: 13px; border-radius: 50%; place-self: center; }
-  .dice i.on { background: radial-gradient(circle at 35% 35%, #8d6e63, #3e2723); }
-  .dice.mini { width: 30px; height: 30px; padding: 4px; border-radius: 9px; box-shadow: 0 3px 0 #d7ccc8, inset 0 2px 0 #fff; }
-  .dice.mini i { width: 5px; height: 5px; }
-  .dice.spin { animation: tumble .2s linear infinite; }
-  @keyframes tumble { 0% { transform: rotate(0) translateY(0); } 50% { transform: rotate(25deg) translateY(-10px); } 100% { transform: rotate(0); } }
-  .diceTable { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px; margin-top: 8px; }
-  .dt { display: flex; align-items: center; gap: 8px; font-size: 14px; background: #f3e9dc; border-radius: 12px; padding: 4px 8px; }
-  .dt.hit { background: #ffe082; font-weight: 700; }
+  .pick .like { color: #777; font-style: italic; }
+  .startRow { text-align: center; margin: 22px 0 30px; }
 
   /* Game screen */
   main { display: flex; flex-wrap: wrap; gap: 16px; padding: 16px; }
@@ -98,111 +62,85 @@
   .right { flex: 2 1 340px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
   .scene { position: relative; overflow: hidden; padding: 0; }
   canvas { display: block; width: 100%; height: auto; }
-  .badge { position: absolute; top: 12px; right: 12px; background: var(--card); border-radius: 20px; padding: 3px 12px; font-weight: 600; box-shadow: var(--clay-out); }
-  #banner { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); background: var(--red); color: #fff; border-radius: 16px; padding: 6px 16px; font-size: 18px; font-weight: 600; box-shadow: var(--clay-out); }
+  .badge { position: absolute; top: 10px; right: 10px; background: #fff; border: 3px solid var(--ink); border-radius: 20px; padding: 2px 12px; font-weight: 600; }
+  #banner { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: var(--red); color: #fff; border: 3px solid var(--ink); border-radius: 14px; padding: 6px 14px; font-size: 18px; font-weight: 600; text-align: center; animation: pulse .6s infinite alternate; max-width: 70%; }
+  @keyframes pulse { to { transform: translateX(-50%) scale(1.05); } }
 
-  .status { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+  .status { padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
   .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-  .seasons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; flex: 1; }
-  .ss { border-radius: 14px; text-align: center; padding: 4px 2px; background: #f3e9dc; font-size: 14px; box-shadow: inset 0 3px 5px rgba(0, 0, 0, .1); }
-  .ss b { display: block; font-size: 15px; }
-  .ss.now { background: #ffe082; box-shadow: var(--clay-out), var(--clay-in); }
-  .ss.past { background: #dcedc8; }
-  #panel { background: #fdf3e6; border-radius: 18px; padding: 12px 14px; box-shadow: inset 0 3px 8px rgba(0, 0, 0, .08); }
-  .panelHead { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
-  #panel p { margin: 4px 0 8px; }
-  .alert { border-radius: 14px; padding: 8px 12px; font-size: 18px; margin: 6px 0; }
-  .alert.bad { background: #ffcdd2; }
-  .alert.good { background: #dcedc8; }
-  .results { margin: 4px 0 8px; padding-left: 20px; }
-  .results li { margin: 3px 0; }
-  .todo { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
-  .act { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: #fff; border-radius: 14px; padding: 8px 10px; box-shadow: 0 3px 0 rgba(0, 0, 0, .06); }
-  .act .num { width: 28px; height: 28px; border-radius: 50%; background: var(--yellow); display: grid; place-items: center; font-weight: 700; flex: none; }
-  .warn { color: #c62828; font-weight: 600; }
-  .bar { height: 20px; border-radius: 12px; background: #e8dccd; overflow: hidden; box-shadow: inset 0 3px 6px rgba(0, 0, 0, .2); margin: 6px 0; }
-  #seasonFill { background-color: var(--green); }
+  #phase { font-size: 20px; font-weight: 700; flex: 1; }
+  .months { display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px; }
+  .mo { border: 2px solid var(--ink); border-radius: 8px; text-align: center; font-size: 12px; padding: 2px 0; background: #fff; min-height: 40px; }
+  .mo .ev { display: block; font-size: 16px; }
+  .mo.past { background: #c8e6c9; }
+  .mo.now { background: var(--yellow); }
 
-  .mascot { display: flex; gap: 12px; align-items: center; padding: 10px 14px; }
-  .mascot .avatar { width: 64px; height: 64px; font-size: 38px; }
-  .bubble { flex: 1; background: #fff; border-radius: 18px; padding: 8px 12px; font-size: 17px; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .06); }
+  .mascot { display: flex; gap: 12px; align-items: center; padding: 10px 12px; }
+  .fran { font-size: 54px; line-height: 1; }
+  .bubble { flex: 1; background: #fffde7; border: 3px solid var(--ink); border-radius: 14px; padding: 8px 12px; font-size: 17px; position: relative; }
+  .bubble::before { content: ""; position: absolute; left: -14px; top: 18px; border: 8px solid transparent; border-right: 12px solid var(--ink); }
 
-  .tabs { display: flex; flex-wrap: wrap; gap: 8px; }
-  .tab { font: inherit; color: inherit; font-size: 15px; font-weight: 600; padding: 7px 12px; border: none; border-radius: 16px; background: var(--card); cursor: pointer; box-shadow: 0 4px 0 rgba(0, 0, 0, .12), var(--clay-in); }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tab { font: inherit; font-size: 15px; font-weight: 600; padding: 6px 10px; border: 3px solid var(--ink); border-radius: 12px; background: #fff; cursor: pointer; }
   .tab.on { background: var(--c); color: #fff; }
   .tab .n { background: var(--yellow); color: var(--ink); border-radius: 8px; padding: 0 5px; margin-left: 4px; font-size: 13px; }
-  #items { padding: 12px 16px; }
-  #items h2 { font-size: 24px; }
-  .sub { margin: 0 0 6px; color: #8d6e63; }
-  .item { border-top: 2px dashed #e0d2c0; padding: 8px 0; }
+  #items { padding: 10px 14px; }
+  #items h2 { margin: 0; font-size: 24px; }
+  .sub { margin: 0 0 6px; color: #666; }
+  .item { border-top: 2px dashed #ccc; padding: 8px 0; }
   .item h3 { margin: 0 0 6px; font-size: 18px; }
-  .soilNote { background: #efebe9; border-radius: 12px; padding: 4px 8px; font-size: 14px; margin-bottom: 6px; }
+  .soilNote { background: #efebe9; border-radius: 10px; padding: 4px 8px; font-size: 14px; margin-bottom: 6px; }
   .choices { display: flex; gap: 8px; }
-  .choice { flex: 1; font: inherit; color: inherit; border: none; border-radius: 16px; background: #f6efe6; padding: 7px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center;
-    box-shadow: 0 4px 0 rgba(0, 0, 0, .1), inset 0 3px 0 rgba(255, 255, 255, .7); }
+  .choice { flex: 1; font: inherit; border: 3px solid #bbb; border-radius: 12px; background: #fafafa; padding: 6px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
   .choice .tag { font-size: 12px; font-weight: 600; border-radius: 8px; padding: 0 6px; }
   .tag.min { background: #e0e0e0; }
   .tag.beyond { background: var(--yellow); }
   .tag.weak { background: #ffcdd2; color: #b71c1c; }
   .choice .ico { font-size: 26px; }
-  .choice.sel { background: #d6ecff; box-shadow: 0 0 0 3px var(--blue), 0 4px 0 rgba(0, 0, 0, .1); }
+  .choice .cost { font-weight: 700; color: var(--green); }
+  .choice.sel { border-color: var(--ink); background: #e3f2fd; box-shadow: 0 3px 0 var(--ink); }
   .choice:disabled { opacity: .45; cursor: not-allowed; }
-  .tip { margin: 6px 0 0; font-size: 14px; color: #6d4c41; }
+  .tip { margin: 6px 0 0; font-size: 14px; color: #555; }
 
-  .report { padding: 12px 16px; }
-  .gauge { position: relative; max-width: 260px; margin: 4px auto 6px; }
-  .gauge svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .report { padding: 10px 14px; }
+  .report h3 { margin: 0 0 6px; }
+  .gauge { position: relative; max-width: 260px; margin: 0 auto 6px; }
+  .gauge svg { display: block; width: 100%; height: auto; }
   #needle { transform-origin: 100px 100px; transition: transform .8s cubic-bezier(.3, 1.5, .5, 1); }
   #gaugeFace { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); font-size: 40px; line-height: 1; }
   #report { margin: 0; padding: 0; list-style: none; }
   #report li { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 2px 0; }
-  .mini { flex: 0 0 90px; height: 12px; border-radius: 6px; background: #e8dccd; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0, 0, 0, .2); }
-  .mini i { display: block; height: 100%; border-radius: 6px; }
+  .mini { flex: 0 0 90px; height: 12px; border: 2px solid var(--ink); border-radius: 6px; background: #eee; overflow: hidden; }
+  .mini i { display: block; height: 100%; }
   .mini.plus i { background: var(--green); }
   .mini.minus i { background: var(--red); margin-left: auto; }
-  .legend { font-size: 14px; padding: 10px 14px; }
+  .bar { height: 18px; border: 3px solid var(--ink); border-radius: 10px; background: #eee; overflow: hidden; margin-top: 4px; }
+  .bar i { display: block; height: 100%; }
+  .legend { font-size: 14px; padding: 8px 12px; }
 
   /* End screen */
-  .overlay { position: fixed; inset: 0; background: rgba(78, 52, 46, .55); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 10; }
-  .endCard { max-width: 660px; width: 100%; max-height: 92vh; overflow: auto; padding: 18px 22px; text-align: center; }
+  .overlay { position: fixed; inset: 0; background: rgba(45, 42, 50, .6); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 10; }
+  .endCard { max-width: 640px; width: 100%; max-height: 92vh; overflow: auto; padding: 18px 22px; text-align: center; }
   .stars { font-size: 56px; letter-spacing: 6px; }
-  .endStats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin: 12px 0; }
-  .endStats > div { background: #fdf3e6; border-radius: 16px; padding: 8px; box-shadow: var(--clay-in); }
-  .endStats b { display: block; font-size: 22px; }
+  .endStats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin: 12px 0; }
+  .endStats div { background: #fff8e1; border: 2px solid var(--ink); border-radius: 12px; padding: 6px; }
+  .endStats b { display: block; font-size: 24px; }
   .endCard ul { text-align: left; padding-left: 20px; }
 
   @media (max-width: 600px) {
     header, main, #setup { padding: 10px 16px; }
     .logo { font-size: 26px; }
     .choices { flex-direction: column; }
-    .seasons { grid-template-columns: repeat(2, 1fr); }
+    .mo { font-size: 10px; }
   }
 </style>
 </head>
 <body>
-<!-- Shared clay lighting filter for SVG (map and meter) -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <defs>
-    <filter id="clayF" x="-20%" y="-20%" width="140%" height="160%">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur"/>
-      <feSpecularLighting in="blur" surfaceScale="5" specularConstant=".55" specularExponent="16" lighting-color="#ffffff" result="spec">
-        <feDistantLight azimuth="225" elevation="50"/>
-      </feSpecularLighting>
-      <feComposite in="spec" in2="SourceAlpha" operator="in" result="specIn"/>
-      <feComposite in="SourceGraphic" in2="specIn" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="lit"/>
-      <feDropShadow in="lit" dx="0" dy="5" stdDeviation="4" flood-color="#5d4037" flood-opacity=".35"/>
-    </filter>
-  </defs>
-</svg>
-
 <header>
   <div class="logo">👷 Build<span>Craft</span></div>
   <div class="stat" id="townChip" hidden></div>
   <div class="stat" id="moneyChip" hidden>💰 <span class="wallet" id="wallet"></span></div>
-  <div class="stat jar" id="jarChip" hidden title="Every visitor drops a ticket in the jar. When it fills up, you earn $!">
-    🎟️ <div class="meter"><i id="jarFill"></i></div><span id="earned"></span>
-  </div>
-  <div class="stat happy" id="happyChip" hidden><span id="face">🙂</span><div class="meter"><i id="fill"></i></div></div>
+  <div class="stat happy" id="happyChip" hidden><span id="face">🙂</span><div class="meter"><div id="fill"></div></div></div>
 </header>
 
 <section id="setup"></section>
@@ -212,17 +150,20 @@
     <div class="card scene">
       <canvas id="cv" width="900" height="500"></canvas>
       <div class="badge" id="inside"></div>
-      <div id="banner" hidden>⏸ Paused</div>
+      <div id="banner" hidden></div>
     </div>
     <div class="card status">
       <div class="row">
-        <div class="seasons" id="seasons"></div>
-        <button class="btn pause" id="pause">⏸</button>
+        <span id="phase"></span>
+        <button class="btn go" id="open">🎉 Open for Business!</button>
+        <button class="btn repair" id="repair" hidden></button>
+        <button class="btn ff" id="ff" hidden>⏩ Speed 1×</button>
+        <button class="btn pause" id="pause">⏸ Pause</button>
       </div>
-      <div id="panel"></div>
+      <div class="months" id="months"></div>
     </div>
     <div class="card mascot">
-      <div class="avatar">👷‍♀️</div>
+      <div class="fran">👷‍♀️</div>
       <div class="bubble" id="say"></div>
     </div>
   </section>
@@ -234,15 +175,12 @@
       <h3>😊 Happiness Meter</h3>
       <div class="gauge">
         <svg viewBox="0 0 200 112" aria-hidden="true">
-          <g filter="url(#clayF)">
-            <path d="M 20 100 A 80 80 0 0 1 63.7 28.7" stroke="#ef5350" stroke-width="24" fill="none"/>
-            <path d="M 63.7 28.7 A 80 80 0 0 1 124.7 23.9" stroke="#ffd23f" stroke-width="24" fill="none"/>
-            <path d="M 124.7 23.9 A 80 80 0 0 1 180 100" stroke="#66bb6a" stroke-width="24" fill="none"/>
-          </g>
-          <g filter="url(#clayF)">
-            <line id="needle" x1="100" y1="100" x2="100" y2="30" stroke="#6d4c41" stroke-width="8" stroke-linecap="round"/>
-            <circle cx="100" cy="100" r="11" fill="#6d4c41"/>
-          </g>
+          <path d="M 20 100 A 80 80 0 0 1 63.7 28.7" stroke="#e53935" stroke-width="22" fill="none"/>
+          <path d="M 63.7 28.7 A 80 80 0 0 1 124.7 23.9" stroke="#ffd23f" stroke-width="22" fill="none"/>
+          <path d="M 124.7 23.9 A 80 80 0 0 1 180 100" stroke="#43a047" stroke-width="22" fill="none"/>
+          <path d="M 20 100 A 80 80 0 0 1 180 100" stroke="#2d2a32" stroke-width="3" fill="none"/>
+          <line id="needle" x1="100" y1="100" x2="100" y2="28" stroke="#2d2a32" stroke-width="6" stroke-linecap="round"/>
+          <circle cx="100" cy="100" r="9" fill="#2d2a32"/>
         </svg>
         <div id="gaugeFace">🙂</div>
       </div>
@@ -261,16 +199,11 @@
 
 <script>
 // ================= Game data =================
+const MONTH_MS = 15000, MONTHS = 12, BUILD_MS = 90000, WARN_MS = 10000, HAZARD_MS = 3500, REPAIR_MS = 6000;
 // Money is counted in whole $ signs.
-const BUILD_MS = 60000, SEASON_MS = 25000, HAZARD_MS = 3500;
 const FLOOR_COST = 4, RETROFIT = 1.5, REPAIR_COST = 3, GREEN_ZONE = 60, RED_ZONE = 35, SPEEDS = [1, 2, 4];
+const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const POWER_NAMES = ["", "small", "medium", "big", "MEGA"];
-const SEASONS = [
-  { name: "Spring", ico: "🌸", tree: "#f8bbd0", grass: "#7cc55a" },
-  { name: "Summer", ico: "☀️", tree: "#66bb6a", grass: "#6cbf4b" },
-  { name: "Fall", ico: "🍂", tree: "#ff9800", grass: "#a5b84a" },
-  { name: "Winter", ico: "❄️", tree: "#b0bec5", grass: "#f4f8fb", snow: true },
-];
 
 // need = foundation level the soil needs (1 shallow, 2 mat, 3 deep). Tall buildings on soil need one more.
 // top = where the rock layer starts in the ground cut-away.
@@ -282,20 +215,16 @@ const SOILS = {
           desc: "In an earthquake, wet sand can turn soupy like a milkshake (liquefaction)! Deep piles reach the solid rock below." },
 };
 
-// dice[i] = what happens when the dice shows i+1: null (calm) or [hazard, power]. map = pin spot on the map.
+// events: [hazard, min power, max power]
 const TOWNS = [
-  { key: "rocky", name: "Rocky Ridge", ico: "🏔️", like: "Like the Rocky Mountains", scene: "mountains", soil: "rock", budget: 22, windName: "windstorm",
-    color: "#90a4ae", map: [400, 125], desc: "A quiet mountain town built on solid rock. A good place to start!",
-    dice: [null, null, null, ["quake", 1], ["wind", 1], ["wind", 2]] },
-  { key: "shaky", name: "Shaky Hills", ico: "🌋", like: "Like California or Japan", scene: "hills", soil: "sand", budget: 28, windName: "windstorm",
-    color: "#ff8a65", map: [165, 235], desc: "This town sits right next to a fault line. Earthquakes are the big danger!",
-    dice: [null, ["quake", 1], ["quake", 2], ["quake", 3], ["quake", 4], ["wind", 1]] },
-  { key: "breezy", name: "Breezy Bay", ico: "🌀", like: "Like Florida or the Gulf Coast", scene: "beach", soil: "clay", budget: 27, windName: "hurricane",
-    color: "#26c6da", map: [630, 320], desc: "A sunny beach town where hurricanes blow in from the ocean.",
-    dice: [null, ["wind", 1], ["wind", 2], ["wind", 3], ["wind", 4], ["quake", 1]] },
-  { key: "prairie", name: "Prairie Plains", ico: "🌾", like: "Like Kansas or Oklahoma", scene: "prairie", soil: "firm", budget: 25, windName: "tornado",
-    color: "#ffca28", map: [430, 270], desc: "Wide open farmland where tornadoes can spin up fast.",
-    dice: [null, null, ["wind", 1], ["wind", 2], ["wind", 4], ["quake", 1]] },
+  { key: "rocky", name: "Rocky Ridge", ico: "🏔️", like: "Like the Rocky Mountains", scene: "mountains", soil: "rock", budget: 30, windName: "windstorm",
+    desc: "A quiet mountain town built on solid rock. A good place to start!", events: [["quake", 1, 2], ["wind", 1, 3]] },
+  { key: "shaky", name: "Shaky Hills", ico: "🌋", like: "Like California or Japan", scene: "hills", soil: "sand", budget: 38, windName: "windstorm",
+    desc: "The ground here rumbles a lot! Earthquakes are the big danger.", events: [["quake", 2, 4], ["quake", 1, 3], ["wind", 1, 2]] },
+  { key: "breezy", name: "Breezy Bay", ico: "🌀", like: "Like Florida or the Gulf Coast", scene: "beach", soil: "clay", budget: 36, windName: "hurricane",
+    desc: "A sunny beach town where hurricanes blow in from the ocean.", events: [["wind", 2, 4], ["wind", 2, 3], ["quake", 1, 1]] },
+  { key: "prairie", name: "Prairie Plains", ico: "🌾", like: "Like Kansas or Oklahoma", scene: "prairie", soil: "firm", budget: 33, windName: "tornado",
+    desc: "Wide open farmland where tornadoes can spin up fast.", events: [["wind", 3, 4], ["wind", 1, 2], ["quake", 1, 1]] },
 ];
 
 const TYPES = [
@@ -304,7 +233,7 @@ const TYPES = [
   { key: "hospital", name: "Hospital", ico: "🏥", perCoin: 3, desc: "Must keep working after a disaster. Closing or losing power hurts twice as much!",
     mission: "Never close! Sick people need you.", check: r => r.closedMs === 0 },
   { key: "library", name: "Library", ico: "📚", perCoin: 5, desc: "A cozy place to read. Interior design counts double!",
-    mission: "Welcome 50 visitors this year.", check: r => r.visitors >= 50 },
+    mission: "Welcome 80 visitors this year.", check: r => r.visitors >= 80 },
 ];
 
 const FLOORS = [
@@ -316,7 +245,7 @@ const FLOORS = [
 // Items with tier min/beyond show Code Minimum / Beyond Code. The foundation's tag depends on the soil.
 // quake / wind add strength; happy adds happiness; power = lights stay on; bolted = shelves stay put.
 const CATS = [
-  { key: "structural", name: "Structural", icon: "🏗️", color: "#ef5350", items: [
+  { key: "structural", name: "Structural", icon: "🏗️", color: "#e53935", items: [
     { key: "found", name: "Foundation", foundation: true, options: [
       { label: "Shallow Footings", ico: "🦶", cost: 2, level: 1, tip: "Concrete \"feet\" just under the ground. Great on rock or firm soil." },
       { label: "Mat Slab", ico: "🟫", cost: 5, level: 2, tip: "One big thick slab under the whole building. It spreads the weight like a snowshoe." },
@@ -328,7 +257,7 @@ const CATS = [
       { tier: "min", label: "Bolted Down", ico: "🔧", cost: 0, tip: "The building is bolted to its foundation so it can't slide off." },
       { tier: "beyond", label: "Shake Absorbers", ico: "🛞", cost: 6, quake: 2, tip: "Rubber pads (base isolators) let the ground move while the building stays calm." } ] },
   ]},
-  { key: "arch", name: "Architectural", icon: "🏠", color: "#42a5f5", items: [
+  { key: "arch", name: "Architectural", icon: "🏠", color: "#1e88e5", items: [
     { key: "windows", name: "Windows", options: [
       { tier: "min", label: "Standard Windows", ico: "🪟", cost: 1, tip: "Regular glass windows." },
       { tier: "beyond", label: "Storm-Proof Windows", ico: "🛡️", cost: 3, wind: 1, tip: "Extra-tough glass that won't break when things fly around in the wind." } ] },
@@ -336,7 +265,7 @@ const CATS = [
       { tier: "min", label: "Standard Roof", ico: "🏠", cost: 1, tip: "Keeps the rain out." },
       { tier: "beyond", label: "Strapped-Down Roof", ico: "⛓️", cost: 3, wind: 1, tip: "Metal straps tie the roof to the walls so wind can't lift it off." } ] },
   ]},
-  { key: "interior", name: "Interior Design", icon: "🛋️", color: "#ab47bc", items: [
+  { key: "interior", name: "Interior Design", icon: "🛋️", color: "#8e24aa", items: [
     { key: "furniture", name: "Furniture & Colors", options: [
       { tier: "min", label: "Basic Furniture", ico: "🪑", cost: 1, tip: "Simple chairs and tables." },
       { tier: "beyond", label: "Cozy & Colorful", ico: "🛋️", cost: 3, happy: 10, why: "Cozy, colorful rooms", tip: "Comfy couches, bright colors, and plants make people happy!" } ] },
@@ -344,7 +273,7 @@ const CATS = [
       { tier: "min", label: "Standing Shelves", ico: "📚", cost: 0, tip: "Shelves just stand against the wall." },
       { tier: "beyond", label: "Bolted Shelves", ico: "🔩", cost: 1, bolted: true, tip: "Bolting shelves to the wall stops them from tipping over in an earthquake." } ] },
   ]},
-  { key: "mep", name: "MEP", sub: "Mechanical, Electrical & Plumbing", icon: "💡", color: "#ffa726", items: [
+  { key: "mep", name: "MEP", sub: "Mechanical, Electrical & Plumbing", icon: "💡", color: "#fb8c00", items: [
     { key: "hvac", name: "Heating & Cooling", options: [
       { tier: "min", label: "Basic Heat & AC", ico: "🌡️", cost: 2, tip: "Keeps the building warm enough and cool enough." },
       { tier: "beyond", label: "Fresh-Air System", ico: "🌬️", cost: 4, happy: 10, why: "Fresh air & just-right temperature", tip: "Quiet, fresh air and the perfect temperature in every room." } ] },
@@ -352,7 +281,7 @@ const CATS = [
       { tier: "min", label: "No Backup", ico: "🔌", cost: 0, tip: "If the power goes out, the lights go off." },
       { tier: "beyond", label: "Backup Generator", ico: "⚡", cost: 3, power: true, tip: "Keeps the lights and fridge on after a storm." } ] },
   ]},
-  { key: "sust", name: "Sustainability", icon: "🌱", color: "#66bb6a", items: [
+  { key: "sust", name: "Sustainability", icon: "🌱", color: "#43a047", items: [
     { key: "energy", name: "Energy", options: [
       { tier: "min", label: "Grid Power", ico: "🏭", cost: 0, tip: "Electricity comes from the power plant." },
       { tier: "beyond", label: "Solar Panels", ico: "☀️", cost: 4, happy: 5, power: true, why: "Clean energy from the sun", tip: "Free, clean energy from the sun. Works even when the power plant is down!" } ] },
@@ -369,19 +298,17 @@ let S = null, tab = "structural", happy = 50;
 
 const $ = id => document.getElementById(id);
 const rand = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
-const cap = s => s[0].toUpperCase() + s.slice(1);
 const coins = n => n > 0 ? `<span class="coins">${"$".repeat(n)}</span>` : "Free";
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = rand(0, i); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const town = () => TOWNS.find(t => t.key === S.town);
 const btype = () => TYPES.find(t => t.key === S.type);
 const soil = () => SOILS[town().soil];
-const season = () => SEASONS[Math.min(3, S.season)];
 const opt = k => ITEMS[k].options[S.choice[k]];
 const beyond = k => ITEMS[k].foundation ? opt(k).level > soilNeed() : opt(k).tier === "beyond";
 const foundLevel = () => opt("found").level;
 const soilNeed = () => Math.min(3, soil().need + (S.floors === 3 && town().soil !== "rock" ? 1 : 0));
-const closed = () => S.damage >= 2;
-const hazName = (type, power, t = town()) => `${POWER_NAMES[power]} ${type === "quake" ? "earthquake" : t.windName}`;
-const outcomeLabel = (o, t) => o ? `${o[0] === "quake" ? "🌋" : "🌪️"} ${cap(hazName(o[0], o[1], t))}` : "☀️ Calm";
+const closed = () => S.damage >= 2 || S.repairing > 0;
+const hazName = (type, power) => `${POWER_NAMES[power]} ${type === "quake" ? "earthquake" : town().windName}`;
 
 function stats() {
   const s = { quake: 1, wind: 1, power: false, bolted: false };
@@ -395,72 +322,31 @@ function stats() {
   return s;
 }
 
-// ================= Dice =================
-const PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
-const pips = n => Array.from({ length: 9 }, (_, i) => `<i class="${PIPS[n].includes(i) ? "on" : ""}"></i>`).join("");
-const diceHTML = (n, mini) => `<div class="dice ${mini ? "mini" : ""}">${pips(n)}</div>`;
-const diceTable = (t, hit) => `<div class="diceTable">${t.dice.map((o, i) =>
-  `<div class="dt ${hit === i + 1 ? "hit" : ""}">${diceHTML(i + 1, true)}<span>${outcomeLabel(o, t)}</span></div>`).join("")}</div>`;
-
-// ================= Setup screen (map) =================
-function mapSVG() {
-  const pins = TOWNS.map(t => {
-    const [x, y] = t.map, sel = setup.town === t.key;
-    return `<g class="pin ${sel ? "sel" : ""}" data-town="${t.key}" transform="translate(${x},${y})">
-      <g class="bob">
-        <circle r="30" fill="${t.color}" filter="url(#clayF)" ${sel ? 'stroke="#fff" stroke-width="5"' : ""}/>
-        <text y="11" text-anchor="middle" font-size="30">${t.ico}</text>
-      </g>
-      <rect x="-62" y="38" width="124" height="26" rx="13" fill="#fffaf2" filter="url(#clayF)"/>
-      <text y="57" text-anchor="middle" font-size="16" font-weight="700" fill="#4e342e" font-family="Fredoka, sans-serif">${t.name}</text>
-    </g>`;
-  }).join("");
-  return `<svg viewBox="0 0 800 450" role="img" aria-label="Map of Build Land. Click a town to pick it.">
-    <rect width="800" height="450" rx="22" fill="#4fc3f7"/>
-    ${[[60, 60], [700, 40], [720, 400], [60, 410], [300, 432]].map(([x, y]) =>
-      `<path d="M${x} ${y} q12 -8 24 0 t24 0" stroke="#b3e5fc" stroke-width="4" fill="none" stroke-linecap="round"/>`).join("")}
-    <ellipse cx="690" cy="350" rx="85" ry="48" fill="#f3e0a0" filter="url(#clayF)"/>
-    <path filter="url(#clayF)" fill="#9ccc65" d="M110,95 C210,35 560,30 690,85 C770,125 765,255 705,335 C650,405 520,425 400,405 C280,395 135,385 85,300 C45,230 55,135 110,95 Z"/>
-    <g filter="url(#clayF)">
-      <polygon points="320,170 365,80 410,170" fill="#90a4ae"/><polygon points="380,165 435,62 490,165" fill="#a7b6bf"/>
-      <polygon points="350,108 365,80 380,108" fill="#fff"/><polygon points="418,95 435,62 452,95" fill="#fff"/>
-      <ellipse cx="135" cy="200" rx="45" ry="26" fill="#7cb342"/><ellipse cx="190" cy="285" rx="50" ry="26" fill="#7cb342"/>
-      <rect x="365" y="290" width="140" height="80" rx="18" fill="#ffe082"/>
-    </g>
-    ${[385, 410, 435, 460, 485].map(x => `<line x1="${x}" y1="300" x2="${x}" y2="360" stroke="#f9a825" stroke-width="3" stroke-linecap="round"/>`).join("")}
-    <path d="M95,130 C140,190 200,250 245,365" stroke="#d84315" stroke-width="4" stroke-dasharray="10 8" fill="none"/>
-    <text x="210" y="380" font-size="14" fill="#bf360c" font-weight="700" font-family="Fredoka, sans-serif">fault line</text>
-    <text x="740" y="430" font-size="34" text-anchor="middle">🌀</text>
-    <text x="745" y="70" font-size="18" text-anchor="middle" font-family="Fredoka, sans-serif" fill="#01579b" font-weight="700">⬆ N</text>
-    <rect x="18" y="16" width="150" height="40" rx="20" fill="#fffaf2" filter="url(#clayF)"/>
-    <text x="93" y="43" text-anchor="middle" font-size="20" font-weight="700" fill="#4e342e" font-family="Fredoka, sans-serif">🗺️ Build Land</text>
-    ${pins}
-  </svg>`;
+// ================= Setup screen =================
+function hazardList(t) {
+  const q = t.events.filter(e => e[0] === "quake").length, w = t.events.length - q;
+  return [q && `🌋 ${q} earthquake${q > 1 ? "s" : ""}`, w && `🌪️ ${w} ${t.windName}${w > 1 ? "s" : ""}`].filter(Boolean).join(", ");
 }
 
 function renderSetup() {
-  const t = TOWNS.find(t => t.key === setup.town);
   $("setup").innerHTML = `
-    <div class="card intro"><div class="avatar">👷‍♀️</div><div>
+    <div class="card intro"><div class="fran">👷‍♀️</div><div>
       <h2>Welcome to BuildCraft!</h2>
-      <p>I'm Foreman Fran. Pick a town on the map, choose your building, then build it strong and keep people happy through all four seasons!</p>
+      <p>I'm Foreman Fran. Pick a town and a building. Then build it strong, open it up, and keep people happy through a whole year of weather!</p>
     </div></div>
-    <h2 class="step">1️⃣ Click a town on the map</h2>
-    <div class="mapRow">
-      <div class="card mapCard">${mapSVG()}</div>
-      <div class="card townInfo">
-        <div class="big">${t.ico}</div><h2>${t.name}</h2><p class="like">${t.like}</p><p>${t.desc}</p>
+    <h2 class="step">1️⃣ Pick a town</h2>
+    <div class="grid">${TOWNS.map(t => `
+      <button class="card pick ${setup.town === t.key ? "sel" : ""}" data-town="${t.key}">
+        <div class="big">${t.ico}</div><h3>${t.name}</h3><p class="like">${t.like}</p><p>${t.desc}</p>
         <p>🪨 <b>Ground:</b> ${SOILS[t.soil].name}</p>
+        <p>⚠️ <b>Weather:</b> ${hazardList(t)}</p>
         <p>💰 <b>Budget:</b> ${coins(t.budget)}</p>
-        <p>🎲 <b>Weather dice:</b> each season you roll to see what happens.</p>
-        ${diceTable(t)}
-      </div>
-    </div>
+      </button>`).join("")}</div>
     <h2 class="step">2️⃣ Pick a building</h2>
-    <div class="grid">${TYPES.map(b => `
-      <button class="card pick ${setup.type === b.key ? "sel" : ""}" data-type="${b.key}">
-        <div class="big">${b.ico}</div><h3>${b.name}</h3><p>${b.desc}</p>
-        <p>🎯 <b>Mission:</b> ${b.mission}</p><p>🎟️ Every ${b.perCoin} visitors pay you ${coins(1)}</p>
+    <div class="grid">${TYPES.map(t => `
+      <button class="card pick ${setup.type === t.key ? "sel" : ""}" data-type="${t.key}">
+        <div class="big">${t.ico}</div><h3>${t.name}</h3><p>${t.desc}</p>
+        <p>🎯 <b>Mission:</b> ${t.mission}</p><p>🎟️ Every ${t.perCoin} visitors pay you ${coins(1)}</p>
       </button>`).join("")}</div>
     <h2 class="step">3️⃣ How many floors? <small>(${coins(FLOOR_COST)} per floor)</small></h2>
     <div class="grid">${FLOORS.map(f => `
@@ -471,7 +357,7 @@ function renderSetup() {
 }
 
 $("setup").addEventListener("click", e => {
-  const p = e.target.closest("[data-town], [data-type], [data-floors]");
+  const p = e.target.closest(".pick");
   if (p) {
     if (p.dataset.town) setup.town = p.dataset.town;
     if (p.dataset.type) setup.type = p.dataset.type;
@@ -482,72 +368,58 @@ $("setup").addEventListener("click", e => {
 });
 
 // ================= Game flow =================
-// Phases: build -> (roll -> ready -> hazard -> after -> open) x 4 seasons -> end
 function startBuild() {
   S = {
     ...setup, phase: "build", choice: Object.fromEntries(Object.keys(ITEMS).map(k => [k, 0])),
-    money: 0, earned: 0, jar: 0, speed: 1, damage: 0, settle: 0, lastHazard: null, hazard: null, paused: false,
-    buildLeft: BUILD_MS, season: 0, seasonLeft: 0, seasonVisitors: 0, seasonEarned: 0, rolls: [], face: 1, rolling: false,
-    pending: null, after: null, log: [], visitors: 0, closedMs: 0, happySamples: [], repairSpent: 0,
-    settleCount: 0, liqCount: 0, hazardDamage: 0, simT: 0,
+    money: 0, earned: 0, visitorCount: 0, speed: 1, damage: 0, settle: 0, lastHazard: null, hazard: null, repairing: 0, paused: false,
+    clock: 0, month: -1, buildLeft: BUILD_MS, events: [], settleMonths: [], log: [],
+    visitors: 0, closedMs: 0, happySamples: [], repairSpent: 0, settleCount: 0, liqCount: 0, hazardDamage: 0,
   };
   S.money = S.budget = town().budget - S.floors * FLOOR_COST;
   people = []; parts = []; floats = []; inside = 0; lastArrive = 0; lastLeave = 0;
   tab = "structural";
   $("setup").hidden = true; $("end").hidden = true; $("game").hidden = false;
-  ["townChip", "moneyChip", "jarChip", "happyChip"].forEach(id => $(id).hidden = false);
+  ["townChip", "moneyChip", "happyChip"].forEach(id => $(id).hidden = false);
   $("townChip").textContent = `${town().ico} ${town().name} · ${btype().ico} ${btype().name}`;
   const sl = soil(), weak = foundLevel() < soilNeed();
   say(`Welcome to <b>${town().name}</b>! The ground here is <b>${sl.name}</b>. ${sl.desc} ` +
-      (weak ? "⚠️ Check your <b>Foundation</b> first! " : "") +
-      `Money is tight, so you can't buy everything. Pick what matters most!`);
-  window.scrollTo(0, 0);
+      (weak ? "⚠️ Check your <b>Foundation</b> first!" : "") +
+      ` You have 1½ minutes to build. 🎯 Mission: ${btype().mission}`);
   update();
 }
 
-function addLog(text) { S.log.push(`<b>${season().ico} ${season().name}:</b> ${text}`); }
-
-function startSeason() {
-  S.phase = "roll";
-  S.seasonVisitors = S.seasonEarned = 0;
-  say(`${season().ico} <b>${season().name}</b> is here! Roll the dice to see what the weather brings to ${town().name}.`);
+function openForBusiness() {
+  const t = town(), n = t.events.length;
+  S.phase = "season";
+  S.events = shuffle(t.events.map(([type, a, b]) => ({ type, power: rand(a, b) }))).map((e, i) => {
+    const month = Math.min(11, Math.floor((i + .5) * MONTHS / n) + rand(-1, 1));
+    return { ...e, month, at: month * MONTH_MS + 6000, done: false };
+  });
+  S.settleMonths = foundLevel() < soilNeed() ? [3, 7] : [];
+  S.speed = 1;
+  say(`🎉 You're open! Every ${btype().perCoin} visitors pay you ${coins(1)}. Watch the calendar. Weather is coming, and you'll get a warning before it hits! Press ⏩ to speed up time.`);
   update();
 }
 
-function rollDice() {
-  if (S.rolling) return;
-  S.rolling = true;
-  renderShop();
-  const d = $("dice");
-  d.classList.add("spin");
-  $("rollBtn").disabled = true;
-  let n = 0;
-  const iv = setInterval(() => {
-    d.innerHTML = pips(rand(1, 6));
-    if (++n < 14) return;
-    clearInterval(iv);
-    if (!S || S.phase !== "roll") return;
-    S.rolling = false;
-    S.face = rand(1, 6);
-    S.pending = town().dice[S.face - 1];
-    S.rolls[S.season] = { face: S.face, o: S.pending };
-    addLog(`🎲 Rolled a ${S.face}: ${outcomeLabel(S.pending, town())}`);
-    S.phase = "ready";
-    say(S.pending ? `Uh oh! A <b>${hazName(...S.pending)}</b> is on the way. Upgrade now, or bring it on!` : "☀️ Phew! A calm season. Nothing to worry about this time.");
-    update();
-  }, 90);
+function addLog(text) { S.log.push(`<b>${MONTH_NAMES[Math.max(0, S.month)]}:</b> ${text}`); }
+
+function settleEvent() {
+  S.damage = Math.min(3, S.damage + 1);
+  S.settle += 7;
+  S.settleCount++;
+  addLog(`The building sank into the ${soil().name.toLowerCase()} 😬`);
+  say(`😬 Uh oh! The building is sinking into the <b>${soil().name}</b>. Shallow foundations can't hold heavy buildings on soft ground. A mat slab or deep piles would stop this!`);
+  update();
 }
 
-function bringIt() {
-  const [type, power] = S.pending;
-  S.phase = "hazard";
-  S.hazard = { type, power, t: 0 };
-  say(type === "quake" ? "🌋 Earthquake! Everybody out, nice and calm!" : `🌪️ Here comes the ${town().windName}! Everybody out!`);
+function startHazard(ev) {
+  S.hazard = { type: ev.type, power: ev.power, start: S.clock, ev };
+  say(ev.type === "quake" ? "🌋 Earthquake! Everybody out, nice and calm!" : `🌪️ Here comes the ${town().windName}! Everybody out!`);
   update();
 }
 
 function finishHazard() {
-  const { type, power } = S.hazard, s = stats();
+  const { type, power, ev } = S.hazard, s = stats();
   const tall = S.floors === 3 ? 1 : 0;
   let d = Math.max(0, power + tall - (type === "quake" ? s.quake : s.wind));
   const liq = type === "quake" && soil().liquefy && foundLevel() < 3 && power >= 2;
@@ -556,81 +428,29 @@ function finishHazard() {
   S.damage = Math.min(3, S.damage + d);
   S.hazardDamage += d;
   S.lastHazard = { type, power, damage: d, shelves: type === "quake" && power >= 2 ? s.bolted : null };
-  S.rolls[S.season].result = d;
+  ev.result = d;
   S.hazard = null;
-
-  const name = hazName(type, power), lines = [];
-  lines.push(d === 0 ? `💪 Your building handled the <b>${name}</b> with no damage!` : `💥 The <b>${name}</b> caused ${"💥".repeat(d)} damage.`);
-  if (liq) lines.push("🥤 The wet sand turned soupy (liquefaction)! Deep piles would have reached the solid rock below.");
-  if (S.lastHazard.shelves === false) lines.push("📚 Books fell off the standing shelves.");
-  if (S.lastHazard.shelves === true) lines.push("📚 The bolted shelves stayed put!");
-  if (d > 0) lines.push(s.power ? "💡 Backup power kept the lights on." : "🔌 The power went out!");
-  if (d > 0) lines.push("🙌 Everyone got out safely. That's what the building code is for!");
-  addLog(`${type === "quake" ? "🌋" : "🌪️"} ${cap(name)}: ${d ? `${d} damage${liq ? " (the sand turned soupy!)" : ""}` : "no damage 💪"}`);
-  toAfter(lines, type);
-}
-
-// After an event (or a calm roll): soft-soil sinking, then show what the player can do next
-function toAfter(lines, type) {
-  if (foundLevel() < soilNeed() && (S.season === 1 || S.season === 3)) {
-    S.damage = Math.min(3, S.damage + 1);
-    S.settle += 7;
-    S.settleCount++;
-    lines.push(`😬 The building sank into the <b>${soil().name}</b>! A stronger foundation would stop this.`);
-    addLog(`😬 The building sank into the ${soil().name.toLowerCase()}`);
-  }
-  if (closed()) lines.push("🚧 The building is <b>closed</b> until it is repaired.");
-  S.after = { lines, type };
-  S.phase = "after";
-  say(S.damage ? "Let's look at what happened and decide what to do next. 👇" : "Nice! Check what you can do next, then open for the season. 👇");
+  const name = hazName(type, power);
+  addLog(`${type === "quake" ? "🌋" : "🌪️"} A ${name}: ${d ? `${d} damage${liq ? " (the sand turned soupy!)" : ""}` : "no damage 💪"}`);
+  if (liq) say(`🥤 The wet sand turned soupy in the <b>${name}</b> (liquefaction)! Deep piles reach the solid rock below and stop this.`);
+  else if (d === 0) say(`Wow! Your building handled the <b>${name}</b> with no damage. People can stay inside! 💪`);
+  else if (S.damage < 2) say(`Everyone got out safely from the <b>${name}</b>. There's a little damage, but you can stay open. You could pay to fix it, or retrofit with ⭐ Beyond Code parts!`);
+  else say(`Everyone got out safely. That's the building code's job! 👍 But the building has to <b>close</b> until you pay for repairs. 🔧`);
   update();
 }
 
-function likelyHazard() {
-  const q = town().dice.filter(o => o && o[0] === "quake").length, w = town().dice.filter(o => o && o[0] === "wind").length;
-  return q >= w ? "quake" : "wind";
-}
-
-function openSeason() {
-  S.phase = "open";
-  S.seasonLeft = SEASON_MS;
-  say(closed() ? "🚧 The building is closed, so no visitors can come in. Repair it to reopen!" :
-    `🎉 Open for ${season().name}! Watch the ticket jar 🎟️ fill up as visitors come in. Press ⏩ to speed up.`);
-  update();
-}
-
-function endSeason() {
-  S.happySamples.push(happy);
-  addLog(`👥 ${S.seasonVisitors} visitors earned ${S.seasonEarned ? coins(S.seasonEarned) : "nothing"}`);
-  S.season++;
-  if (S.season >= SEASONS.length) return endGame();
-  startSeason();
-}
-
-function repair() {
+function startRepair() {
   const cost = REPAIR_COST * S.damage;
-  S.money -= cost; S.repairSpent += cost;
-  S.damage = 0; S.lastHazard = null;
+  S.money -= cost; S.repairSpent += cost; S.repairing = REPAIR_MS;
   addLog(`🔧 Paid ${coins(cost)} for repairs`);
-  say(S.money < 0 ? "🔧 All fixed! You had to borrow money, so you owe some $ now." : "🔧 All fixed up! People can come back inside.");
-  update();
-}
-
-function buy(k, i) {
-  if (i === S.choice[k]) return;
-  const cost = switchCost(k, i);
-  if (cost > S.money || locked(k)) return;
-  S.money -= cost;
-  if (S.phase !== "build" && cost > 0) addLog(`🔧 Retrofit: ${ITEMS[k].options[i].label} (${coins(cost)})`);
-  S.choice[k] = i;
-  say(ITEMS[k].options[i].tip);
+  say(S.money < 0 ? "🔧 The builders are on it! You had to borrow money, so your bank is below zero." : "🔧 The builders are on it! Fixing things takes a little time.");
   update();
 }
 
 function endGame() {
   S.phase = "end";
   const avgHappy = Math.round(S.happySamples.reduce((a, b) => a + b, 0) / Math.max(1, S.happySamples.length));
-  const r = { avgHappy, visitors: S.visitors, closedMs: S.closedMs };
+  const r = { avgHappy, visitors: S.visitors, closedMs: S.closedMs, money: S.money };
   const mission = btype().check(r);
   const stars = 1 + (avgHappy >= GREEN_ZONE ? 1 : 0) + (mission ? 1 : 0);
   const lessons = [];
@@ -639,18 +459,17 @@ function endGame() {
   if (S.hazardDamage) lessons.push("⭐ <b>Beyond Code</b> parts (braces, shake absorbers, storm windows, roof straps) stop damage so the building stays open.");
   if (!S.hazardDamage && !S.settleCount) lessons.push("🏆 No damage all year. That's great engineering!");
   if (S.repairSpent) lessons.push(`💸 You spent ${coins(S.repairSpent)} on repairs. Sometimes spending more up front saves money later!`);
-  lessons.push(`🎲 In ${town().name}, the dice shows ${outcomeLabel(town().dice[4], town()).toLowerCase()} on a 5. Knowing your town's risks helps you choose!`);
   $("endCard").innerHTML = `
     <h2>🎆 The year is over in ${town().name}!</h2>
     <div class="stars">${"⭐".repeat(stars)}${"☆".repeat(3 - stars)}</div>
     <p>🎯 <b>Mission:</b> ${btype().mission} ${mission ? "✅ Done!" : "❌ Not this time."}</p>
     <div class="endStats">
-      <div>😊 Happiness for the year<div class="bar"><i style="width:${avgHappy}%;background-color:${meterColor(avgHappy)}"></i></div></div>
+      <div>😊 Happiness for the year<div class="bar"><i style="width:${avgHappy}%;background:${meterColor(avgHappy)}"></i></div></div>
       <div>👥 Visitors<b>${S.visitors}</b></div>
-      <div>🎟️ Earned from visitors<b>${S.earned ? coins(S.earned) : "nothing"}</b></div>
-      <div>💰 Money left<b>${S.money < 0 ? `<span class="neg">owe ${"$".repeat(-S.money)}</span>` : S.money ? coins(S.money) : "none"}</b></div>
+      <div>💰 Money left<b>${S.money < 0 ? `<span class="neg">owe ${"$".repeat(-S.money)}</span>` : coins(S.money)}</b></div>
+      <div>🚧 Days closed<b>${Math.round(S.closedMs / MONTH_MS * 30)}</b></div>
     </div>
-    <h3>📖 What happened</h3><ul>${S.log.map(l => `<li>${l}</li>`).join("")}</ul>
+    <h3>📖 What happened</h3><ul>${S.log.map(l => `<li>${l}</li>`).join("") || "<li>A calm year!</li>"}</ul>
     <h3>💡 What we learned</h3><ul>${lessons.map(l => `<li>${l}</li>`).join("")}</ul>
     <div class="row" style="justify-content:center">
       <button class="btn go" id="again">🔁 Play Again</button>
@@ -663,7 +482,7 @@ $("endCard").addEventListener("click", e => {
   if (e.target.closest("#again")) startBuild();
   if (e.target.closest("#newTown")) {
     $("end").hidden = true; $("game").hidden = true; $("setup").hidden = false;
-    ["townChip", "moneyChip", "jarChip", "happyChip"].forEach(id => $(id).hidden = true);
+    ["townChip", "moneyChip", "happyChip"].forEach(id => $(id).hidden = true);
     S = null; renderSetup();
   }
 });
@@ -686,7 +505,6 @@ function calcHappiness() {
   const total = L.reduce((t, l) => t + l[1], 0);
   return { value: Math.max(0, Math.min(100, total)), lines: L };
 }
-const meterColor = v => v >= GREEN_ZONE ? "#66bb6a" : v >= RED_ZONE ? "#ffd23f" : "#ef5350";
 
 // ================= UI =================
 function say(msg) { $("say").innerHTML = msg; }
@@ -703,7 +521,6 @@ function switchCost(k, idx) {
   return S.phase === "build" ? diff : Math.max(0, Math.ceil(diff * RETROFIT));
 }
 const locked = k => ITEMS[k].foundation && S.phase !== "build";
-const shopBusy = () => S.phase === "end" || S.phase === "hazard" || S.rolling;
 
 function renderShop() {
   $("tabs").innerHTML = CATS.map(c => {
@@ -726,13 +543,12 @@ function renderShop() {
   refreshButtons();
 }
 
-// Enable/disable buttons without rebuilding them (money changes every time the ticket jar fills).
+// Enable/disable shop buttons without rebuilding them (money changes every time a visitor pays).
 function refreshButtons() {
   document.querySelectorAll(".choice").forEach(b => {
     const k = b.dataset.item, i = +b.dataset.i;
-    b.disabled = shopBusy() || locked(k) || (i !== S.choice[k] && switchCost(k, i) > S.money);
+    b.disabled = S.phase === "end" || !!S.hazard || locked(k) || (i !== S.choice[k] && switchCost(k, i) > S.money);
   });
-  document.querySelectorAll("#panel [data-act=buy]").forEach(b => b.disabled = shopBusy() || switchCost(b.dataset.k, 1) > S.money);
 }
 
 function renderHappiness() {
@@ -740,13 +556,14 @@ function renderHappiness() {
   happy = h.value;
   const face = happy >= 85 ? "🤩" : happy >= 65 ? "😄" : happy >= 45 ? "🙂" : happy >= 25 ? "😟" : "😭";
   $("fill").style.width = happy + "%";
-  $("fill").style.backgroundColor = meterColor(happy);
+  $("fill").style.background = meterColor(happy);
   $("face").textContent = $("gaugeFace").textContent = face;
   $("needle").style.transform = `rotate(${-90 + happy * 1.8}deg)`;
   // Each reason gets a small bar: green pushes happiness up, red pulls it down
   $("report").innerHTML = h.lines.map(([t, v]) =>
     `<li><span>${t}</span><span class="mini ${v >= 0 ? "plus" : "minus"}"><i style="width:${Math.min(100, Math.abs(v) * 2)}%"></i></span></li>`).join("");
 }
+const meterColor = v => v >= GREEN_ZONE ? "#43a047" : v >= RED_ZONE ? "#ffd23f" : "#e53935";
 
 // Money left as green $, money spent as faded $, money borrowed as red $.
 let lastWallet = "";
@@ -761,91 +578,48 @@ function renderWallet() {
     (spent > 0 ? `<span class="coins spent">${"$".repeat(spent)}</span>` : "");
 }
 
-// Upgrade ideas for the hazard that just hit (or the town's most likely one)
-function upgradeButtons(type) {
-  const keys = type === "quake" ? ["iso", "frame", "shelves"] : ["windows", "roof", "frame"];
-  if (!stats().power) keys.push("backup");
-  const ks = keys.filter(k => !beyond(k));
-  if (!ks.length) return "<span>✅ You already have the best parts for this!</span>";
-  return ks.map(k => {
-    const o = ITEMS[k].options[1];
-    return `<button class="btn buy" data-act="buy" data-k="${k}">${o.ico} ${o.label} ${coins(switchCost(k, 1))}</button>`;
-  }).join("");
-}
+function update() { renderShop(); renderHappiness(); hud(true); }
 
-function renderSeasons() {
-  $("seasons").innerHTML = SEASONS.map((s, i) => {
-    const r = S.rolls[i];
-    const cls = S.phase === "build" ? "" : i < S.season ? "past" : i === S.season ? "now" : "";
-    const res = r ? `🎲${r.face} ${r.o ? (r.o[0] === "quake" ? "🌋" : "🌪️") + (r.result === undefined ? "" : r.result ? "💥" : "✅") : "☀️"}` : "&nbsp;";
-    return `<div class="ss ${cls}"><b>${s.ico} ${s.name}</b>${res}</div>`;
-  }).join("");
-}
-
-// The action panel shows exactly what the player can do right now
-function renderPanel() {
-  const s = season(), t = town();
-  let h = "";
-  if (S.phase === "build") {
-    h = `<div class="panelHead">🏗️ Build your building! <span id="buildTimer"></span></div>
-      <p>Pick parts in the shop. You <b>can't afford everything</b>, so choose what matters most for ${t.name}.</p>
-      <button class="btn go" data-act="done">🎉 I'm done building!</button>`;
-  } else if (S.phase === "roll") {
-    h = `<div class="panelHead">${s.ico} ${s.name} is here!</div>
-      <div class="row"><div class="dice" id="dice">${pips(S.face)}</div>
-      <button class="btn go" id="rollBtn" data-act="roll">🎲 Roll the dice!</button></div>
-      <p>What could happen in ${t.name}:</p>${diceTable(t)}`;
-  } else if (S.phase === "ready") {
-    const o = S.pending;
-    h = `<div class="panelHead">🎲 You rolled a ${S.face}!</div>
-      <div class="row">${diceHTML(S.face)}<div class="alert ${o ? "bad" : "good"}" style="flex:1">${o ? `⚠️ A <b>${hazName(...o)}</b> is coming!` : "☀️ Calm weather this season!"}</div></div>` +
-      (o ? `<h4>What can you do?</h4><div class="todo">
-          <div class="act"><span class="num">1</span><span>⭐ Upgrade before it hits (retrofit price):</span> ${upgradeButtons(o[0])}</div>
-          <div class="act"><span class="num">2</span><span>When you're ready:</span> <button class="btn danger" data-act="bring">⚡ Bring it on!</button></div></div>`
-        : `<div class="todo"><div class="act"><button class="btn go" data-act="calm">▶️ Continue</button></div></div>`);
-  } else if (S.phase === "hazard") {
-    h = `<div class="panelHead">${S.hazard.type === "quake" ? "🌋 Earthquake!" : `🌪️ ${cap(t.windName)}!`}</div><p>Everybody out, nice and calm! Let's see how your building does...</p>`;
-  } else if (S.phase === "after") {
-    const cost = REPAIR_COST * S.damage;
-    h = `<div class="panelHead">📋 What happened</div>
-      <ul class="results">${S.after.lines.map(l => `<li>${l}</li>`).join("")}</ul>
-      <h4>What can you do now?</h4><div class="todo">` +
-      (S.damage ? `<div class="act"><span class="num">🔧</span><button class="btn repair" data-act="repair">Repair ${coins(cost)}</button>
-          <span>Fixes the damage${closed() ? " and <b>reopens</b> the building" : ""}.${cost > S.money ? " You'll have to borrow!" : ""}</span></div>` : "") +
-      `<div class="act"><span class="num">⭐</span><span>Upgrade for next time:</span> ${upgradeButtons(S.after.type)}</div>
-       <div class="act"><span class="num">💰</span><span>Or save your money for later.</span></div>
-       <div class="act"><span class="num">▶️</span><button class="btn go" data-act="open">Open for ${s.name}</button>
-          ${closed() ? '<span class="warn">⚠️ Still closed! No visitors until you repair.</span>' : ""}</div></div>`;
-  } else if (S.phase === "open") {
-    h = `<div class="panelHead">${s.ico} ${s.name}: ${closed() ? "🚧 closed" : "open for business!"}</div>
-      <div class="bar"><i id="seasonFill"></i></div>
-      <div class="row"><span id="seasonStats" style="flex:1"></span>
-        <button class="btn ff" data-act="ff" id="ff"></button>
-        ${S.damage ? `<button class="btn repair" data-act="repair">🔧 Repair ${coins(REPAIR_COST * S.damage)}</button>` : ""}</div>`;
-  }
-  $("panel").innerHTML = h;
-  renderSeasons();
-}
-
-function update() { renderShop(); renderHappiness(); renderPanel(); refreshButtons(); hud(); }
-
-// Per-frame updates: wallet, ticket jar, timers
-function hud() {
+// Per-frame status bar: money, timers, calendar, warning banner, buttons.
+let lastMonthsKey = "";
+function hud(force) {
   renderWallet();
-  const per = btype().perCoin;
-  $("jarFill").style.width = (S.jar / per * 100) + "%";
-  $("earned").innerHTML = `<small>${S.jar}/${per}</small> ${S.earned ? "+" + coins(S.earned) : ""}`;
+  $("ff").hidden = S.phase !== "season";
+  $("ff").textContent = `⏩ Speed ${S.speed}×`;
   $("inside").textContent = S.phase === "build" ? "🚧 Under construction" : `👥 ${inside} inside`;
-  $("pause").textContent = S.paused ? "▶️" : "⏸";
-  $("banner").hidden = !S.paused;
-  if (S.phase === "build" && $("buildTimer")) {
-    const sec = Math.ceil(S.buildLeft / 1000);
-    $("buildTimer").textContent = `⏱ ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
+  $("open").hidden = S.phase !== "build";
+  $("pause").textContent = S.paused ? "▶️ Play" : "⏸ Pause";
+
+  if (S.phase === "build") {
+    const s = Math.ceil(S.buildLeft / 1000);
+    $("phase").textContent = `🏗️ Build time: ${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  } else {
+    const m = Math.min(11, Math.max(0, S.month));
+    $("phase").textContent = `📅 ${MONTH_NAMES[m]} · Month ${m + 1} of 12 · 👥 ${S.visitors} visitors`;
   }
-  if (S.phase === "open" && $("seasonFill")) {
-    $("seasonFill").style.width = (100 - S.seasonLeft / SEASON_MS * 100) + "%";
-    $("seasonStats").innerHTML = `👥 ${S.seasonVisitors} visitors · 🎟️ earned ${S.seasonEarned ? coins(S.seasonEarned) : "nothing yet"}`;
-    $("ff").textContent = `⏩ Speed ${S.speed}×`;
+
+  const rp = $("repair");
+  rp.hidden = !(S.phase === "season" && (S.damage > 0 || S.repairing > 0));
+  rp.disabled = S.repairing > 0 || !!S.hazard;
+  rp.innerHTML = S.repairing > 0 ? "🔨 Repairing..." : `🔧 Repair ${"$".repeat(REPAIR_COST * S.damage)}`;
+
+  const next = S.events.find(e => !e.done);
+  const until = next ? next.at - S.clock : Infinity;
+  const warn = S.phase === "season" && until > 0 && until <= WARN_MS;
+  $("banner").hidden = !warn && !S.paused;
+  if (S.paused) $("banner").textContent = "⏸ Paused";
+  else if (warn) $("banner").innerHTML = `⚠️ A <b>${hazName(next.type, next.power)}</b> is coming in ${Math.ceil(until / 1000)}s! Quick, upgrade now!`;
+
+  // Calendar: show an event icon once it has been announced
+  const key = S.phase + S.month + S.events.map(e => (e.done ? "d" + e.result : "") + (e.at - S.clock <= WARN_MS ? "w" : "")).join();
+  if (force || key !== lastMonthsKey) {
+    lastMonthsKey = key;
+    $("months").innerHTML = MONTH_NAMES.map((n, i) => {
+      const ev = S.events.find(e => e.month === i && (e.done || e.at - S.clock <= WARN_MS));
+      const icon = ev ? (ev.type === "quake" ? "🌋" : "🌪️") + (ev.done ? (ev.result ? "💥" : "✅") : "") : "";
+      const cls = S.phase === "build" ? "" : i < S.month ? "past" : i === S.month ? "now" : "";
+      return `<div class="mo ${cls}">${n}<span class="ev">${icon}</span></div>`;
+    }).join("");
   }
 }
 
@@ -853,82 +627,97 @@ $("tabs").addEventListener("click", e => {
   const b = e.target.closest(".tab");
   if (b) { tab = b.dataset.tab; renderShop(); }
 });
+
 $("items").addEventListener("click", e => {
   const b = e.target.closest(".choice");
-  if (b && !b.disabled) buy(b.dataset.item, +b.dataset.i);
-});
-$("panel").addEventListener("click", e => {
-  const b = e.target.closest("[data-act]");
   if (!b || b.disabled) return;
-  const act = b.dataset.act;
-  if (act === "done") { S.phase = "roll"; startSeason(); }
-  else if (act === "roll") rollDice();
-  else if (act === "bring") bringIt();
-  else if (act === "calm") toAfter(["☀️ A calm season. No storms or earthquakes!"], likelyHazard());
-  else if (act === "repair") repair();
-  else if (act === "buy") buy(b.dataset.k, 1);
-  else if (act === "open") openSeason();
-  else if (act === "ff") { S.speed = SPEEDS[(SPEEDS.indexOf(S.speed) + 1) % SPEEDS.length]; hud(); }
+  const k = b.dataset.item, i = +b.dataset.i;
+  if (i === S.choice[k]) return;
+  const cost = switchCost(k, i);
+  S.money -= cost;
+  if (S.phase === "season" && cost > 0) addLog(`🔧 Retrofit: ${ITEMS[k].options[i].label} (${coins(cost)})`);
+  S.choice[k] = i;
+  say(ITEMS[k].options[i].tip);
+  update();
 });
-$("pause").addEventListener("click", () => { S.paused = !S.paused; hud(); });
+
+$("open").addEventListener("click", () => openForBusiness());
+$("repair").addEventListener("click", () => startRepair());
+$("pause").addEventListener("click", () => { S.paused = !S.paused; hud(true); });
+$("ff").addEventListener("click", () => { S.speed = SPEEDS[(SPEEDS.indexOf(S.speed) + 1) % SPEEDS.length]; hud(true); });
 
 // ================= Simulation =================
-const W = 900, H = 500, GY = 330, BW = 240, FH = 62, DOOR_X = 450;
-const SHIRTS = ["#ef5350", "#42a5f5", "#66bb6a", "#ab47bc", "#ffa726", "#26c6da", "#f06292"];
-const PANTS = ["#5c6bc0", "#6d4c41", "#546e7a", "#7e57c2"];
+const W = 900, H = 500, GY = 330, BW = 240, FH = 62, DOOR_X = 450, INK = "#2d2a32";
+const SHIRTS = ["#e53935", "#1e88e5", "#43a047", "#8e24aa", "#fb8c00", "#00acc1", "#f06292"];
 const SKINS = ["#f5d0a9", "#e0ac69", "#c68642", "#8d5524", "#ffdbac"];
 const CRACKS = [[-80, -50], [60, -110], [-30, -150], [95, -40], [10, -90], [-100, -130]];
 const clouds = [{ x: 160, y: 60, v: .2, s: 1 }, { x: 480, y: 40, v: .15, s: 1.3 }, { x: 760, y: 85, v: .25, s: .9 }];
-const DOTS = Array.from({ length: 50 }, () => [Math.random() * W, Math.random(), 3 + Math.random() * 4]);
+const DOTS = Array.from({ length: 60 }, () => [Math.random() * W, Math.random(), 2 + Math.random() * 3]);
 let people = [], parts = [], floats = [], inside = 0, lastArrive = 0, lastLeave = 0;
 
 const pick = a => a[Math.floor(Math.random() * a.length)];
-const newPerson = (x, dir, state, speed) => ({ x, dir, state, speed, lane: Math.random() * 6, phase: 0,
-  shirt: pick(SHIRTS), pants: pick(PANTS), skin: pick(SKINS), hat: Math.random() < .2, bump: Math.random() < .5 });
 
 function spawnArriver() {
   const fromLeft = Math.random() < .5;
-  people.push(newPerson(fromLeft ? -20 : W + 20, fromLeft ? 1 : -1, "in", .7 + Math.random() * .5));
+  people.push({ x: fromLeft ? -20 : W + 20, dir: fromLeft ? 1 : -1, state: "in", speed: .7 + Math.random() * .5,
+    lane: Math.random() * 6, phase: 0, shirt: pick(SHIRTS), skin: pick(SKINS), hat: Math.random() < .2 });
 }
 function spawnLeaver(run) {
   inside--;
-  const p = newPerson(DOOR_X, Math.random() < .5 ? -1 : 1, "out", run ? 3 : .7 + Math.random() * .5);
-  p.scared = run;
-  people.push(p);
+  people.push({ x: DOOR_X, dir: Math.random() < .5 ? -1 : 1, state: "out", speed: run ? 3 : .7 + Math.random() * .5,
+    lane: Math.random() * 6, phase: 0, shirt: pick(SHIRTS), skin: pick(SKINS), hat: Math.random() < .2, scared: run });
 }
 
 function tick(dt) {
   if (S.phase === "build") {
     S.buildLeft -= dt;
-    if (S.buildLeft <= 0) { S.phase = "roll"; startSeason(); }
+    if (S.buildLeft <= 0) openForBusiness();
     return;
   }
-  if (S.phase === "hazard" && (S.hazard.t += dt) > HAZARD_MS) finishHazard();
-  if (S.phase === "open") {
-    S.seasonLeft -= dt;
-    if (closed()) S.closedMs += dt;
-    if (S.seasonLeft <= 0) { endSeason(); return; }
-  }
+  if (S.phase !== "season") return;
 
-  // Visitors only arrive while the building is open for the season; happier and taller buildings get more
-  const now = (S.simT += dt);
-  if (S.phase === "hazard") {
+  S.clock += dt;
+  const month = Math.floor(S.clock / MONTH_MS);
+  if (month !== S.month) {
+    if (month >= MONTHS) {
+      if (!S.hazard) { S.happySamples.push(happy); return endGame(); }
+    } else {
+      if (S.month >= 0) S.happySamples.push(happy);
+      S.month = month;
+      if (S.settleMonths.includes(month)) settleEvent();
+    }
+  }
+  for (const ev of S.events) {
+    // Drop back to normal speed when a warning starts so players have time to react
+    if (!ev.warned && ev.at - S.clock <= WARN_MS) { ev.warned = true; S.speed = 1; }
+    if (!ev.done && !S.hazard && S.clock >= ev.at) { ev.done = true; startHazard(ev); }
+  }
+  if (S.hazard && S.clock - S.hazard.start > HAZARD_MS) finishHazard();
+  if (S.repairing > 0 && (S.repairing -= dt) <= 0) {
+    S.repairing = 0; S.damage = 0; S.lastHazard = null;
+    say("🔧 All fixed up! People can come back inside.");
+    update();
+  }
+  if (closed()) S.closedMs += dt;
+
+  // Visitors: happier and taller buildings get more of them
+  const now = S.clock, open = !closed() && !S.hazard;
+  if (S.hazard) {
     people.forEach(p => { if (p.state === "in") { p.state = "out"; p.dir *= -1; } p.speed = 3; p.scared = true; });
     if (inside > 0 && now - lastLeave > 120) { spawnLeaver(true); lastLeave = now; }
   } else {
     const gap = (4200 - happy * 32) / (.6 + .4 * S.floors);
-    if (S.phase === "open" && !closed() && now - lastArrive > gap) { spawnArriver(); lastArrive = now; }
+    if (open && now - lastArrive > gap) { spawnArriver(); lastArrive = now; }
     if (inside > 0 && now - lastLeave > gap * 1.15) { spawnLeaver(false); lastLeave = now; }
-    if (closed()) people.forEach(p => { if (p.state === "in") { p.state = "out"; p.dir *= -1; p.sad = true; } });
+    if (!open) people.forEach(p => { if (p.state === "in") { p.state = "out"; p.dir *= -1; p.sad = true; } });
   }
   people.forEach(p => {
     p.x += p.dir * p.speed * dt / 16;
     p.phase += p.speed * dt / 70;
     if (p.state === "in" && Math.abs(p.x - DOOR_X) < 4) {
-      p.gone = true; inside++; S.visitors++; S.seasonVisitors++;
-      // Each visitor drops a ticket in the jar; a full jar pays $
-      if (++S.jar >= btype().perCoin) {
-        S.jar = 0; S.money++; S.earned++; S.seasonEarned++;
+      p.gone = true; inside++; S.visitors++;
+      if (++S.visitorCount >= btype().perCoin) {
+        S.visitorCount = 0; S.money++; S.earned++;
         floats.push({ x: DOOR_X + 26, y: GY - 60, life: 50, text: "+$" });
       }
     }
@@ -944,213 +733,152 @@ function tick(dt) {
       else if (Math.random() < .4) parts.push({ x: 200 + Math.random() * 500, y: GY, vx: (Math.random() - .5) * 2, vy: -2 - Math.random() * 2, kind: "dust", life: 40 });
     }
   }
-  if (season().snow && Math.random() < .3) parts.push({ x: Math.random() * W, y: -10, vx: .3, vy: 1 + Math.random(), kind: "snow", life: 400 });
   parts.forEach(p => { p.x += p.vx * dt / 16; p.y += p.vy * dt / 16; if (p.kind === "dust") p.vy += .1; p.life--; });
   parts = parts.filter(p => p.life > 0 && p.x < W + 20 && p.y < H);
   floats.forEach(f => { f.y -= dt / 30; f.life--; });
   floats = floats.filter(f => f.life > 0);
 }
 
-// ================= Clay drawing =================
+// ================= Drawing =================
 const cv = $("cv"), ctx = cv.getContext("2d");
 
-// Lighten (amt > 0) or darken (amt < 0) a #rrggbb color
-function shade(hex, amt) {
-  const c = parseInt(hex.slice(1), 16);
-  const f = v => Math.round(amt < 0 ? v * (1 + amt) : v + (255 - v) * amt).toString(16).padStart(2, "0");
-  return "#" + f(c >> 16) + f(c >> 8 & 255) + f(c & 255);
-}
-
-// A clay blob: soft drop shadow, light from the top-left, darker underside, gentle rim
-function clay(fill, path, x, y, w, h, o = {}) {
-  ctx.save();
+function shape(fill, path, lw = 4) {
   ctx.beginPath(); path();
-  if (!o.flat) { ctx.shadowColor = "rgba(70,45,30,.35)"; ctx.shadowBlur = o.blur ?? 8; ctx.shadowOffsetY = o.drop ?? 4; }
-  ctx.fillStyle = fill; ctx.fill();
-  ctx.shadowColor = "transparent";
-  ctx.clip();
-  const g = ctx.createLinearGradient(x, y, x + w * .3, y + h);
-  g.addColorStop(0, "rgba(255,255,255,.45)"); g.addColorStop(.45, "rgba(255,255,255,0)"); g.addColorStop(1, "rgba(0,0,0,.22)");
-  ctx.fillStyle = g; ctx.fillRect(x - 2, y - 2, w + 4, h + 4);
-  ctx.restore();
-  ctx.beginPath(); path();
-  ctx.strokeStyle = shade(fill, -.3); ctx.lineWidth = 1.5; ctx.stroke();
+  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+  ctx.lineWidth = lw; ctx.strokeStyle = INK; ctx.lineJoin = "round"; ctx.stroke();
 }
-const rr = (x, y, w, h, r, fill, o) => clay(fill, () => ctx.roundRect(x, y, w, h, r), x, y, w, h, o);
-function ball(x, y, r, fill, o = {}) {
-  clay(fill, () => ctx.arc(x, y, r, 0, Math.PI * 2), x - r, y - r, 2 * r, 2 * r, o);
-  ctx.fillStyle = "rgba(255,255,255,.4)";
-  ctx.beginPath(); ctx.ellipse(x - r * .35, y - r * .45, r * .3, r * .17, -.5, 0, 7); ctx.fill();
+const rr = (x, y, w, h, r, fill) => shape(fill, () => ctx.roundRect(x, y, w, h, r));
+const circ = (x, y, r, fill) => shape(fill, () => ctx.arc(x, y, r, 0, Math.PI * 2));
+function line(x1, y1, x2, y2, c = INK, w = 4) {
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+  ctx.strokeStyle = c; ctx.lineWidth = w; ctx.lineCap = "round"; ctx.stroke();
 }
-function poly(fill, pts, o) {
-  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]), x = Math.min(...xs), y = Math.min(...ys);
-  clay(fill, () => { ctx.moveTo(...pts[0]); pts.slice(1).forEach(p => ctx.lineTo(...p)); ctx.closePath(); }, x, y, Math.max(...xs) - x, Math.max(...ys) - y, o);
-}
-// A rolled clay "snake": darker underside plus the main color
-function rope(x1, y1, x2, y2, c, w) {
-  ctx.lineCap = "round";
-  ctx.strokeStyle = shade(c, -.35); ctx.lineWidth = w;
-  ctx.beginPath(); ctx.moveTo(x1, y1 + 1.5); ctx.lineTo(x2, y2 + 1.5); ctx.stroke();
-  ctx.strokeStyle = c; ctx.lineWidth = w * .75;
-  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
-}
-function ln(x1, y1, x2, y2, c, w) {
-  ctx.lineCap = "round"; ctx.strokeStyle = c; ctx.lineWidth = w;
-  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
-}
-// A pressed-in window: dark at the top like it's set into the clay
-function inset(x, y, w, h, r, fill) {
-  ctx.save();
-  ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fillStyle = fill; ctx.fill(); ctx.clip();
-  const g = ctx.createLinearGradient(0, y, 0, y + h);
-  g.addColorStop(0, "rgba(0,0,0,.3)"); g.addColorStop(.35, "rgba(0,0,0,0)");
-  ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
-  ctx.restore();
-}
-function text(t, x, y, size, color = "#4e342e", align = "left") {
+function text(t, x, y, size, color = INK, align = "left") {
   ctx.font = `bold ${size}px Fredoka, sans-serif`; ctx.fillStyle = color; ctx.textAlign = align;
   ctx.fillText(t, x, y); ctx.textAlign = "left";
 }
-function face(x, y, r, mood, dir = 0) {
-  [-1, 1].forEach(sd => {
-    ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.ellipse(x + sd * r * .38, y - r * .15, r * .25, r * .32, 0, 0, 7); ctx.fill();
-    ctx.fillStyle = "#2d2a32"; ctx.beginPath(); ctx.arc(x + sd * r * .38 + dir * r * .08, y - r * .1, r * .13, 0, 7); ctx.fill();
-  });
-  ctx.strokeStyle = "#5d4037"; ctx.fillStyle = "#5d4037"; ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.beginPath();
-  if (mood === "scared") { ctx.ellipse(x, y + r * .42, r * .16, r * .2, 0, 0, 7); ctx.fill(); return; }
-  if (mood === "sad") ctx.arc(x, y + r * .75, r * .3, Math.PI * 1.2, Math.PI * 1.8);
-  else ctx.arc(x, y + r * .2, r * .32, Math.PI * .15, Math.PI * .85);
+function smile(x, y, r, mood) {
+  ctx.fillStyle = INK;
+  ctx.beginPath(); ctx.arc(x - r * .35, y - r * .15, r * .12, 0, 7); ctx.arc(x + r * .35, y - r * .15, r * .12, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.lineWidth = 2; ctx.strokeStyle = INK;
+  if (mood === "scared") ctx.arc(x, y + r * .35, r * .2, 0, 7);
+  else if (mood === "sad") ctx.arc(x, y + r * .6, r * .35, Math.PI * 1.2, Math.PI * 1.8);
+  else ctx.arc(x, y + r * .1, r * .4, Math.PI * .15, Math.PI * .85);
   ctx.stroke();
 }
-
-// Grainy clay texture laid over the whole scene
-const noise = document.createElement("canvas");
-noise.width = noise.height = 128;
-{
-  const nc = noise.getContext("2d"), img = nc.createImageData(128, 128);
-  for (let i = 0; i < img.data.length; i += 4) { const v = Math.random() * 255; img.data[i] = img.data[i + 1] = img.data[i + 2] = v; img.data[i + 3] = 16; }
-  nc.putImageData(img, 0, 0);
+function drawCloud(x, y, s, color) {
+  ctx.fillStyle = color; ctx.beginPath();
+  ctx.arc(x, y, 22 * s, 0, 7); ctx.arc(x + 25 * s, y - 12 * s, 26 * s, 0, 7); ctx.arc(x + 52 * s, y, 22 * s, 0, 7);
+  ctx.fill();
 }
-const NOISE = ctx.createPattern(noise, "repeat");
-
-// Clay person with a slanted, Gumby-like head
 function drawPerson(x, y, p, mood) {
-  const sw = Math.sin(p.phase) * 5;
-  rr(x - 8 + sw * .4, y - 15, 7, 15, 3.5, p.pants, { blur: 4, drop: 2 });
-  rr(x + 1 - sw * .4, y - 15, 7, 15, 3.5, p.pants, { blur: 4, drop: 2 });
-  rope(x - 9, y - 34, x - 13 - sw * .4, y - 20, p.shirt, 7);
-  rope(x + 9, y - 34, x + 13 + sw * .4, y - 20, p.shirt, 7);
-  rr(x - 10, y - 40, 20, 27, 9, p.shirt, { blur: 5, drop: 3 });
-  const hy = y - 51;
-  clay(p.skin, () => {
-    ctx.ellipse(x, hy, 11, 12, 0, 0, 7);
-    if (p.bump && !p.hat) { ctx.moveTo(x + 5 + 9 * Math.cos(-.6), hy - 9 + 9 * Math.sin(-.6)); ctx.ellipse(x + 5, hy - 9, 9, 6, -.6, 0, 7); }
-  }, x - 11, hy - 16, 25, 28, { blur: 5, drop: 3 });
-  face(x, hy + 1, 11, mood, p.dir || 0);
-  if (p.hat) clay("#ffd23f", () => { ctx.ellipse(x, hy - 6, 13, 10, 0, Math.PI, 0); ctx.lineTo(x + 16, hy - 5); ctx.lineTo(x - 16, hy - 5); ctx.closePath(); },
-    x - 16, hy - 16, 32, 12, { blur: 4, drop: 2 });
+  const sw = Math.sin(p.phase) * 6;
+  line(x, y - 14, x - sw * .7, y); line(x, y - 14, x + sw * .7, y);
+  rr(x - 9, y - 38, 18, 26, 7, p.shirt);
+  circ(x, y - 48, 11, p.skin);
+  smile(x, y - 48, 11, mood);
+  if (p.hat) shape("#ffd23f", () => { ctx.arc(x, y - 52, 11, Math.PI, 0); ctx.lineTo(x + 15, y - 52); ctx.lineTo(x - 15, y - 52); ctx.closePath(); }, 3);
 }
 
 function drawBackdrop(now, windy) {
   const sc = town().scene;
   if (sc === "hills") {
-    clay("#8fd16a", () => { ctx.moveTo(-20, GY + 5); ctx.quadraticCurveTo(200, 190, 440, GY + 5); ctx.closePath(); }, -20, 260, 460, 75);
-    clay("#7cc55a", () => { ctx.moveTo(380, GY + 5); ctx.quadraticCurveTo(640, 220, W + 20, GY - 20); ctx.lineTo(W + 20, GY + 5); ctx.closePath(); }, 380, 270, 540, 65);
+    shape("#8fd16a", () => { ctx.moveTo(-20, GY + 5); ctx.quadraticCurveTo(200, 190, 440, GY + 5); });
+    shape("#7cc55a", () => { ctx.moveTo(380, GY + 5); ctx.quadraticCurveTo(640, 220, W + 20, GY - 20); ctx.lineTo(W + 20, GY + 5); });
   } else if (sc === "mountains") {
     [[150, 120, 200], [420, 90, 240], [720, 110, 220]].forEach(([x, y, w]) => {
-      poly("#90a4ae", [[x - w / 2, GY], [x, y], [x + w / 2, GY]]);
-      poly("#ffffff", [[x - 25, y + 35], [x, y], [x + 25, y + 35], [x + 8, y + 28], [x - 8, y + 38]], { blur: 2, drop: 1 });
+      shape("#90a4ae", () => { ctx.moveTo(x - w / 2, GY); ctx.lineTo(x, y); ctx.lineTo(x + w / 2, GY); ctx.closePath(); });
+      shape("#fff", () => { ctx.moveTo(x - 25, y + 35); ctx.lineTo(x, y); ctx.lineTo(x + 25, y + 35); ctx.lineTo(x + 8, y + 28); ctx.lineTo(x - 8, y + 38); ctx.closePath(); }, 3);
     });
   } else if (sc === "beach") {
-    rr(-10, GY - 70, W + 20, 75, 0, "#29b6f6", { flat: true });
+    rr(-10, GY - 70, W + 20, 75, 0, "#29b6f6");
     for (let x = 0; x < W; x += 60) {
       const y = GY - 50 + Math.sin(now * .003 + x) * (windy ? 8 : 3);
-      rope(x, y, x + 30, y, "#e1f5fe", 5);
+      line(x, y, x + 30, y, "#e1f5fe", 3);
     }
   } else {
-    rr(-10, GY - 40, W + 20, 45, 0, "#ffe082", { flat: true });
-    for (let x = 10; x < W; x += 24) rope(x, GY - 36, x + (windy ? 8 : 2), GY - 20, "#f9a825", 4);
-    rr(800, GY - 75, 60, 45, 6, "#e53935");
-    poly("#8e0000", [[795, GY - 75], [830, GY - 102], [865, GY - 75]]);
+    rr(-10, GY - 40, W + 20, 45, 0, "#ffe082");
+    for (let x = 10; x < W; x += 24) line(x, GY - 36, x + (windy ? 8 : 2), GY - 22, "#f9a825", 3);
+    rr(800, GY - 75, 60, 45, 2, "#c62828");
+    shape("#8e0000", () => { ctx.moveTo(795, GY - 75); ctx.lineTo(830, GY - 100); ctx.lineTo(865, GY - 75); ctx.closePath(); }, 3);
   }
 }
 
 function drawGround() {
-  const sl = soil(), sc = town().scene, rockY = GY + sl.top;
-  const g = ctx.createLinearGradient(0, GY, 0, H);
-  g.addColorStop(0, sl.color); g.addColorStop(1, shade(sl.color, -.25));
-  ctx.fillStyle = g; ctx.fillRect(0, GY, W, H - GY);
-  DOTS.forEach(([x, f, r]) => { const y = GY + 14 + f * (rockY - GY - 14); if (y < rockY - 6) ball(x, y, r, sl.color, { flat: true }); });
-  rr(-20, rockY, W + 40, H - rockY + 20, 0, "#78909c", { flat: true });
-  for (let y = rockY + 14; y < H; y += 24) for (let x = (y % 48 ? 10 : 40); x < W; x += 62) rr(x, y, 40, 14, 7, "#90a4ae", { flat: true });
-  rr(-20, GY - 4, W + 40, 16, 8, sc === "beach" ? "#f3e0a0" : season().grass);
-  if (sl.top > 8) text(`⬇️ ${sl.name}`, 12, GY + 36, 16, "#3e2723");
-  text("🪨 Solid Rock", 12, Math.max(rockY + 24, GY + 58), 16, "#fff");
+  const sl = soil(), sc = town().scene;
+  const rockY = GY + sl.top;
+  rr(-20, GY, W + 40, H - GY + 20, 0, sl.color);
+  ctx.fillStyle = "rgba(0,0,0,.12)";
+  DOTS.forEach(([x, f, r]) => { const y = GY + 12 + f * (rockY - GY - 12); if (y < rockY - 4) { ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); } });
+  rr(-20, rockY, W + 40, H - rockY + 20, 0, "#78909c");
+  for (let y = rockY + 18; y < H; y += 22) for (let x = (y % 44 ? 0 : 30); x < W; x += 60) line(x, y, x + 24, y, "#607d8b", 2);
+  rr(-20, GY, W + 40, 10, 0, sc === "beach" ? "#f3e0a0" : sc === "prairie" ? "#9ccc65" : "#6cbf4b");
+  if (sl.top > 8) text(`⬇️ ${sl.name}`, 12, GY + 34, 16, "#3e2723");
+  text("🪨 Solid Rock", 12, Math.max(rockY + 22, GY + 56), 16, "#fff");
 }
 
 function drawFoundation() {
   const lvl = foundLevel(), rockY = soil().top;
-  if (lvl === 1) [-90, 0, 90].forEach(x => rr(x - 24, 0, 48, 22, 6, "#bdbdbd", { flat: true }));
-  else if (lvl === 2) rr(-BW / 2 - 14, 0, BW + 28, 28, 8, "#bdbdbd", { flat: true });
+  if (lvl === 1) [-90, 0, 90].forEach(x => rr(x - 24, 0, 48, 22, 3, "#bdbdbd"));
+  else if (lvl === 2) rr(-BW / 2 - 14, 0, BW + 28, 28, 3, "#bdbdbd");
   else {
-    [-100, -35, 35, 100].forEach(x => rr(x - 7, 12, 14, Math.max(10, rockY + 6), 6, "#9e9e9e", { flat: true }));
-    rr(-BW / 2 - 10, 0, BW + 20, 16, 6, "#bdbdbd", { flat: true });
+    [-100, -35, 35, 100].forEach(x => rr(x - 7, 12, 14, Math.max(10, rockY + 6), 2, "#9e9e9e"));
+    rr(-BW / 2 - 10, 0, BW + 20, 16, 3, "#bdbdbd");
   }
 }
 
 function drawBuilding() {
   const floors = S.floors, base = -14, top = base - FH * floors, eave = BW / 2 + 16;
-  if (beyond("iso")) [-90, 0, 90].forEach(x => rr(x - 14, base + 2, 28, 12, 6, "#424242", { blur: 3, drop: 2 }));
-  else rr(-BW / 2 - 4, base, BW + 8, 14, 5, "#9e9e9e", { blur: 3, drop: 2 });
+  if (beyond("iso")) [-90, 0, 90].forEach(x => rr(x - 14, base + 2, 28, 12, 5, "#333"));
+  else rr(-BW / 2 - 4, base, BW + 8, 14, 2, "#9e9e9e");
 
   // Walls and frame
-  const steel = beyond("frame"), wall = steel ? "#b0c4d8" : "#f4c27a";
-  rr(-BW / 2, top, BW, FH * floors, 16, wall);
-  if (!steel) for (let y = top + 13; y < base - 4; y += 13) ln(-BW / 2 + 8, y, BW / 2 - 8, y, shade(wall, -.1), 2);
-  for (let f = 1; f < floors; f++) rope(-BW / 2 + 4, base - f * FH, BW / 2 - 4, base - f * FH, shade(wall, -.15), 5);
+  const steel = beyond("frame");
+  rr(-BW / 2, top, BW, FH * floors, 6, steel ? "#b0c4d8" : "#f4c27a");
+  if (!steel) for (let y = top + 13; y < base; y += 13) line(-BW / 2 + 4, y, BW / 2 - 4, y, "#d9a35b", 2);
+  for (let f = 1; f < floors; f++) line(-BW / 2, base - f * FH, BW / 2, base - f * FH, INK, 3);
   if (steel) for (let f = 0; f < floors; f++) {
     const yb = base - f * FH, yt = yb - FH;
-    [[-BW / 2 + 6, -BW / 2 + 32], [BW / 2 - 32, BW / 2 - 6]].forEach(([a, b]) => {
-      rope(a, yt + 6, b, yb - 6, "#e53935", 5); rope(b, yt + 6, a, yb - 6, "#e53935", 5);
+    [[-BW / 2 + 4, -BW / 2 + 32], [BW / 2 - 32, BW / 2 - 4]].forEach(([a, b]) => {
+      line(a, yt + 4, b, yb - 4, "#c62828", 3); line(b, yt + 4, a, yb - 4, "#c62828", 3);
     });
   }
 
-  // Windows pressed into the walls
+  // Windows
   const storm = beyond("windows"), cozy = beyond("furniture");
   let idx = 0;
   for (let f = 0; f < floors; f++) for (const cx of [-62, 0, 62]) {
     if (f === 0 && cx === 0) continue;
     const x = cx - 19, y = base - f * FH - FH + 13, broken = S.damage >= 2 && idx++ % 3 === 0;
-    rr(x - (storm ? 5 : 3), y - (storm ? 5 : 3), 38 + (storm ? 10 : 6), 36 + (storm ? 10 : 6), 10, storm ? "#1a3d8f" : "#ffffff", { blur: 3, drop: 2 });
-    inset(x, y, 38, 36, 8, broken ? "#4a4f5a" : "#bfe9ff");
-    if (broken) { ln(x + 6, y + 6, x + 20, y + 20, "#fff", 2); ln(x + 20, y + 20, x + 32, y + 10, "#fff", 2); }
+    rr(x, y, 38, 36, 4, broken ? "#4a4f5a" : "#bfe9ff");
+    if (broken) { line(x + 6, y + 6, x + 20, y + 20, "#fff", 2); line(x + 20, y + 20, x + 32, y + 10, "#fff", 2); }
     else {
-      ln(x + 9, y + 26, x + 18, y + 10, "rgba(255,255,255,.8)", 3);
+      line(x + 8, y + 26, x + 18, y + 8, "#fff", 3);
       if (cozy) {
-        rr(x + 2, y + 2, 7, 22, 3, "#f06292", { blur: 2, drop: 1 });
-        rr(x + 29, y + 2, 7, 22, 3, "#f06292", { blur: 2, drop: 1 });
-        ball(x + 27, y + 29, 5, "#43a047", { blur: 2, drop: 1 });
+        shape("#f06292", () => { ctx.moveTo(x + 2, y + 2); ctx.lineTo(x + 12, y + 2); ctx.lineTo(x + 2, y + 18); ctx.closePath(); }, 2);
+        shape("#f06292", () => { ctx.moveTo(x + 36, y + 2); ctx.lineTo(x + 26, y + 2); ctx.lineTo(x + 36, y + 18); ctx.closePath(); }, 2);
+        circ(x + 27, y + 28, 5, "#43a047");
       }
     }
+    if (storm) { ctx.lineWidth = 7; ctx.strokeStyle = "#1a3d8f"; ctx.strokeRect(x, y, 38, 36); }
   }
 
   // Door
-  rr(-20, base - 52, 40, 52, 12, "#1e88e5");
-  ball(12, base - 26, 3.5, "#ffd23f", { blur: 2, drop: 1 });
+  rr(-20, base - 52, 40, 52, 6, "#1e88e5");
+  circ(12, base - 26, 3, "#ffd23f");
 
-  // Roof (blown crooked with heavy damage), straps, solar panels, snow, building sign
+  // Roof (blown crooked with heavy damage), solar panels, building sign
   ctx.save();
   if (S.damage >= 3) { ctx.translate(-eave, top); ctx.rotate(-.14); ctx.translate(eave, -top); }
-  poly("#e53935", [[-eave, top], [0, top - 62], [eave, top]]);
+  shape("#e53935", () => { ctx.moveTo(-eave, top); ctx.lineTo(0, top - 62); ctx.lineTo(eave, top); ctx.closePath(); });
   const roofY = x => top - 62 * (1 - Math.abs(x) / eave);
-  if (season().snow) poly("#ffffff", [[-eave, top], [0, top - 62], [eave, top], [eave - 14, top - 1], [0, top - 52], [-eave + 14, top - 1]], { blur: 2, drop: 1 });
-  if (beyond("roof")) for (const x of [-95, -50, 50, 95]) rope(x, roofY(x) + 4, x, top - 3, "#90a4ae", 6);
+  if (beyond("roof")) for (const x of [-95, -50, 50, 95]) line(x, roofY(x) + 3, x, top - 2, "#78909c", 5);
   if (beyond("energy")) {
     const a = 40, b = 108;
-    poly("#1f3c88", [[a, roofY(a) + 4], [b, roofY(b) + 4], [b, roofY(b) + 15], [a, roofY(a) + 15]], { blur: 3, drop: 2 });
-    for (let x = a + 17; x < b; x += 17) ln(x, roofY(x) + 6, x, roofY(x) + 14, "#90caf9", 2);
+    shape("#1f3c88", () => { ctx.moveTo(a, roofY(a) + 4); ctx.lineTo(b, roofY(b) + 4); ctx.lineTo(b, roofY(b) + 14); ctx.lineTo(a, roofY(a) + 14); ctx.closePath(); }, 3);
+    for (let x = a + 17; x < b; x += 17) line(x, roofY(x) + 5, x, roofY(x) + 13, "#90caf9", 2);
   }
-  ball(0, top - 22, 15, "#ffffff", { blur: 3, drop: 2 });
+  circ(0, top - 22, 15, "#fff");
   ctx.font = "18px sans-serif"; ctx.textAlign = "center"; ctx.fillText(btype().ico, 0, top - 15); ctx.textAlign = "left";
   ctx.restore();
 
@@ -1158,91 +886,93 @@ function drawBuilding() {
   CRACKS.filter(([, y]) => y > top).slice(0, S.damage * 2).forEach(([x, y]) => {
     ctx.beginPath(); ctx.moveTo(x, y);
     for (let i = 1; i <= 4; i++) ctx.lineTo(x + (i % 2 ? 8 : -4), y + i * 8);
-    ctx.strokeStyle = "#3e2723"; ctx.lineWidth = 3; ctx.stroke();
+    ctx.strokeStyle = INK; ctx.lineWidth = 3; ctx.stroke();
   });
 }
 
 function drawProps(now) {
-  // Town tree, colored by season
-  const sc = town().scene, sn = season();
+  // Town tree
+  const sc = town().scene;
   if (sc === "beach") {
-    rope(60, GY, 70, GY - 110, "#8d6e63", 12);
+    shape(null, () => { ctx.moveTo(60, GY); ctx.quadraticCurveTo(50, GY - 60, 70, GY - 110); }, 8);
     [[-1, -.3], [1, -.3], [-1, .3], [1, .3]].forEach(([d, t]) =>
-      clay("#43a047", () => ctx.ellipse(70 + d * 26, GY - 112 + t * 20, 30, 9, d * t * 2, 0, 7), 40 + d * 26, GY - 130, 60, 36));
+      shape("#43a047", () => ctx.ellipse(70 + d * 26, GY - 112 + t * 20, 30, 9, d * t * 2, 0, 7), 3));
   } else if (sc === "mountains") {
-    rr(54, GY - 30, 12, 30, 4, "#8d5524");
-    poly(sn.snow ? "#cfd8dc" : "#2e7d32", [[25, GY - 25], [60, GY - 120], [95, GY - 25]]);
+    rr(54, GY - 30, 12, 30, 2, "#8d5524");
+    shape("#2e7d32", () => { ctx.moveTo(25, GY - 25); ctx.lineTo(60, GY - 120); ctx.lineTo(95, GY - 25); ctx.closePath(); });
   } else {
-    rr(52, GY - 70, 16, 70, 6, "#8d5524");
-    ball(60, GY - 92, 38, sn.tree);
-    if (sn.snow) ball(60, GY - 118, 18, "#ffffff", { blur: 2, drop: 1 });
+    rr(52, GY - 70, 16, 70, 4, "#8d5524");
+    circ(60, GY - 90, 38, "#66bb6a");
   }
 
   // Rain garden or storm drain
   if (beyond("water")) {
-    clay("#64b5f6", () => ctx.ellipse(190, GY + 4, 55, 9, 0, 0, 7), 135, GY - 5, 110, 18, { blur: 3, drop: 2 });
+    shape("#64b5f6", () => ctx.ellipse(190, GY + 4, 55, 8, 0, 0, 7), 3);
     [[150, "#f06292"], [175, "#ffd23f"], [210, "#ab47bc"], [235, "#ff7043"]].forEach(([x, c]) => {
-      rope(x, GY, x, GY - 22, "#2e7d32", 4); ball(x, GY - 27, 7, c, { blur: 3, drop: 2 });
+      line(x, GY, x, GY - 22, "#2e7d32", 3); circ(x, GY - 26, 6, c);
     });
     ctx.font = "20px sans-serif"; ctx.fillText("🦋", 190 + Math.sin(now * .002) * 40, GY - 60 + Math.sin(now * .005) * 10);
   } else {
-    rr(220, GY - 2, 30, 8, 3, "#757575", { blur: 2, drop: 1 });
+    rr(220, GY - 2, 30, 8, 2, "#757575");
+    for (let x = 226; x < 250; x += 6) line(x, GY - 1, x, GY + 5, INK, 1);
   }
 
   if (beyond("backup")) {
-    rr(255, GY - 40, 56, 40, 10, "#ffd23f");
+    rr(255, GY - 40, 56, 40, 6, "#ffd23f");
     ctx.font = "22px sans-serif"; ctx.fillText("⚡", 271, GY - 12);
   }
 
   // Heating & cooling unit with spinning fan
   const big = beyond("hvac"), hx = 595, hw = big ? 64 : 50, hh = big ? 52 : 40;
-  rr(hx, GY - hh, hw, hh, 10, big ? "#e3f2fd" : "#cfd8dc");
+  rr(hx, GY - hh, hw, hh, 6, big ? "#e3f2fd" : "#cfd8dc");
   const fx = hx + hw / 2, fy = GY - hh / 2, a = now * .01;
-  ball(fx, fy, 14, "#ffffff", { blur: 2, drop: 1 });
-  for (let i = 0; i < 3; i++) rope(fx, fy, fx + Math.cos(a + i * 2.1) * 11, fy + Math.sin(a + i * 2.1) * 11, "#78909c", 4);
+  circ(fx, fy, 14, "#fff");
+  for (let i = 0; i < 3; i++) line(fx, fy, fx + Math.cos(a + i * 2.1) * 11, fy + Math.sin(a + i * 2.1) * 11, INK, 3);
   if (big) { ctx.font = "16px sans-serif"; ctx.fillText("🍃", hx + hw - 20, GY - hh + 18); }
 }
 
 function drawCrane(now) {
   const x = 790;
-  rr(x - 11, 70, 22, GY - 70, 6, "#ffc107");
-  for (let y = 78; y < GY - 14; y += 24) rope(x - 7, y, x + 7, y + 20, "#f57f17", 3);
-  rr(x - 140, 58, 200, 14, 7, "#ffc107");
-  rr(x - 18, 72, 36, 26, 8, "#e53935");
+  rr(x - 10, 70, 20, GY - 70, 0, "#ffc107");
+  for (let y = 75; y < GY - 10; y += 22) line(x - 8, y, x + 8, y + 22, INK, 2);
+  rr(x - 140, 60, 200, 12, 3, "#ffc107");
+  rr(x - 16, 72, 32, 24, 5, "#e53935");
   const hx = x - 105 + Math.sin(now * .0008) * 25;
-  ln(hx, 72, hx, 160, "#5d4037", 2);
-  rr(hx - 30, 160, 60, 12, 6, "#e53935");
+  line(hx, 72, hx, 160, INK, 2);
+  rr(hx - 30, 160, 60, 10, 2, "#e53935");
 }
 
 function drawCrew(now, label) {
-  [-34, 34].forEach(dx => poly("#ff7043", [[DOOR_X + dx, GY - 22], [DOOR_X + dx + 11, GY + 6], [DOOR_X + dx - 11, GY + 6]], { blur: 4, drop: 2 }));
-  rope(DOOR_X - 175, GY, DOOR_X - 175, GY - 40, "#8d6e63", 7);
-  rr(DOOR_X - 235, GY - 78, 120, 40, 12, "#ffffff");
+  [-34, 34].forEach(dx => shape("#ff7043", () => {
+    const x = DOOR_X + dx, y = GY + 6;
+    ctx.moveTo(x, y - 26); ctx.lineTo(x + 10, y); ctx.lineTo(x - 10, y); ctx.closePath();
+  }, 3));
+  line(DOOR_X - 175, GY, DOOR_X - 175, GY - 40, INK, 4);
+  rr(DOOR_X - 235, GY - 76, 120, 38, 6, "#fff");
   text(label[0], DOOR_X - 175, GY - 61, 13, "#e53935", "center");
   text(label[1], DOOR_X - 175, GY - 45, 13, "#e53935", "center");
   [[DOOR_X + 230, 0], [DOOR_X + 270, 1.5]].forEach(([x, off]) => {
     const y = GY + 4, swing = Math.sin(now * .012 + off) * .8;
-    drawPerson(x, y, { phase: 0, shirt: "#ffa726", pants: "#5c6bc0", skin: SKINS[off ? 3 : 0], hat: true }, "happy");
+    drawPerson(x, y, { phase: 0, shirt: "#fb8c00", skin: SKINS[off ? 3 : 0], hat: true }, "happy");
     const hx = x - 10 + Math.cos(-2 + swing) * 18, hy = y - 30 + Math.sin(-2 + swing) * 18;
-    rope(x - 8, y - 30, hx, hy, "#8d6e63", 4);
-    rr(hx - 7, hy - 5, 14, 9, 4, "#9e9e9e", { blur: 2, drop: 1 });
+    line(x - 8, y - 30, hx, hy, INK, 4);
+    rr(hx - 6, hy - 5, 12, 8, 2, "#9e9e9e");
   });
 }
 
 function draw(now) {
-  const h = S.hazard, env = h ? Math.sin(Math.PI * Math.min(1, h.t / HAZARD_MS)) : 0;
+  const h = S.hazard, env = h ? Math.sin(Math.PI * Math.min(1, (S.clock - h.start) / HAZARD_MS)) : 0;
   const windy = h && h.type === "wind", quaky = h && h.type === "quake";
 
   // Sky, sun, clouds, town backdrop
   const g = ctx.createLinearGradient(0, 0, 0, GY);
-  g.addColorStop(0, windy ? "#7a8ea8" : season().snow ? "#a7c4dc" : "#7fd0ff"); g.addColorStop(1, windy ? "#b8c4d4" : "#e1f5fe");
+  g.addColorStop(0, windy ? "#7a8ea8" : "#6ec6ff"); g.addColorStop(1, windy ? "#b8c4d4" : "#d4f1ff");
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  if (!windy) { ball(70, 60, 30, "#ffd23f"); face(70, 64, 26, "happy"); }
+  if (!windy) { circ(70, 60, 30, "#ffd23f"); smile(70, 62, 26, "happy"); }
   clouds.forEach(c => {
     if (!S.paused) c.x += c.v * (windy ? 6 * h.power : 1);
     if (c.x > W + 60) c.x = -150;
-    const col = windy ? "#dfe5ec" : "#ffffff";
-    [[0, 0, 22], [25, -12, 26], [52, 0, 22]].forEach(([dx, dy, r]) => ball(c.x + dx * c.s, c.y + dy * c.s, r * c.s, col, { blur: 6, drop: 3 }));
+    drawCloud(c.x, c.y, c.s, windy ? "#dfe5ec" : "#fff");
   });
   drawBackdrop(now, windy);
   if (S.phase === "build") drawCrane(now);
@@ -1272,29 +1002,26 @@ function draw(now) {
   else if (closed() && !h) drawCrew(now, ["CLOSED FOR", "REPAIRS 🔧"]);
   people.sort((a, b) => a.lane - b.lane).forEach(p => {
     const mood = p.scared ? "scared" : p.sad || happy < 30 ? "sad" : "happy";
-    drawPerson(p.x, GY + 4 + p.lane, p, mood);
+    drawPerson(p.x, GY + 2 + p.lane, p, mood);
   });
   ctx.restore();
 
-  // Weather, coins, clay texture
+  // Weather and coins
   parts.forEach(p => {
-    if (p.kind === "rain") ln(p.x, p.y, p.x - 10, p.y - 4, "#e3f2fd", 3);
-    else if (p.kind === "leaf") { ctx.fillStyle = "#66bb6a"; ctx.beginPath(); ctx.ellipse(p.x, p.y, 7, 4, p.x * .05, 0, 7); ctx.fill(); }
-    else if (p.kind === "snow") { ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, 7); ctx.fill(); }
+    if (p.kind === "rain") line(p.x, p.y, p.x - 10, p.y - 4, "#e3f2fd", 2);
+    else if (p.kind === "leaf") { ctx.fillStyle = "#66bb6a"; ctx.beginPath(); ctx.ellipse(p.x, p.y, 6, 3, p.x * .05, 0, 7); ctx.fill(); }
     else { ctx.fillStyle = "rgba(141,85,36,.5)"; ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, 7); ctx.fill(); }
   });
-  floats.forEach(f => text(f.text, f.x, f.y, 22, "#2e7d32"));
-  ctx.fillStyle = NOISE; ctx.fillRect(0, 0, W, H);
+  floats.forEach(f => text(f.text, f.x, f.y, 18, "#2e7d32"));
 }
 
 let last = performance.now();
 function frame(now) {
   const dt = Math.min(50, now - last); last = now;
   if (S && S.phase !== "end") {
-    // Fast forward runs several simulation steps per frame (only while a season is open)
-    const steps = S.phase === "open" ? S.speed : 1;
-    for (let i = 0; i < steps && !S.paused && S.phase !== "end"; i++) tick(dt);
-    if (S && S.phase !== "end") hud();
+    // Fast forward runs several simulation steps per frame
+    for (let i = 0; i < S.speed && !S.paused && S.phase !== "end"; i++) tick(dt);
+    if (S && S.phase !== "end") hud(false);
   }
   if (S && !$("game").hidden) draw(now);
   requestAnimationFrame(frame);
