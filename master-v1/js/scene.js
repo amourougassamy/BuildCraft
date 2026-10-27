@@ -294,11 +294,17 @@ export function createSite(container) {
   const world = new THREE.Group();   // everything that shakes in a quake
   scene.add(world);
 
-  // Platform: grass on top, see-through soil so the foundation shows, rock at the bottom.
+  // Fog fades the far ground into the stage's sky (the CSS gradient behind the see-through canvas),
+  // so the edge of the world never shows (PLAN.md B4). three.js mixes fog in screen colours,
+  // so this hex is simply the top of the .stage gradient.
+  scene.fog = new THREE.Fog(0xd9eefe, 70, 220);
+
+  // The lot: grass on top, see-through soil so the foundation shows, rock at the bottom.
   // Grass and rock fade when the camera dips below ground, so you can look up at the piles.
+  const LOT_W = 28, LOT_D = 22, DIG = 6.2; // DIG: from the grass down to the bottom of the rock
   const grassMat = new THREE.MeshStandardMaterial({ color: 0x9fd27a, roughness: 0.92, transparent: true });
   const rockMat = new THREE.MeshStandardMaterial({ color: 0x8d8a94, roughness: 0.92, transparent: true });
-  const grass = rbox(28, 0.8, 22, grassMat, 0, -0.4, 0, 0.35);
+  const grass = rbox(LOT_W, 0.8, LOT_D, grassMat, 0, -0.4, 0, 0.35);
   world.add(grass);
   const soilMat = new THREE.MeshStandardMaterial({ color: 0xb08f80, roughness: 1, transparent: true, opacity: 0.55 });
   const soil = rbox(27.6, 4, 21.6, soilMat, 0, -2.8, 0, 0.3);
@@ -307,24 +313,47 @@ export function createSite(container) {
   const rock = rbox(27.6, 1.4, 21.6, rockMat, 0, -5.5, 0, 0.3);
   world.add(rock);
   let soilKnown = false;
-
-  // The green field runs out to the horizon and hides the platform's edges from above.
-  // One-sided, so from underground you still see the soil cut-away.
-  const field = mesh(new THREE.CircleGeometry(150, 48), clay(0x97cc72), 0, -0.03, 0);
-  field.rotation.x = -Math.PI / 2;
-  field.castShadow = false;
-  scene.add(field);
-  scene.fog = new THREE.Fog(0xe8f0ee, 60, 145);
   const neighbors = new THREE.Group();
   scene.add(neighbors);
 
-  const water = mesh(new RoundedBoxGeometry(30, 1, 24, 3, 0.4),
+  // Ground: one big grass field around the lot that runs out into the fog. It has a hole for the
+  // lot plus a sloped "cutaway" trench on the lot's left and right, so you can still look into the
+  // see-through soil and watch the foundation reach down.
+  const TRENCH = 9, PIT = 1.5;                       // trench width at the top / flat floor at the bottom
+  const HOLE_X = LOT_W / 2 + TRENCH, HOLE_Z = LOT_D / 2, FOOT_X = LOT_W / 2 + PIT;
+  const field = new THREE.Shape().absarc(0, 0, 400, 0, Math.PI * 2);
+  field.holes.push(new THREE.Path([[-HOLE_X, -HOLE_Z], [HOLE_X, -HOLE_Z], [HOLE_X, HOLE_Z], [-HOLE_X, HOLE_Z]].map(([x, y]) => new THREE.Vector2(x, y))));
+  const fieldGeo = new THREE.ShapeGeometry(field, 48).rotateX(-Math.PI / 2);
+  const ground = mesh(fieldGeo, clay(0x9fd27a));
+  ground.castShadow = false;
+  world.add(ground);
+  const cutMat = new THREE.MeshStandardMaterial({ color: 0x9a7b62, roughness: 1, side: THREE.DoubleSide }); // trench walls, tinted per soil
+  const bankGeo = new THREE.PlaneGeometry(Math.hypot(TRENCH - PIT, DIG), LOT_D).rotateX(-Math.PI / 2);
+  for (const s of [1, -1]) {
+    const bank = mesh(bankGeo, cutMat, s * (FOOT_X + (TRENCH - PIT) / 2), -DIG / 2, 0);
+    bank.rotation.z = s * Math.atan2(DIG, TRENCH - PIT);
+    bank.castShadow = false;
+    world.add(bank);
+  }
+  const endGeo = new THREE.ShapeGeometry(new THREE.Shape([[-HOLE_X, 0], [HOLE_X, 0], [FOOT_X, -DIG], [-FOOT_X, -DIG]].map(([x, y]) => new THREE.Vector2(x, y))));
+  for (const z of [-HOLE_Z, HOLE_Z]) { const e = mesh(endGeo, cutMat, 0, 0, z); e.castShadow = false; world.add(e); }
+  const pitFloor = mesh(new THREE.PlaneGeometry(FOOT_X * 2, LOT_D).rotateX(-Math.PI / 2), clay(0x8d8a94), 0, -DIG - 0.02, 0);
+  pitFloor.castShadow = false;
+  world.add(pitFloor);
+
+  // Flood water: a wide flat sheet, so a flood fills the trenches first, then covers the whole
+  // neighbourhood with no edge in sight. The surface sits 0.5 above water.position.y.
+  const water = mesh(new THREE.CircleGeometry(380, 48).rotateX(-Math.PI / 2).translate(0, 0.5, 0),
     new THREE.MeshStandardMaterial({ color: 0x5aa9e6, roughness: 0.3, transparent: true, opacity: 0.7 }), 0, -1.5, 0);
+  water.castShadow = false;
   water.visible = false;
   scene.add(water);
 
   const backdrop = new THREE.Group();
   scene.add(backdrop);
+  // Breezy Bay's beach and sea are flat sheets that run out to the foggy horizon.
+  const sandGeo = new THREE.PlaneGeometry(800, 12).rotateX(-Math.PI / 2);
+  const seaGeo = new THREE.PlaneGeometry(800, 400).rotateX(-Math.PI / 2);
   const clouds = [cloud(-14, 15, -14, 1.6), cloud(10, 17, -18, 2), cloud(18, 13, 4, 1.3)];
   clouds.forEach(c => scene.add(c));
   const debris = new THREE.Group();
@@ -421,13 +450,13 @@ export function createSite(container) {
     parts.shelves.push(g);
     return g;
   }
-  function table(x, z, cozy, chairs = 2) {
+  function table(x, z, chairs = 2) {
     const g = new THREE.Group();
     g.add(rbox(1.6, 0.12, 0.9, 0xc69c6d, 0, 0.78, 0, 0.04));
     [[-0.65, -0.35], [0.65, -0.35], [-0.65, 0.35], [0.65, 0.35]].forEach(([a, b]) => g.add(rbox(0.1, 0.75, 0.1, 0x8d6e63, a, 0.38, b, 0.03)));
     for (let c = 0; c < chairs; c++) {
       const s = c % 2 ? 1 : -1;
-      g.add(rbox(0.55, 0.5, 0.5, cozy ? [0xff8fa3, 0x5b9bd5, 0xffd23f, 0x5cb85c][c % 4] : 0x9e9a96, (c > 1 ? 0.45 : -0.45), 0.25, s * 0.8, 0.12));
+      g.add(rbox(0.55, 0.5, 0.5, [0xff8fa3, 0x5b9bd5, 0xffd23f, 0x5cb85c][c % 4], (c > 1 ? 0.45 : -0.45), 0.25, s * 0.8, 0.12));
     }
     g.position.set(x, 0, z);
     return g;
@@ -451,21 +480,21 @@ export function createSite(container) {
     return g;
   }
 
-  function furnish(key, f, cozy) {
+  function furnish(key, f) {
     const g = new THREE.Group(), backZ = -D / 2 + 0.6;
-    if (cozy) g.add(rug(0, 0.3, 5, 2.6), plant(W / 2 - 0.8, D / 2 - 0.9), plant(-W / 2 + 0.8, D / 2 - 0.9));
-    if (key === "rocky") g.add(shelf(-3, backZ, 0), shelf(0, backZ, 0), shelf(3, backZ, 0), table(-2.4, 0.9, cozy, 4), table(2.4, 0.9, cozy, 4));
+    g.add(rug(0, 0.3, 5, 2.6), plant(W / 2 - 0.8, D / 2 - 0.9), plant(-W / 2 + 0.8, D / 2 - 0.9));
+    if (key === "rocky") g.add(shelf(-3, backZ, 0), shelf(0, backZ, 0), shelf(3, backZ, 0), table(-2.4, 0.9, 4), table(2.4, 0.9, 4));
     if (key === "prairie") {
       g.add(rbox(4, 1.5, 0.1, 0x2e5e3e, 0, 1.6, -D / 2 + 0.3, 0.04), shelf(-W / 2 + 0.6, -1.4, Math.PI / 2));
-      for (let r = 0; r < 2; r++) for (let c = -1; c <= 1; c++) g.add(table(c * 2.6, -0.6 + r * 1.9, cozy, 1));
+      for (let r = 0; r < 2; r++) for (let c = -1; c <= 1; c++) g.add(table(c * 2.6, -0.6 + r * 1.9, 1));
     }
-    if (key === "breezy") g.add(tank(-2.6, backZ + 0.2), tank(1, backZ + 0.2), shelf(-W / 2 + 0.6, 0.8, Math.PI / 2), table(0, 1, cozy, 2));
+    if (key === "breezy") g.add(tank(-2.6, backZ + 0.2), tank(1, backZ + 0.2), shelf(-W / 2 + 0.6, 0.8, Math.PI / 2), table(0, 1, 2));
     if (key === "shaky") {
       g.add(bed(-3, -1.6, 0x81c995), bed(-0.6, -1.6, 0x81c995), bed(1.8, -1.6, 0x81c995), shelf(W / 2 - 0.6, 0.8, -Math.PI / 2));
       g.add(rbox(0.9, 0.9, 0.08, 0xffffff, -4, 2, -D / 2 + 0.25, 0.04), rbox(0.6, 0.15, 0.1, 0xe53935, -4, 2, -D / 2 + 0.31, 0.03), rbox(0.15, 0.6, 0.1, 0xe53935, -4, 2, -D / 2 + 0.31, 0.03));
     }
     if (key === "mega") {
-      g.add(rbox(2.6, 0.6, 0.9, cozy ? 0x5b9bd5 : 0x9e9a96, -2.6, 0.3, 0.6, 0.25), rbox(2.6, 0.7, 0.3, cozy ? 0x5b9bd5 : 0x9e9a96, -2.6, 0.6, 1.0, 0.12));
+      g.add(rbox(2.6, 0.6, 0.9, 0x5b9bd5, -2.6, 0.3, 0.6, 0.25), rbox(2.6, 0.7, 0.3, 0x5b9bd5, -2.6, 0.6, 1.0, 0.12));
       g.add(rbox(1.8, 1, 0.1, 0x2d2a32, -2.6, 1.4, -D / 2 + 0.35, 0.04), bed(1.6, -1.2, f % 2 ? 0xffd23f : 0xa77bd1), shelf(0.2, -D / 2 + 0.6, 0));
     }
     g.position.y = f * FH + SLAB;
@@ -502,16 +531,22 @@ export function createSite(container) {
     bld.add(body);
     parts.body = body;
 
-    // Floor slabs, interior floors, corner columns, ceiling lights
-    const H = floors * FH;
+    // Floor slabs, interior floors, corner columns, ceiling lights, fire sprinklers
+    const H = floors * FH, sprZ = -1;
     for (let i = 0; i < floors; i++) {
       body.add(rbox(W + 0.4, SLAB, D + 0.4, palette[1], 0, i * FH + SLAB / 2, 0, 0.08));
-      body.add(rbox(W - 0.4, 0.04, D - 0.4, choice.furniture ? 0xe8c9a0 : 0xd4d0cb, 0, i * FH + SLAB + 0.02, 0, 0.02));
-      body.add(furnish(lv.key, i, !!choice.furniture));
+      body.add(rbox(W - 0.4, 0.04, D - 0.4, 0xe8c9a0, 0, i * FH + SLAB + 0.02, 0, 0.02));
+      body.add(furnish(lv.key, i));
       for (const x of [-2.5, 2.5]) {
         const l = rbox(1.6, 0.08, 0.6, lightMat, x, (i + 1) * FH - 0.04, 0, 0.03);
         l.castShadow = false;
         body.add(l);
+      }
+      // A red water pipe under the ceiling, with little heads that spray when it gets hot
+      if (choice.sprinklers) {
+        const y = (i + 1) * FH - 0.16;
+        body.add(rbox(W - 1, 0.12, 0.12, 0xe53935, 0.05, y, sprZ, 0.06));
+        for (const x of [-3.6, -1.2, 1.2, 3.6]) body.add(rbox(0.06, 0.18, 0.06, 0xe53935, x, y - 0.12, sprZ, 0.03), ball(0.08, 0xffd23f, x, y - 0.24, sprZ));
       }
       [[-3, 1.4], [3, 1.4], [-1.2, -1.2], [1.4, 2.2]].forEach(([x, z]) => parts.slots.push(new THREE.Vector3(x, base + i * FH + SLAB, z)));
     }
@@ -526,6 +561,7 @@ export function createSite(container) {
       body.add(shaft, car);
       parts.lift = { car, top: H - FH + SLAB + 0.95, bottom: SLAB + 0.95 };
     }
+    if (choice.sprinklers) body.add(cyl(0.08, 0.08, H - SLAB, 0xe53935, W / 2 - 0.45, (H + SLAB) / 2, sprZ)); // riser feeds every floor
 
     // Four walls
     const front = facade(W, 3, floors, { door: true, storm: !!choice.windows });
@@ -734,7 +770,9 @@ export function createSite(container) {
 
   function setSoilKnown(known) {
     soilKnown = known;
-    if (level) soilMat.color.setHex(known ? SOILS[level.soil].color : 0x9e9aa2); // grey until a soil report is bought
+    if (!level) return;
+    soilMat.color.setHex(known ? SOILS[level.soil].color : 0x9e9aa2); // grey until a soil report is bought
+    cutMat.color.copy(soilMat.color).multiplyScalar(0.78);             // trench walls match the soil
   }
 
   // ----- neighbours: a street out front and houses next door, styled per site -----
@@ -754,12 +792,13 @@ export function createSite(container) {
   function buildNeighbors(lv) {
     neighbors.clear();
     // Street with sidewalks, dashed centre line, lamp posts and a front walk to the door
-    neighbors.add(rbox(240, 0.08, 6, 0x5d5a66, 0, 0.02, 15, 0.03));
-    for (const z of [11.4, 18.6]) neighbors.add(rbox(240, 0.14, 1.4, 0xd8d2c8, 0, 0.05, z, 0.05));
-    for (let x = -110; x <= 110; x += 5) neighbors.add(rbox(2.4, 0.03, 0.25, 0xffd23f, x, 0.08, 15, 0.02));
-    neighbors.add(rbox(2.2, 0.1, 3, 0xd8d2c8, 0, 0.03, 12.3, 0.05));
+    // (starts at z = 12.2, just past the lot and its trenches, which end at z = 11)
+    neighbors.add(rbox(240, 0.08, 6, 0x5d5a66, 0, 0.02, 16, 0.03));
+    for (const z of [12.9, 19.6]) neighbors.add(rbox(240, 0.14, 1.4, 0xd8d2c8, 0, 0.05, z, 0.05));
+    for (let x = -110; x <= 110; x += 5) neighbors.add(rbox(2.4, 0.03, 0.25, 0xffd23f, x, 0.08, 16, 0.02));
+    neighbors.add(rbox(2.2, 0.1, 2, 0xd8d2c8, 0, 0.03, 11.9, 0.05));
     for (let x = -42; x <= 42; x += 14) {
-      neighbors.add(cyl(0.12, 0.15, 4, 0x3a3340, x, 2, 19.2), ball(0.38, 0xfff3c4, x, 4.1, 19.2));
+      neighbors.add(cyl(0.12, 0.15, 4, 0x3a3340, x, 2, 20.2), ball(0.38, 0xfff3c4, x, 4.1, 20.2));
     }
     const style = {
       rocky: { wall: [0xa1785a, 0x8d6e63], roof: 0x5d4037 },
@@ -768,16 +807,16 @@ export function createSite(container) {
       shaky: { wall: [0xf5f5f5, 0xe0e0e0], roof: 0x8d6e63 },
       mega: { wall: [0xcfd8dc, 0xb0bec5], roof: 0x78909c },
     }[lv.key];
-    const lots = [[-24, -2, 0], [-36, 4, 0], [24, -3, 0], [37, 3, 0], [-20, 25, Math.PI], [-6, 26, Math.PI], [10, 25, Math.PI], [26, 26, Math.PI]];
+    // Houses sit beyond the cutaway trenches on the lot's left and right (|x| > 23)
+    const lots = [[-31, -3, 0], [-42, 4, 0], [31, -3, 0], [42, 3, 0], [-20, 25, Math.PI], [-6, 26, Math.PI], [10, 25, Math.PI], [26, 26, Math.PI]];
     lots.forEach(([x, z, r], i) => {
       const tall = lv.key === "mega" ? 2 + (i % 3) * 1.5 : 1;
       neighbors.add(house(x, z, 7, 4 * tall, 6, style.wall[i % style.wall.length], style.roof, r));
     });
     // Fences, bushes and trees between the lots
-    for (const x of [-17, 17]) for (let z = -9; z <= 9; z += 3) neighbors.add(rbox(0.2, 1, 2.8, 0xf5e6d0, x, 0.5, z, 0.05));
-    [[-30, -10], [30, -11], [-46, -4], [46, -2], [-14, 30], [2, 31], [18, 31], [-52, 12], [52, 10]].forEach(([x, z], i) =>
+    [[-36, -12], [36, -12], [-50, -4], [50, -2], [-14, 30], [2, 31], [18, 31], [-54, 12], [54, 10]].forEach(([x, z], i) =>
       neighbors.add(lv.key === "breezy" && i % 2 ? tree(x, z, 1.4, 0x4caf50) : tree(x, z, 1 + (i % 3) * 0.2)));
-    [[-20, 9], [21, 8], [-28, 9], [29, 9]].forEach(([x, z]) => neighbors.add(ball(0.8, 0x6cc070, x, 0.5, z)));
+    [[-28, 9], [29, 9], [-36, 9], [37, 9]].forEach(([x, z]) => neighbors.add(ball(0.8, 0x6cc070, x, 0.5, z)));
   }
 
   function setLevel(lv) {
@@ -787,11 +826,11 @@ export function createSite(container) {
     backdrop.clear();
     if (lv.key === "rocky") { backdrop.add(mountain(-24, -34, 18), mountain(-6, -40, 24, 0x8f9aa6), mountain(16, -36, 16)); }
     if (lv.key === "prairie") {
-      backdrop.add(rbox(16, 0.1, 8, 0xf2d27a, -22, 0.03, -24, 0.05), rbox(12, 0.1, 8, 0xe8c25a, 8, 0.03, -26, 0.05), rbox(14, 0.1, 7, 0xc5e1a5, 30, 0.03, -22, 0.05));
+      backdrop.add(rbox(16, 0.1, 8, 0xf2d27a, -22, 0.05, -24, 0.05), rbox(12, 0.1, 8, 0xe8c25a, 8, 0.05, -26, 0.05), rbox(14, 0.1, 7, 0xc5e1a5, 30, 0.05, -22, 0.05));
       backdrop.add(rbox(6, 4.5, 5, 0xd9534f, 26, 2.25, -32, 0.3), cyl(1.4, 1.4, 7, 0xb0bec5, 32, 3.5, -32));
     }
     if (lv.key === "breezy") {
-      backdrop.add(rbox(160, 0.1, 10, 0xf4dc9c, 0, 0.03, -26, 0.05), rbox(200, 0.12, 60, clay(0x5aa9e6, { roughness: 0.25 }), 0, 0.04, -60, 0.05));
+      backdrop.add(mesh(sandGeo, clay(0xf4dc9c), 0, 0.03, -19), mesh(seaGeo, clay(0x5aa9e6, { roughness: 0.25 }), 0, 0.06, -225));
       backdrop.add(tree(-16, -24, 1.5, 0x4caf50), tree(14, -25, 1.4, 0x4caf50));
     }
     if (lv.key === "shaky") {
@@ -1030,8 +1069,20 @@ export function createSite(container) {
     } else renderer.render(scene, camera);
   });
 
+  // Speech bubbles (main.js): the pixel spot just above a person's emoji face, relative to the canvas.
+  // null when that person is hidden (inside with no window seat) or off screen.
+  const headV = new THREE.Vector3();
+  function headPos(key) {
+    const p = people.find(q => q.c.key === key);
+    if (!p || !p.m.visible) return null;
+    p.m.localToWorld(headV.set(0, p.c.pet ? 2.5 : 3.2, 0)).project(camera); // local units, so the 1.3 scale counts
+    if (headV.z > 1 || Math.abs(headV.x) > 1 || Math.abs(headV.y) > 1) return null;
+    const el = renderer.domElement;
+    return { x: (headV.x + 1) / 2 * el.clientWidth, y: (1 - headV.y) / 2 * el.clientHeight };
+  }
+
   return {
-    setLevel, setDesign, setRun, startHazard, endHazard, doCollapse, reset,
+    setLevel, setDesign, setRun, startHazard, endHazard, doCollapse, reset, headPos,
     setGentle: g => { gentle = g; people.forEach(p => p.m.userData.faceKey = ""); },
     setPeek, tipShelves, setSoilKnown,
     setSpin: on => { controls.autoRotate = on && !reduceMotion; },

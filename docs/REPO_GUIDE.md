@@ -31,7 +31,7 @@ flowchart TB
 
 Solid arrows: ideas or code that went into the next thing. Dotted: idea sources not yet used.
 
-## `master-v1/` (Anand, on branch `master_V1` until merged)
+## `master-v1/` (Anand)
 
 The team's main game. ES modules with three.js 0.160.1 **vendored** in `vendor/`, so it runs offline. A `firebase.json` is included for event hosting. The folder README covers gameplay, hosting and the rules in kid terms.
 

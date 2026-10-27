@@ -15,7 +15,7 @@ BuildCraft is a set of browser games built at the NCSEA hackathon (2026-10-27). 
 | Path | Owner | What it is | Tech |
 | --- | --- | --- | --- |
 | `index.html` | team | Launcher: one row per playable folder, in two lists (Team mainline, Prototypes) | static HTML |
-| `master-v1/` (branch `master_V1` until merged) | Anand | **The team's main game going forward.** Kid-first claymation 3D: name prompt, island map with 5 unlockable sites, one-screen design with coin jar, a forward-only year with repairs and downtime, emoji moods, ghosts, report card | ES modules, three.js 0.160.1 vendored, `npm test` |
+| `master-v1/` | Anand | **The team's main game going forward.** Kid-first claymation 3D: name prompt, island map with 5 unlockable sites, one-screen design with coin jar, a forward-only year with repairs and downtime, emoji moods, ghosts, report card | ES modules, three.js 0.160.1 vendored, `npm test` |
 | `buildcraft-v0.1/` | team (andrewdsundal) | Mainline starter "Build It!": Riverside Library, $4.0M budget, 9 decisions, then a Minnesota weather year | classic scripts, `window.GAME`/`SIM` |
 | `buildcraft-v0.2/` | team (andrewdsundal) | Previous mainline (snapshot). Kid edition: six characters (happy / sad / ghost), coins, celebrations, Gentle mode, sound | classic scripts, `GAME`/`SIM`/`ART`/`FX` |
 | `prototypes/alex/` | Alex | v3: pick a town, building type and floors; 90 s build, then a year of quakes and windstorms where foundations must match the soil. v1 and v2 are in the same folder | single HTML, canvas |
@@ -29,8 +29,7 @@ BuildCraft is a set of browser games built at the NCSEA hackathon (2026-10-27). 
 
 ## Before you edit
 
-- **Picking up work:** read `PLAN.md`, the team's task board for Master V1. It lives on `main`. Claim a task by putting your initials in its **Who** cell before you start, and change ⬜ to ✅ once it's merged.
-- **Master V1's code is on branch `master_V1` until task 0 merges it into `main`.** To read or run it, first run `git fetch origin && git checkout master_V1`.
+- **Picking up work:** read `PLAN.md`, the team's task board for Master V1. It lives on `main`. **Claim before you code:** your first step is to put your human's initials in the task's **Who** cell and push that change to `main`. If the cell already has someone else's initials, pick another task. Once the PR is merged, change ⬜ to ✅ and push.
 - **Before editing a folder, read its `README.md`:** owner, how to run it, and which squad owns which file. `interactive/` and `earthquake-tower/` have no README yet; this table and `docs/REPO_GUIDE.md` describe them.
 - **For architecture details**, read `docs/REPO_GUIDE.md`: load order, globals, data schemas, sim rules, file formats, and what the zip changes.
 
@@ -94,6 +93,7 @@ The prototypes stay as idea sources and stay playable. Housekeeping still open f
 
 Add new entries at the top: date, decision, who decided.
 
+- 2026-10-27: Master V1 merged into `main` (Anand, PR #4).
 - 2026-10-27: Master V1 review meeting. Master V1 is the main game. The upgrade tasks are in `PLAN.md`, claimed with initials and ticked when merged (team).
 - 2026-10-27: Master V1 built on branch `master_V1` from the team's favourite ideas (Anand).
 - 2026-10-27: `interactive/` and `earthquake-tower/` (Logan) listed in the launcher and README. The folders stay where Logan put them.

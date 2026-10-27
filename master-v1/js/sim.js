@@ -23,10 +23,10 @@ export const coinsLeft = (level, choice) => level.budget - level.shell - designC
 export const canRun = (level, choice) => coinsLeft(level, choice) >= 0;
 
 export function designStats(choice) {
-  const s = { quake: 0, wind: 0, flood: 0, heat: 0, happy: 0, eco: 0, power: false, bolted: false, found: 1 };
+  const s = { quake: 0, wind: 0, flood: 0, heat: 0, fire: 0, happy: 0, eco: 0, power: false, bolted: false, found: 1 };
   for (const k in ITEMS) {
     const o = option(choice, k);
-    for (const f of ["quake", "wind", "flood", "heat", "happy", "eco"]) s[f] += o[f] || 0;
+    for (const f of ["quake", "wind", "flood", "heat", "fire", "happy", "eco"]) s[f] += o[f] || 0;
     s.power = s.power || !!o.power;
     s.bolted = s.bolted || !!o.bolted;
     if (o.level) s.found = o.level;
