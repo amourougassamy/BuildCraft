@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Building Tycoon · BuildCraft</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+  <script type="importmap">
+    { "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/"
+    } }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <header id="top">
+      <a class="brand" href="../../index.html" title="Back to all BuildCraft versions"><span class="logo">🏢</span><span><b>Building Tycoon</b><small>BuildCraft · Chicago</small></span></a>
+      <div class="stat"><b id="clock">June</b><small id="monthn">Month 1 of 12</small></div>
+      <div class="stat"><b id="weather">☀️</b><small id="event" class="evtag" hidden></small></div>
+      <div class="stat"><b id="cash">$150k</b><small>cash</small></div>
+      <div class="stat"><b>👥 <span id="tenants">45/60</span></b><small>tenants</small></div>
+      <div class="stat mood"><b><span id="moodface">🙂</span> <span class="mbar"><span id="moodbar"></span></span></b><small>happiness</small></div>
+      <div class="spacer"></div>
+      <div id="speed" class="seg" aria-label="Game speed">
+        <button data-speed="0" title="Pause (Space)">⏸</button>
+        <button data-speed="1" title="Play (1)">▶</button>
+        <button data-speed="2" title="Fast (2)">⏩</button>
+        <button data-speed="4" title="Faster (3)">⏭</button>
+      </div>
+      <div class="seg">
+        <button id="rotl" title="Rotate left (Q)">⟲</button>
+        <button id="rotr" title="Rotate right (E)">⟳</button>
+      </div>
+      <div class="seg">
+        <button id="heatview" title="Heat view: see-through walls, rooms colored by temperature (H)">🌡️ Heat view</button>
+        <button id="engview" title="Show the engineering numbers">🤓 Engineer view</button>
+        <button id="help" title="How to play">?</button>
+      </div>
+    </header>
+
+    <aside id="panel" aria-label="Design choices"></aside>
+
+    <main id="stage">
+      <div id="view3d"></div>
+      <div id="bubbles"></div>
+      <div id="banner"></div>
+      <div id="toasts"></div>
+      <div id="legend" class="eng-heat">
+        <span><i style="background:#3b82f6"></i>cold</span><span><i style="background:#22c55e"></i>comfy</span><span><i style="background:#f59e0b"></i>warm</span><span><i style="background:#dc2626"></i>hot</span>
+      </div>
+      <div id="hint">Drag to orbit · scroll to zoom · right-drag to pan · Q / E rotate</div>
+    </main>
+
+    <aside id="side" aria-label="Building status">
+      <h3>Load vs capacity</h3>
+      <div id="gauges"></div>
+      <div id="forecast"></div>
+      <h3>Right now</h3>
+      <div id="live"></div>
+      <h3>Chain reactions</h3>
+      <div id="feed"><p id="feed-empty" class="note">Change something and watch it ripple through every discipline.</p></div>
+    </aside>
+  </div>
+  <div id="modal" hidden></div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
