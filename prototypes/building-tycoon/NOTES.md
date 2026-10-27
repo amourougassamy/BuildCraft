@@ -20,5 +20,5 @@ Tuned with `tools/calibrate.mjs` (seed 2026) so the starting building is undersi
 
 ## Open items
 
-- [ ] Tom to try it locally and decide when to push and open the PR (Pages goes live on merge).
+- [x] Pushed and merged as PR #2 on 2026-10-27 (squash `c26fb4d`); live on Pages.
 - [ ] Ideas: plumbing/fire protection, vertical fins on the west, a story mode with a client brief, sound, a floor-by-floor cutaway, an Excalidraw version of the README diagrams to share.
