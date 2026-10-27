@@ -174,7 +174,11 @@ function openBrief(i) {
 
 // ---------- 4. design ----------
 function ensureSite() {
-  if (!site) { site = createSite($("siteView")); site.setGentle(save.gentle); }
+  if (!site) {
+    site = createSite($("siteView"));
+    site.setGentle(save.gentle);
+    site.onDeliver(() => sound("ding")); // helicopter set the rooftop unit down
+  }
 }
 function startDesign(keepChoice) {
   if (!keepChoice) choice = defaultChoice();

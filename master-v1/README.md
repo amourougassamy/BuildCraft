@@ -63,7 +63,7 @@ firebase deploy --only hosting --project <your-firebase-project-id>
 | --- | --- |
 | `js/data.js` | **All numbers to tune:** sites, choices, hazards, timing, grade cutoffs, report-card weights |
 | `js/sim.js` | The rules. Pure (no DOM, no randomness), so the same design and the same repair taps always give the same year |
-| `js/scene.js` | Clay-style Three.js: the site, people and pet, hazard effects, and the island map |
+| `js/scene.js` | Clay-style Three.js: the site, people and pet, hazard effects, the helicopter that flies in the rooftop heating and cooling unit, and the island map |
 | `js/main.js` | The screens and game flow |
 | `js/fx.js` | Confetti and synth sounds (copied from v0.2) |
 | `tests/sim.test.mjs` | Rule tests: `npm test` (Node 18+, no installs) |

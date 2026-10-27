@@ -193,6 +193,51 @@ function mountain(x, z, h, color = 0x9aa5b1) {
   return g;
 }
 
+// Rooftop heating and cooling unit. Origin at the bottom centre, so it sits on whatever it's placed on.
+const HVAC_H = 1.25;
+function hvacUnit(heatPump) {
+  const g = new THREE.Group();
+  g.add(rbox(1.8, 0.16, 1.5, 0x8a8f96, 0, 0.08, 0, 0.05));                      // curb
+  g.add(rbox(1.6, 0.9, 1.3, heatPump ? 0x9ccc65 : 0xb0bec5, 0, 0.61, 0, 0.18)); // cabinet
+  g.add(rbox(0.06, 0.55, 1.0, 0x5f6670, 0.81, 0.6, 0, 0.03));                    // side grille
+  g.add(cyl(0.42, 0.42, 0.12, 0x3a3340, 0.25, 1.1, 0));                          // fan ring
+  const fan = new THREE.Group();
+  fan.add(rbox(0.72, 0.04, 0.13, 0x2d2a32, 0, 0, 0, 0.02), rbox(0.13, 0.04, 0.72, 0x2d2a32, 0, 0, 0, 0.02));
+  fan.position.set(0.25, 1.18, 0);
+  g.add(fan);
+  if (heatPump) g.add(ball(0.15, 0x43b05c, -0.5, 1.12, 0.42));                   // green "eco" badge
+  g.userData.fan = fan;
+  return g;
+}
+
+// Clay helicopter that flies rooftop units in (PLAN.md task S5). Nose points along +x.
+function makeHeli() {
+  const g = new THREE.Group();
+  const body = ball(0.85, 0xffd23f, 0, 0, 0);
+  body.scale.set(1.6, 1, 1);
+  g.add(body);
+  const glass = mesh(new THREE.SphereGeometry(0.6, 14, 10), clay(0x9fd9f6, { roughness: 0.2 }), 0.75, 0.2, 0);
+  glass.scale.set(1, 0.8, 0.95);
+  g.add(glass);
+  g.add(rbox(2.4, 0.24, 0.24, 0xffd23f, -2.1, 0.25, 0, 0.1));  // tail boom
+  g.add(rbox(0.45, 0.8, 0.1, 0xe8655a, -3.25, 0.6, 0, 0.05));  // fin
+  const tail = new THREE.Group();
+  tail.add(rbox(0.06, 0.9, 0.12, 0x3a3340, 0, 0, 0, 0.02));
+  tail.position.set(-3.25, 0.6, 0.14);
+  g.add(tail);
+  for (const z of [0.55, -0.55]) {
+    g.add(rbox(2, 0.08, 0.08, 0x3a3340, 0, -0.95, z, 0.03));
+    g.add(rbox(0.07, 0.35, 0.07, 0x3a3340, 0.5, -0.78, z, 0.02), rbox(0.07, 0.35, 0.07, 0x3a3340, -0.5, -0.78, z, 0.02));
+  }
+  g.add(cyl(0.1, 0.1, 0.35, 0x3a3340, 0, 1.0, 0));            // rotor mast
+  const rotor = new THREE.Group();
+  rotor.add(rbox(6, 0.05, 0.28, 0x3a3340, 0, 0, 0, 0.02), rbox(0.28, 0.05, 6, 0x3a3340, 0, 0, 0, 0.02));
+  rotor.position.y = 1.2;
+  g.add(rotor);
+  g.userData = { rotor, tail };
+  return g;
+}
+
 function makePerson(c) {
   const g = new THREE.Group();
   const body = new THREE.Group();
@@ -481,7 +526,7 @@ export function createSite(container) {
     roof.add(rbox(W + 0.4, 0.6, 0.25, palette[1], 0, 0.6, D / 2 + 0.1, 0.08), rbox(W + 0.4, 0.6, 0.25, palette[1], 0, 0.6, -D / 2 - 0.1, 0.08),
       rbox(0.25, 0.6, D + 0.4, palette[1], W / 2 + 0.1, 0.6, 0, 0.08), rbox(0.25, 0.6, D + 0.4, palette[1], -W / 2 - 0.1, 0.6, 0, 0.08));
     if (choice.roof) for (let s = -1; s <= 1; s++) roof.add(rbox(0.25, 0.5, D + 0.8, 0x3a3340, s * 3.2, 0.35, 0, 0.08));
-    roof.add(rbox(1.6, 1, 1.4, choice.hvac ? 0x9ccc65 : 0xb0bec5, -3, 0.9, -1.8, 0.2));
+    placeUnit(shownHvac); // the unit on the roof is whatever the helicopter last delivered
     if (choice.energy) for (let s = -1; s <= 1; s++) {
       const panel = rbox(1.8, 0.12, 1.4, clay(0x2f4f8f, { roughness: 0.35 }), s * 2.1 + 1, 0.9, 1.4, 0.05);
       panel.rotation.x = -0.35;
@@ -534,6 +579,133 @@ export function createSite(container) {
 
   function tipShelves() { (parts.shelves || []).forEach(s => (s.userData.tip = true)); }
 
+  // ----- helicopter delivers the rooftop unit (PLAN.md S5) -----
+  // The roof shows `shownHvac`. When the design asks for a different unit (or the roof is empty
+  // on a fresh site), the helicopter flies the new one in on a cable and sets it down.
+  const HVAC_SPOT = new THREE.Vector3(-3, 0, -1.8); // where the unit sits, in roof coordinates
+  const CABLE = 3;
+  const HANG = 0.9 + CABLE + HVAC_H;                 // heli centre height above the roof when the unit touches down
+  const ENTRY = new THREE.Vector3(-60, 26, -50), EXIT = new THREE.Vector3(60, 30, -45);
+  const heli = makeHeli();
+  heli.visible = false;
+  scene.add(heli);
+  const cable = cyl(0.04, 0.04, 1, 0x3a3340, 0, 0, 0);
+  cable.castShadow = false;
+  cable.visible = false;
+  scene.add(cable);
+  const puffs = new THREE.Group();
+  scene.add(puffs);
+  let shownHvac = null, trip = null, load = null, deliverCb = null;
+
+  const roofSpot = () => new THREE.Vector3(HVAC_SPOT.x, (parts.top || 4) + 0.4, HVAC_SPOT.z);
+  const above = h => () => roofSpot().add(new THREE.Vector3(0, h, 0));
+  // Each leg flies to a point that follows the roof, so a taller design mid-flight still lines up.
+  const LEGS = [
+    { to: above(HANG + 7), dur: 2.6 },          // fly in high
+    { to: above(HANG), dur: 1.5 },              // lower the unit onto the roof
+    { to: above(HANG), dur: 0.35, drop: true }, // let go
+    { to: above(HANG + 7), dur: 1.0 },          // climb
+    { to: () => EXIT.clone(), dur: 2.4 },       // fly off
+  ];
+
+  function placeUnit(kind) {
+    shownHvac = kind;
+    if (!parts.roof) return;
+    if (parts.hvac) parts.roof.remove(parts.hvac);
+    parts.hvac = null;
+    if (kind === null) return;
+    parts.hvac = hvacUnit(kind === 1);
+    parts.hvac.position.set(HVAC_SPOT.x, 0.4, HVAC_SPOT.z);
+    parts.roof.add(parts.hvac);
+  }
+
+  function setLoad(kind) {
+    if (load) scene.remove(load);
+    load = hvacUnit(kind === 1);
+    scene.add(load);
+  }
+
+  const inbound = () => trip && !trip.dropped && !trip.returning; // on the way to the roof with a unit
+
+  function deliver(kind) {
+    if (reduceMotion) { placeUnit(kind); return; }
+    if (inbound()) { trip.kind = kind; setLoad(kind); return; } // still carrying: swap the load
+    trip = { kind, leg: 0, t: 0, from: heli.visible ? heli.position.clone() : ENTRY.clone(), dropped: false };
+    setLoad(kind);
+    heli.position.copy(trip.from);
+    heli.visible = true;
+  }
+
+  function cancelDelivery() {
+    trip = null;
+    heli.visible = false;
+    cable.visible = false;
+    if (load) { scene.remove(load); load = null; }
+  }
+
+  function puff(at) {
+    const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, transparent: true, opacity: 0.9 });
+    const burst = new THREE.Group();
+    burst.userData.life = 1;
+    for (let i = 0; i < 10; i++) {
+      const a = (i / 10) * Math.PI * 2;
+      const b = mesh(new THREE.SphereGeometry(0.3, 10, 8), mat, at.x, at.y + 0.3, at.z);
+      b.castShadow = false;
+      b.userData.v = new THREE.Vector3(Math.cos(a) * 2.2, 1 + (i % 3) * 0.5, Math.sin(a) * 2.2);
+      burst.add(b);
+    }
+    puffs.add(burst);
+  }
+
+  const ease = k => (k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2);
+  const hook = new THREE.Vector3(), down = new THREE.Vector3(0, -0.9, 0);
+  function tickHeli(dt, t) {
+    for (const burst of [...puffs.children]) {
+      burst.userData.life -= dt * 1.4;
+      burst.children.forEach(b => { b.position.addScaledVector(b.userData.v, dt); b.scale.setScalar(1 + (1 - burst.userData.life)); });
+      burst.children[0].material.opacity = Math.max(0, burst.userData.life * 0.9);
+      if (burst.userData.life <= 0) {
+        puffs.remove(burst);
+        burst.children.forEach(b => b.geometry.dispose());
+        burst.children[0].material.dispose();
+      }
+    }
+    if (!trip) return;
+    const leg = LEGS[trip.leg];
+    trip.t = Math.min(1, trip.t + dt / leg.dur);
+    const to = leg.to();
+    const dx = to.x - trip.from.x, dz = to.z - trip.from.z, moving = Math.hypot(dx, dz) > 0.5;
+    heli.position.lerpVectors(trip.from, to, ease(trip.t));
+    heli.position.y += Math.sin(t * 3) * 0.06;                     // hover bob
+    if (moving) heli.rotation.y = Math.atan2(-dz, dx);
+    heli.rotation.z = moving ? -0.18 * Math.sin(Math.PI * trip.t) : 0; // nose dips while flying
+    heli.userData.rotor.rotation.y += dt * 28;
+    heli.userData.tail.rotation.z += dt * 40;
+    if (!trip.dropped && load) {
+      hook.copy(heli.position).add(down);
+      const sway = moving ? Math.sin(t * 2.4) * 0.25 : Math.sin(t * 2.4) * 0.05;
+      load.position.set(hook.x + sway, hook.y - CABLE - HVAC_H, hook.z);
+      load.rotation.y = heli.rotation.y;
+      cable.visible = true;
+      cable.position.set(hook.x + sway / 2, hook.y - CABLE / 2, hook.z);
+      cable.scale.set(1, CABLE, 1);
+      cable.rotation.z = Math.atan2(sway, CABLE);
+    } else cable.visible = false;
+    if (trip.t >= 1) {
+      if (leg.drop && !trip.dropped) {
+        trip.dropped = true;
+        scene.remove(load);
+        load = null;
+        placeUnit(trip.kind);
+        puff(roofSpot());
+        if (deliverCb) deliverCb(trip.kind);
+      }
+      trip.from = to.clone();
+      trip.t = 0;
+      if (++trip.leg >= LEGS.length) cancelDelivery();
+    }
+  }
+
   function setLevel(lv) {
     level = lv;
     soilMat.color.setHex(SOILS[lv.soil].color);
@@ -564,6 +736,16 @@ export function createSite(container) {
   function setDesign(lv, choice) {
     buildBuilding(lv, choice);
     bounce = 1;
+    const carrying = inbound() ? trip.kind : undefined;
+    if (choice.hvac !== shownHvac && choice.hvac !== carrying) deliver(choice.hvac);
+    else if (choice.hvac === shownHvac && carrying !== undefined) sendHome(); // changed back mid-flight
+  }
+  // The roof already has the right unit: fly off still carrying the load.
+  function sendHome() {
+    trip.returning = true;
+    trip.leg = LEGS.length - 1;
+    trip.t = 0;
+    trip.from = heli.position.clone();
   }
   function setRun(S, sp = 1) { run = S; speed = sp; }
   function startHazard(ev) {
@@ -580,6 +762,8 @@ export function createSite(container) {
     run = null; hazard = null; collapse = 0; water.visible = false; debris.visible = false;
     world.position.set(0, 0, 0);
     spawnPeople();
+    cancelDelivery();
+    shownHvac = null; // a fresh site starts with an empty roof, so the helicopter brings the first unit
   }
 
   function personTick(p, dt, t) {
@@ -682,6 +866,8 @@ export function createSite(container) {
     }
     const dark = run && run.outage > 0 && !run.stats.power;
     lightMat.emissiveIntensity = dark ? 0 : parts.led ? 1.3 : 0.7;
+    if (parts.hvac) parts.hvac.userData.fan.rotation.y += dt * (dark ? 0 : run ? 16 : 6);
+    tickHeli(dt, t);
     (parts.shelves || []).forEach(s => { if (s.userData.tip && s.rotation.x < 1.35) s.rotation.x = Math.min(1.35, s.rotation.x + dt * 4); });
 
     // Design "boing" when a choice changes
@@ -758,6 +944,7 @@ export function createSite(container) {
     setGentle: g => { gentle = g; people.forEach(p => p.m.userData.faceKey = ""); },
     setPeek, tipShelves,
     setSpin: on => { controls.autoRotate = on && !reduceMotion; },
+    onDeliver: fn => { deliverCb = fn; }, // called with choice.hvac when the helicopter sets a unit down
   };
 }
 
