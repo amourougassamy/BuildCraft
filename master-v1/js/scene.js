@@ -486,8 +486,8 @@ export function createSite(container) {
     bld.add(body);
     parts.body = body;
 
-    // Floor slabs, interior floors, corner columns, ceiling lights
-    const H = floors * FH;
+    // Floor slabs, interior floors, corner columns, ceiling lights, fire sprinklers
+    const H = floors * FH, sprZ = -1;
     for (let i = 0; i < floors; i++) {
       body.add(rbox(W + 0.4, SLAB, D + 0.4, palette[1], 0, i * FH + SLAB / 2, 0, 0.08));
       body.add(rbox(W - 0.4, 0.04, D - 0.4, 0xe8c9a0, 0, i * FH + SLAB + 0.02, 0, 0.02));
@@ -497,9 +497,16 @@ export function createSite(container) {
         l.castShadow = false;
         body.add(l);
       }
+      // A red water pipe under the ceiling, with little heads that spray when it gets hot
+      if (choice.sprinklers) {
+        const y = (i + 1) * FH - 0.16;
+        body.add(rbox(W - 1, 0.12, 0.12, 0xe53935, 0.05, y, sprZ, 0.06));
+        for (const x of [-3.6, -1.2, 1.2, 3.6]) body.add(rbox(0.06, 0.18, 0.06, 0xe53935, x, y - 0.12, sprZ, 0.03), ball(0.08, 0xffd23f, x, y - 0.24, sprZ));
+      }
       [[-3, 1.4], [3, 1.4], [-1.2, -1.2], [1.4, 2.2]].forEach(([x, z]) => parts.slots.push(new THREE.Vector3(x, base + i * FH + SLAB, z)));
     }
     for (const [a, b] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) body.add(rbox(0.45, H, 0.45, palette[1], a * W / 2, H / 2, b * D / 2, 0.1));
+    if (choice.sprinklers) body.add(cyl(0.08, 0.08, H - SLAB, 0xe53935, W / 2 - 0.45, (H + SLAB) / 2, sprZ)); // riser feeds every floor
 
     // Four walls
     const front = facade(W, 3, floors, { door: true, storm: !!choice.windows });

@@ -55,7 +55,7 @@ export const BREAKS = {
 };
 
 // Sections on the design screen. Option 0 of each item is the cheapest (Code Minimum).
-// quake / wind / flood / heat add strength; happy and eco add points;
+// quake / wind / flood / heat / fire add strength; happy and eco add points;
 // power keeps the lights on in an outage; bolted keeps shelves standing.
 export const SECTIONS = [
   { key: "structure", name: "Structure", ico: "🏗️", color: "#e8655a", items: [
@@ -85,6 +85,9 @@ export const SECTIONS = [
     { key: "shelves", name: "Shelves", options: [
       { label: "Standing", ico: "📚", cost: 0, tip: "Shelves just stand against the wall." },
       { label: "Bolted to Wall", ico: "🔩", cost: 1, bolted: true, tip: "Bolted shelves can't tip over on anyone in an earthquake." } ] },
+    { key: "sprinklers", name: "Fire Safety", options: [
+      { label: "Smoke Alarms", ico: "🚨", cost: 0, tip: "Beep beep! Alarms tell everyone to get out, but they can't put out a fire." },
+      { label: "Fire Sprinklers", ico: "🚿", cost: 3, fire: 2, tip: "When it gets too hot, water sprays from the ceiling and puts the fire out." } ] },
   ]},
   { key: "mep", name: "Power & Air", ico: "💡", color: "#f0a43a", items: [
     { key: "hvac", name: "Heating & Cooling", options: [

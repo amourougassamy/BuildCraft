@@ -79,6 +79,7 @@ firebase deploy --only hosting --project <your-firebase-project-id>
   - At 0% the building falls down.
 - **Heat waves** never break anything. If cooling (heat pump, shade trees) is weaker than the heat, people get hot and less happy.
 - **Power outages.** A hazard of power 2 or more knocks out power for 20 days. A generator, or solar + battery, keeps the doors open. Solar without a battery switches off in a blackout, and the game teaches that.
+- **Fire sprinklers** (Inside → Fire Safety) add 🧯+2 fire strength, and a red pipe shows under each ceiling. No site has a fire yet (that comes with `PLAN.md` task S4), so for now they only cost coins.
 - **Report card.** Weighted average: Safety 30, Happiness 25, Open Days 20 (doubled for the hospital), Eco 15, Budget 10.
   - Grade cutoffs: A+ ≥ 90, A ≥ 85, B ≥ 75, C ≥ 65, D ≥ 50.
   - Any ghost caps the score at 84 (a B).
