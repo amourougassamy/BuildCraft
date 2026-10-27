@@ -13,7 +13,8 @@ That page lists every version. Nothing to install; it runs in any modern browser
 ```
 index.html               Launcher for every playable version
 buildcraft-v0.1/         Team mainline: starter (Riverside Library)
-buildcraft-v0.2/         Team mainline: kid edition (latest)
+buildcraft-v0.2/         Team mainline: kid edition
+master-v1/               Master version (latest): the best ideas from every version
 prototypes/              Individual explorations, one folder each
   building-tycoon/         Isometric 3D building-systems tycoon (Tom)
   alex/                    Alex's single-file versions (v1-v3)
@@ -33,7 +34,8 @@ Each `buildcraft-v*` folder is a complete, playable version. Old folders are nev
 
 | Version | Play | What's in it | Source |
 | --- | --- | --- | --- |
-| v0.2 (latest) | [Play](https://amourougassamy.github.io/BuildCraft/buildcraft-v0.2/) | Kid edition: toy-box look, six regulars with happy / sad / ghost moods, celebrations, Gentle mode, sound | [`buildcraft-v0.2/`](buildcraft-v0.2/) |
+| Master V1 (latest) | [Play](https://amourougassamy.github.io/BuildCraft/master-v1/) | The best of every prototype: kid-first claymation 3D, name, island map with unlockable sites, one-screen design, forward-only year with repairs and downtime, emoji moods, ghosts, eco points, A+ report card, game over | [`master-v1/`](master-v1/) |
+| v0.2 | [Play](https://amourougassamy.github.io/BuildCraft/buildcraft-v0.2/) | Kid edition: toy-box look, six regulars with happy / sad / ghost moods, celebrations, Gentle mode, sound | [`buildcraft-v0.2/`](buildcraft-v0.2/) |
 | v0.1 | [Play](https://amourougassamy.github.io/BuildCraft/buildcraft-v0.1/) | Starter: Riverside Library, Minneapolis weather, 9 decisions | [`buildcraft-v0.1/`](buildcraft-v0.1/) |
 
 Each iteration's own README explains how the game works and which squad owns which file.
