@@ -693,6 +693,7 @@ const TEAM = [
   ["Carlos Navea", "SDSU", "https://www.linkedin.com/in/carlosnavea/"],
   ["Rao Patri", "Logan Patri Engineering", "https://www.linkedin.com/in/rao-patri-pe-se-425a0319/"],
   ["Joel Kramer", "SSOE Group", "https://www.linkedin.com/in/joel-kramer-pe-35662817/"],
+  ["Victor Garcia", "SSOE Group", ""], // add his LinkedIn URL here when we have it
 ];
 function showAbout() {
   overlay(`<div class="about">
@@ -703,7 +704,7 @@ function showAbout() {
     <p class="event">🏆 Made at the <b>NCSEA Hackathon 2026</b></p>
     <h3>💛 Thank you to the team</h3>
     <ul class="team">${TEAM.map(([n, org, url]) => `<li><b>${n}</b><span>${org}</span>
-      <a href="${url}" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a></li>`).join("")}</ul>
+      ${url ? `<a href="${url}" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>` : ""}</li>`).join("")}</ul>
     <p class="small">A game, not engineering: every number in it is made up to teach the big ideas. Real buildings are designed by licensed engineers.</p>
     <div class="btns"><button class="btn go" id="aboutClose">Back to building ▶</button></div>
   </div>`);
