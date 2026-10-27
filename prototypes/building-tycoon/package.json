@@ -1,0 +1,10 @@
+{
+  "name": "buildcraft-building-tycoon",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "calibrate": "node tools/calibrate.mjs",
+    "serve": "python3 tools/serve.py"
+  }
+}
