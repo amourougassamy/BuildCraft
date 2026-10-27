@@ -5,7 +5,7 @@
 
 import {
   LEVELS, SECTIONS, ITEMS, SOILS, HAZARDS, POWER_NAMES, MONTH_NAMES, MONTH_DAYS, DAYS,
-  DAYS_PER_SEC, SPEEDS, HEALTH_CLOSED, REPAIR_DAYS,
+  DAYS_PER_SEC, SPEEDS, HEALTH_CLOSED, REPAIR_DAYS, CAST,
 } from "./data.js";
 import {
   defaultChoice, designCost, designStats, coinsLeft, canRun, soilNeed, strength,
@@ -87,6 +87,181 @@ function setHappy(v) {
   $("happyFill").style.width = `${v}%`;
   $("happyFill").style.background = v >= 60 ? "var(--green)" : v >= 40 ? "var(--orange)" : "var(--red)";
   $("face").textContent = v >= 80 ? "😍" : v >= 60 ? "😀" : v >= 45 ? "🙂" : v >= 30 ? "😟" : "😭";
+}
+
+// ---------- people's speech bubbles ----------
+// Short lines over people's heads in the 3D view. Events from the sim feed make one person react
+// right away (talkOnFeed); between events a chatter timer lets someone say how they feel.
+// {n} is the player's name. Keep lines short (about 30 letters) so the bubbles stay small.
+const LINES = {
+  design: ["Can't wait for it to open!", "Ooh, what are you building?", "I hope it's super strong!", "I'll be first in line!", "Go, {n}, go! 🏗️", "Make it cozy, {n}!"],
+  opening: ["Yay, it's open! 🎉", "Hooray! Let's go in!", "Thanks, {n}! 🎀", "Ooh, so shiny!"],
+  happy: ["Nice view! 😍", "Best building ever!", "I love it here!", "So comfy! 👌", "Great job, {n}!", "This place rocks!"],
+  ok: ["Pretty nice in here.", "Not bad at all!", "Hmm, it's okay."],
+  meh: ["Kind of boring in here…", "Could be comfier…", "Meh. 😐"],
+  sad: ["Something's broken… 😟", "Can someone fix this?", "Please fix it, {n}!"],
+  broken: {
+    cracks: ["Look, cracks in the wall! 🧱"], frame: ["The walls look bent!"], roof: ["Drip, drip… the roof! 💧"],
+    windows: ["Brr, broken windows! 🪟"], floor: ["The floor's soggy! 💧"], power: ["The wires got wet! 🔌"], found: ["It's all crooked! ⬇️"],
+  },
+  closed: ["Aww, it's closed. 😢", "When will it open?", "Hello? Anybody in?"],
+  repairing: ["Go, fix-it crew! 🚧", "Hammer time! 🔨", "Is it fixed yet?"],
+  fixed: ["Yay, it's fixed! ✨", "Thanks, {n}!", "Good as new! 🔧", "Hooray, we're back!"],
+  hot: ["Heat wave! 🥵", "It's an oven in here!", "My ice cream melted!", "Can we get AC, please?"],
+  cool: ["Hot out, cool in here! 😎", "Ahh, nice and cool!", "Love the cool air!"],
+  cooled: ["Phew, it cooled off!", "Finally, no more heat!"],
+  dark: ["Power's out! 😱", "Who turned off the lights?", "I can't see a thing!", "It's so dark in here!"],
+  backed: ["Lights still on! 💡", "Backup power, yay!", "We still have power!"],
+  held: ["Phew, it held! 💪", "Strong building!", "We're safe! 😅", "Nice work, {n}!"],
+  hit: ["Oh no, it broke! 😟", "Uh oh, look at that!", "That's not good…"],
+  sinking: ["Is the floor tilting?", "We're sinking! ⬇️", "Why is it crooked?"],
+  shelves: ["The shelves fell! 📚", "Watch out, books!", "CRASH! 😲"],
+  falling: ["It's falling down! 😱", "Run, everybody!"],
+  warn: {
+    quake: ["I feel a rumble…", "Did the ground move?"], wind: ["Look at those clouds!", "It's getting windy…"],
+    flood: ["Lots of rain coming…", "The river's rising!"], heat: ["It's getting warm…", "Sunscreen time! ☀️"],
+  },
+  scared: {
+    quake: ["Is the building shaking?!", "Earthquake! Hold on!", "Whoa, the floor's moving!"],
+    wind: ["Hold onto your hat! 🌪️", "So windy!", "The roof is rattling!"],
+    flood: ["The floor's soggy! 🌊", "Water's coming in!", "My shoes are wet!"],
+  },
+  love: {
+    lights: ["LED lights, so bright! ✨", "I can read so well now!"], sprinklers: ["Sprinklers keep us safe! 🚿"], garden: ["Look, butterflies! 🦋", "Pretty rain garden! 🌼"],
+    energy: ["Yay, sun power! ☀️", "Clean energy rocks!"], hvac: ["Just-right temperature!", "Fresh air, yay! 🌬️"],
+    trees: ["I love the shade trees! 🌳", "So shady and nice!"],
+  },
+  ghost: ["Boo! 👻", "Ooooo… 👻", "I'm see-through!"],
+  hurt: ["Ouch! 🩹", "Owie!", "I need a bandage."],
+  pet: { happy: ["Woof! 🐶", "Arf arf! 🐾", "*wags tail*"], sad: ["Whimper… 🐶", "Arf…?"], scared: ["Yip yip! 😱", "AROOO!"], hot: ["*pant pant* 🥵"], dark: ["Woof? 🌑"] },
+};
+const TALK_MAX = 3;          // bubbles on screen at once during the year (2 while designing)
+let talks = [], talkPhase = "", talkWait = 1, lastTalker = "", recentLines = [];
+const who = () => save.name || "Builder"; // plain text: bubbles use textContent, never innerHTML
+
+function pickLine(lines) {
+  if (!lines || !lines.length) return "";
+  const fresh = lines.filter(l => !recentLines.includes(l)); // no line twice in a row
+  const from = fresh.length ? fresh : lines;
+  return from[Math.floor(Math.random() * from.length)];
+}
+function dropTalk(b) {
+  talks = talks.filter(t => t !== b);
+  b.el.classList.add("bye");
+  setTimeout(() => b.el.remove(), 250);
+}
+function clearTalks() { talks.forEach(b => b.el.remove()); talks = []; }
+
+// One person says one line. force: event lines replace that person's bubble or the oldest one.
+function speak(key, line, { ms = 2800, tone = "", force = false } = {}) {
+  if (!site || !line || !site.headPos(key)) return false;
+  const old = talks.find(t => t.key === key);
+  if (old && !force) return false;
+  if (old) { old.el.remove(); talks = talks.filter(t => t !== old); }
+  if (talks.length >= TALK_MAX) { if (!force) return false; dropTalk(talks[0]); }
+  const el = document.createElement("div");
+  el.className = `talk ${tone}`;
+  el.textContent = line.replace("{n}", who());
+  $("talk").appendChild(el);
+  talks.push({ key, el, w: el.offsetWidth, h: el.offsetHeight, until: performance.now() + ms });
+  recentLines = [line, ...recentLines.filter(l => l !== line)].slice(0, 6);
+  lastTalker = key;
+  placeTalks();
+  return true;
+}
+// Someone (not the dog, not a ghost) reacts to an event. People not already talking go first.
+function speakSomeone(lines, opts = {}) {
+  const line = pickLine(lines), busy = p => talks.some(t => t.key === p.key);
+  const crowd = (S ? S.people : CAST).filter(p => !p.pet && !p.ghost).sort(() => Math.random() - 0.5);
+  return [...crowd.filter(p => !busy(p)), ...crowd.filter(busy)].some(p => speak(p.key, line, { force: true, ...opts }));
+}
+
+// Each frame: keep bubbles over their heads, inside the stage, and not on top of each other.
+function placeTalks() {
+  const W = $("talk").clientWidth, now = performance.now(), placed = [];
+  for (const b of [...talks]) {
+    const at = now < b.until && site.headPos(b.key);
+    if (!at) { dropTalk(b); continue; }
+    const half = b.w / 2, x = Math.min(Math.max(at.x, half + 6), W - half - 6);
+    let y = at.y;
+    for (const o of placed) if (Math.abs(x - o.x) < (b.w + o.w) / 2 + 4 && Math.abs(y - o.y) < o.h + 4) y = o.y - o.h - 4;
+    placed.push({ x, y, w: b.w, h: b.h });
+    b.el.style.transform = `translate(${x - half}px, ${y - b.h - 9}px)`;
+    b.el.style.setProperty("--tail", `${Math.max(14 - half, Math.min(half - 14, at.x - x))}px`); // tail still points at the head
+  }
+}
+
+// What this person feels like saying right now (run phase).
+function runLines(p) {
+  if (p.ghost) return save.gentle ? LINES.hurt : LINES.ghost;
+  if (p.pet) return LINES.pet[["scared", "hot", "dark"].includes(p.reason) ? p.reason : p.mood < 40 ? "sad" : "happy"];
+  if (p.reason === "scared") return LINES.scared[S.hazard && S.hazard.type] || LINES.scared.quake;
+  if (p.reason === "hot") return LINES.hot;
+  if (p.reason === "dark") return LINES.dark;
+  if (S.repairing) return LINES.repairing;
+  if (!S.open) return LINES.closed;
+  if (S.broken.length && p.mood < 60) {
+    const part = S.broken[Math.floor(Math.random() * S.broken.length)].part;
+    return Math.random() < 0.6 && LINES.broken[part] ? LINES.broken[part] : LINES.sad;
+  }
+  if (p.reason === "love" && Math.random() < 0.5) return LINES.love[p.loves];
+  return p.mood >= 68 ? LINES.happy : p.mood >= 45 ? LINES.ok : LINES.meh;
+}
+const isLoud = p => p.ghost || ["scared", "hot", "dark"].includes(p.reason) || p.mood < 45;
+
+function chatter() {
+  if (talks.length >= (talkPhase === "run" ? TALK_MAX : 2)) return;
+  const people = S ? S.people : CAST.map(c => ({ ...c, mood: 75, reason: "" }));
+  const pool = people.filter(p => p.key !== lastTalker && !talks.some(t => t.key === p.key)
+    && (!p.ghost || Math.random() < 0.3) && site.headPos(p.key)); // ghosts mostly stay quiet
+  if (!pool.length) return;
+  const loud = pool.filter(isLoud);
+  const from = loud.length && Math.random() < 0.7 ? loud : pool;
+  const p = from[Math.floor(Math.random() * from.length)];
+  const lines = !S ? (p.pet ? LINES.pet.happy : LINES.design) : runLines(p);
+  speak(p.key, pickLine(lines), { tone: p.ghost ? "ghost" : S && isLoud(p) ? "bad" : "" });
+}
+
+// Called from the main frame loop.
+function talkFrame(dt) {
+  if (!site) return;
+  if ($("play").hidden || !$("overlay").hidden) { if (talks.length) clearTalks(); return; }
+  placeTalks();
+  if (talkPhase === "done" || paused || (talkWait -= dt) > 0) return;
+  talkWait = talkPhase === "run" ? 1.4 + Math.random() * 1.2 : 2.6 + Math.random() * 1.6;
+  chatter();
+}
+function setTalkPhase(phase) {
+  talkPhase = phase;
+  talkWait = 1.2;
+  clearTalks(); // design chatter doesn't carry into the year
+  if (phase === "run") speakSomeone(LINES.opening, { tone: "good" });
+}
+// Picking something a person loves on the design screen makes them cheer.
+function talkAboutChoice(key, opt) {
+  const fan = opt > 0 && CAST.find(c => c.loves === key && !c.pet);
+  if (fan) speak(fan.key, pickLine(LINES.love[key]), { force: true, tone: "good" });
+}
+// One person reacts to each sim event.
+function talkOnFeed(f) {
+  const bad = { tone: "bad" }, good = { tone: "good" };
+  if (f.type === "warn") speakSomeone(LINES.warn[f.ev.type]);
+  if (f.type === "hazard") {
+    if (f.ev.type === "heat") speakSomeone(f.over > 0 ? LINES.hot : LINES.cool, f.over > 0 ? bad : good);
+    else speakSomeone(LINES.scared[f.ev.type], bad);
+    if (f.ghost) speak(f.ghost, save.gentle ? "Ouch! 🩹" : "Boo! 👻", { force: true, tone: "ghost" });
+  }
+  if (f.type === "calm" && f.ev) {
+    if (f.ev.type === "heat") { if (f.ev.over > 0) speakSomeone(LINES.cooled, good); }
+    else speakSomeone(f.ev.over > 0 ? LINES.hit : LINES.held, f.ev.over > 0 ? bad : good);
+  }
+  if (f.type === "settle") speakSomeone(LINES.sinking, bad);
+  if (f.type === "shelves") speakSomeone(LINES.shelves, bad);
+  if (f.type === "outage") speakSomeone(f.backed ? LINES.backed : LINES.dark, f.backed ? good : bad);
+  if (f.type === "repairStart") speakSomeone(LINES.repairing);
+  if (f.type === "repaired") speakSomeone(LINES.fixed, good);
+  if (f.type === "over" && f.reason === "collapse") speakSomeone(LINES.falling, bad);
+  if (f.type === "over" || f.type === "end") talkPhase = "done";
 }
 
 // ---------- 1. title ----------
@@ -196,6 +371,7 @@ function startDesign(keepChoice) {
   document.body.classList.remove("quake");
   renderMonths();
   renderDesign();
+  setTalkPhase("design");
   say(`Okay ${name()}, everything is on one screen. Pick an upgrade in each row. The meters show if you're strong enough for <b>${L().name}</b>'s weather. Press <b>▶ Run the year!</b> when you're ready.`);
 }
 
@@ -266,6 +442,7 @@ $("panel").addEventListener("click", e => {
   flyCoin(b, after > before);
   site.setDesign(L(), choice);
   renderDesign();
+  talkAboutChoice(k, i);
   const fnd = k === "found" ? (o.level >= soilNeed(L()) ? " ✅ Strong enough for this ground!" : " ⚠️ Too weak for this ground. It will sink!") : "";
   say(`<b>${o.ico} ${o.label}</b>: ${o.tip}${fnd}${after < 0 ? ` <b>Uh oh, ${name()}, that's over budget!</b>` : ""}`);
 });
@@ -290,6 +467,7 @@ function startRun() {
   $("ffBtn").textContent = "⏩ 1×"; $("pauseBtn").textContent = "⏸";
   sound("cheer");
   FX && FX.confetti(60);
+  setTalkPhase("run");
   say(`🎉 Ribbon cut! The ${L().building} is open, ${name()}! Everybody's happy. Watch the calendar: when something breaks, tap <b>🔧</b> to fix it.`);
   renderRun();
 }
@@ -344,6 +522,7 @@ function drain() {
   while (S && S.feed.length) {
     const f = S.feed.shift();
     const lv = L();
+    talkOnFeed(f);
     if (f.type === "warn") {
       $("banner").hidden = false;
       $("banner").textContent = `⚠️ ${HAZARDS[f.ev.type].ico} ${hazLabel(f.ev.type, f.ev.power).toUpperCase()} coming!`;
@@ -402,6 +581,7 @@ let prev = performance.now();
   requestAnimationFrame(tickLoop);
   const dt = Math.min(0.1, (now - prev) / 1000);
   prev = now;
+  talkFrame(dt);
   if (!S || paused || !$("overlay").hidden) return;
   advance(S, dt * DAYS_PER_SEC * SPEEDS[speedIdx]);
   drain();
