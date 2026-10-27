@@ -136,13 +136,16 @@ header { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding
 }
 .opt:hover { transform: translateY(-2px); }
 .opt.sel { background: #fff; box-shadow: 0 0 0 3px var(--c), 0 5px 10px rgba(0, 0, 0, .12); transform: scale(1.03); }
+.opt { min-height: 38px; }
 .opt .ico { font-size: 19px; }
-.opt .txt { display: flex; flex-direction: column; min-width: 0; }
-.opt .lb { font-weight: 500; }
-.opt .meta { display: flex; flex-wrap: wrap; gap: 0 5px; }
-.opt .cost { font-weight: 700; color: #b8860b; }
-.opt .fx { font-size: 11px; color: var(--muted); }
-.opt .min { font-size: 10px; color: var(--muted); }
+.opt .lb { flex: 1; font-weight: 500; min-width: 0; overflow-wrap: anywhere; }
+.section:not(.wide) .opt { flex-wrap: wrap; gap: 0 4px; padding: 4px 5px; }
+.section:not(.wide) .opt .cost { font-size: 11px; }
+.opt .cost { font-weight: 700; color: #b8860b; white-space: nowrap; }
+.topCard .checks { border-top: 2px dashed #eee6e1; padding-top: 8px; }
+.legend { margin: 0 4px; font-size: 12px; color: var(--muted); }
+.fxline { white-space: nowrap; font-size: 15px; }
+.health .fixes { padding: 6px 0 2px; }
 @media (min-width: 1000px) and (min-height: 680px) {
   #play { height: calc(100vh - 92px); overflow: hidden; }
   .stageCol, .panel { max-height: 100%; }
@@ -161,7 +164,8 @@ header { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding
 .fixes h3, .logBox h3 { margin: 0; font-size: 17px; }
 .fixes .btn { font-size: 16px; text-align: left; }
 .logBox { padding: 10px 12px; max-height: 220px; overflow: auto; }
-.logBox ol { margin: 4px 0 0; padding-left: 18px; font-size: 14px; }
+.logBox ul { margin: 4px 0 0; padding-left: 18px; font-size: 14px; }
+.logBox li:first-child { font-weight: 600; }
 
 /* Overlays: brief, report card, game over */
 .overlay { position: fixed; inset: 0; background: rgba(58, 51, 64, .45); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 40; }
@@ -187,6 +191,13 @@ header { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding
 .stars span { display: inline-block; animation: popIn .4s cubic-bezier(.3, 1.8, .5, 1) both; }
 .comment { background: #fff8dc; border-radius: 16px; padding: 10px 14px; margin-top: 8px; }
 .unlock { text-align: center; font-size: 20px; font-weight: 600; color: #2e7d32; margin: 8px 0 0; animation: wobble 1.2s ease-in-out infinite; }
+
+.linkBtn { font: inherit; font-size: 15px; margin-top: 10px; border: 0; background: none; color: var(--blue); cursor: pointer; text-decoration: underline; }
+.about .event { font-size: 18px; text-align: center; background: #fff8dc; border-radius: 14px; padding: 8px; }
+.about .team { list-style: none; padding: 0; margin: 8px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px; }
+.about .team li { background: #f5efe9; border-radius: 14px; padding: 8px 12px; display: flex; flex-direction: column; }
+.about .team span { color: var(--muted); font-size: 14px; }
+.about .team a { color: var(--blue); font-size: 14px; }
 
 .gameover { text-align: center; background: #2f2a36; color: #fff; }
 .gameover h2 { font-size: 56px; margin: 6px 0; color: var(--yellow); }

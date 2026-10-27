@@ -279,11 +279,13 @@ export function createSite(container) {
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.target.set(0, 3, 0);
   controls.enableDamping = true;
-  controls.enablePan = false;
+  // Pan (right-drag / two fingers) and orbit down to ground level so deep foundations can be seen.
+  controls.enablePan = true;
+  controls.screenSpacePanning = true;
   controls.minDistance = 14;
-  controls.maxDistance = 70;
+  controls.maxDistance = 80;
   controls.minPolarAngle = 0.35;
-  controls.maxPolarAngle = 1.35;
+  controls.maxPolarAngle = 1.75;
   controls.autoRotate = !reduceMotion;
   controls.autoRotateSpeed = 0.35;
   fit(container, renderer, camera);
@@ -293,14 +295,28 @@ export function createSite(container) {
   scene.add(world);
 
   // Platform: grass on top, see-through soil so the foundation shows, rock at the bottom.
-  const grass = rbox(28, 0.8, 22, 0x9fd27a, 0, -0.4, 0, 0.35);
+  // Grass and rock fade when the camera dips below ground, so you can look up at the piles.
+  const grassMat = new THREE.MeshStandardMaterial({ color: 0x9fd27a, roughness: 0.92, transparent: true });
+  const rockMat = new THREE.MeshStandardMaterial({ color: 0x8d8a94, roughness: 0.92, transparent: true });
+  const grass = rbox(28, 0.8, 22, grassMat, 0, -0.4, 0, 0.35);
   world.add(grass);
   const soilMat = new THREE.MeshStandardMaterial({ color: 0xb08f80, roughness: 1, transparent: true, opacity: 0.55 });
   const soil = rbox(27.6, 4, 21.6, soilMat, 0, -2.8, 0, 0.3);
   soil.castShadow = false;
   world.add(soil);
-  const rock = rbox(27.6, 1.4, 21.6, 0x8d8a94, 0, -5.5, 0, 0.3);
+  const rock = rbox(27.6, 1.4, 21.6, rockMat, 0, -5.5, 0, 0.3);
   world.add(rock);
+  let soilKnown = false;
+
+  // The green field runs out to the horizon and hides the platform's edges from above.
+  // One-sided, so from underground you still see the soil cut-away.
+  const field = mesh(new THREE.CircleGeometry(150, 48), clay(0x97cc72), 0, -0.03, 0);
+  field.rotation.x = -Math.PI / 2;
+  field.castShadow = false;
+  scene.add(field);
+  scene.fog = new THREE.Fog(0xe8f0ee, 60, 145);
+  const neighbors = new THREE.Group();
+  scene.add(neighbors);
 
   const water = mesh(new RoundedBoxGeometry(30, 1, 24, 3, 0.4),
     new THREE.MeshStandardMaterial({ color: 0x5aa9e6, roughness: 0.3, transparent: true, opacity: 0.7 }), 0, -1.5, 0);
@@ -443,14 +459,14 @@ export function createSite(container) {
       g.add(rbox(4, 1.5, 0.1, 0x2e5e3e, 0, 1.6, -D / 2 + 0.3, 0.04), shelf(-W / 2 + 0.6, -1.4, Math.PI / 2));
       for (let r = 0; r < 2; r++) for (let c = -1; c <= 1; c++) g.add(table(c * 2.6, -0.6 + r * 1.9, cozy, 1));
     }
-    if (key === "breezy") g.add(tank(-2.6, backZ + 0.2), tank(2.6, backZ + 0.2), shelf(-W / 2 + 0.6, 0.8, Math.PI / 2), table(0, 1, cozy, 2));
+    if (key === "breezy") g.add(tank(-2.6, backZ + 0.2), tank(1, backZ + 0.2), shelf(-W / 2 + 0.6, 0.8, Math.PI / 2), table(0, 1, cozy, 2));
     if (key === "shaky") {
       g.add(bed(-3, -1.6, 0x81c995), bed(-0.6, -1.6, 0x81c995), bed(1.8, -1.6, 0x81c995), shelf(W / 2 - 0.6, 0.8, -Math.PI / 2));
-      g.add(rbox(0.9, 0.9, 0.08, 0xffffff, 3.9, 2, -D / 2 + 0.25, 0.04), rbox(0.6, 0.15, 0.1, 0xe53935, 3.9, 2, -D / 2 + 0.31, 0.03), rbox(0.15, 0.6, 0.1, 0xe53935, 3.9, 2, -D / 2 + 0.31, 0.03));
+      g.add(rbox(0.9, 0.9, 0.08, 0xffffff, -4, 2, -D / 2 + 0.25, 0.04), rbox(0.6, 0.15, 0.1, 0xe53935, -4, 2, -D / 2 + 0.31, 0.03), rbox(0.15, 0.6, 0.1, 0xe53935, -4, 2, -D / 2 + 0.31, 0.03));
     }
     if (key === "mega") {
       g.add(rbox(2.6, 0.6, 0.9, cozy ? 0x5b9bd5 : 0x9e9a96, -2.6, 0.3, 0.6, 0.25), rbox(2.6, 0.7, 0.3, cozy ? 0x5b9bd5 : 0x9e9a96, -2.6, 0.6, 1.0, 0.12));
-      g.add(rbox(1.8, 1, 0.1, 0x2d2a32, -2.6, 1.4, -D / 2 + 0.35, 0.04), bed(2.8, -1.4, f % 2 ? 0xffd23f : 0xa77bd1), shelf(0.2, -D / 2 + 0.6, 0));
+      g.add(rbox(1.8, 1, 0.1, 0x2d2a32, -2.6, 1.4, -D / 2 + 0.35, 0.04), bed(1.6, -1.2, f % 2 ? 0xffd23f : 0xa77bd1), shelf(0.2, -D / 2 + 0.6, 0));
     }
     g.position.y = f * FH + SLAB;
     return g;
@@ -500,6 +516,16 @@ export function createSite(container) {
       [[-3, 1.4], [3, 1.4], [-1.2, -1.2], [1.4, 2.2]].forEach(([x, z]) => parts.slots.push(new THREE.Vector3(x, base + i * FH + SLAB, z)));
     }
     for (const [a, b] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) body.add(rbox(0.45, H, 0.45, palette[1], a * W / 2, H / 2, b * D / 2, 0.1));
+    // Elevator: a glass shaft in the back corner with a car that rides up and down
+    parts.lift = null;
+    if (choice.lift && floors >= 2) {
+      const sx = W / 2 - 1.3, sz = -D / 2 + 1.3;
+      const shaft = mesh(new THREE.BoxGeometry(1.6, H - SLAB, 1.6), new THREE.MeshStandardMaterial({ color: 0x9fd3e8, transparent: true, opacity: 0.35, depthWrite: false }), sx, (H + SLAB) / 2, sz);
+      shaft.castShadow = false;
+      const car = rbox(1.3, 1.9, 1.3, 0xf0a43a, sx, SLAB + 0.95, sz, 0.12);
+      body.add(shaft, car);
+      parts.lift = { car, top: H - FH + SLAB + 0.95, bottom: SLAB + 0.95 };
+    }
 
     // Four walls
     const front = facade(W, 3, floors, { door: true, storm: !!choice.windows });
@@ -706,25 +732,74 @@ export function createSite(container) {
     }
   }
 
+  function setSoilKnown(known) {
+    soilKnown = known;
+    if (level) soilMat.color.setHex(known ? SOILS[level.soil].color : 0x9e9aa2); // grey until a soil report is bought
+  }
+
+  // ----- neighbours: a street out front and houses next door, styled per site -----
+  function house(x, z, w, h, d, wall, roof, rotY = 0) {
+    const g = new THREE.Group();
+    g.add(rbox(w, h, d, wall, 0, h / 2, 0, 0.25));
+    const top = mesh(new THREE.ConeGeometry(Math.max(w, d) * 0.75, h * 0.55, 4), clay(roof), 0, h + h * 0.27, 0);
+    top.rotation.y = Math.PI / 4;
+    top.scale.z = d / w;
+    g.add(top);
+    g.add(rbox(1, 1.6, 0.15, 0x8a5a35, 0, 0.8, d / 2 + 0.02, 0.05));
+    for (const s of [-1, 1]) g.add(rbox(1, 0.9, 0.15, 0xbfe3f5, s * w * 0.28, h * 0.6, d / 2 + 0.02, 0.05));
+    g.position.set(x, 0, z);
+    g.rotation.y = rotY;
+    return g;
+  }
+  function buildNeighbors(lv) {
+    neighbors.clear();
+    // Street with sidewalks, dashed centre line, lamp posts and a front walk to the door
+    neighbors.add(rbox(240, 0.08, 6, 0x5d5a66, 0, 0.02, 15, 0.03));
+    for (const z of [11.4, 18.6]) neighbors.add(rbox(240, 0.14, 1.4, 0xd8d2c8, 0, 0.05, z, 0.05));
+    for (let x = -110; x <= 110; x += 5) neighbors.add(rbox(2.4, 0.03, 0.25, 0xffd23f, x, 0.08, 15, 0.02));
+    neighbors.add(rbox(2.2, 0.1, 3, 0xd8d2c8, 0, 0.03, 12.3, 0.05));
+    for (let x = -42; x <= 42; x += 14) {
+      neighbors.add(cyl(0.12, 0.15, 4, 0x3a3340, x, 2, 19.2), ball(0.38, 0xfff3c4, x, 4.1, 19.2));
+    }
+    const style = {
+      rocky: { wall: [0xa1785a, 0x8d6e63], roof: 0x5d4037 },
+      prairie: { wall: [0xfff3e0, 0xffe0b2], roof: 0xc0392b },
+      breezy: { wall: [0x80deea, 0xffcdd2, 0xfff59d], roof: 0xf5f5f5 },
+      shaky: { wall: [0xf5f5f5, 0xe0e0e0], roof: 0x8d6e63 },
+      mega: { wall: [0xcfd8dc, 0xb0bec5], roof: 0x78909c },
+    }[lv.key];
+    const lots = [[-24, -2, 0], [-36, 4, 0], [24, -3, 0], [37, 3, 0], [-20, 25, Math.PI], [-6, 26, Math.PI], [10, 25, Math.PI], [26, 26, Math.PI]];
+    lots.forEach(([x, z, r], i) => {
+      const tall = lv.key === "mega" ? 2 + (i % 3) * 1.5 : 1;
+      neighbors.add(house(x, z, 7, 4 * tall, 6, style.wall[i % style.wall.length], style.roof, r));
+    });
+    // Fences, bushes and trees between the lots
+    for (const x of [-17, 17]) for (let z = -9; z <= 9; z += 3) neighbors.add(rbox(0.2, 1, 2.8, 0xf5e6d0, x, 0.5, z, 0.05));
+    [[-30, -10], [30, -11], [-46, -4], [46, -2], [-14, 30], [2, 31], [18, 31], [-52, 12], [52, 10]].forEach(([x, z], i) =>
+      neighbors.add(lv.key === "breezy" && i % 2 ? tree(x, z, 1.4, 0x4caf50) : tree(x, z, 1 + (i % 3) * 0.2)));
+    [[-20, 9], [21, 8], [-28, 9], [29, 9]].forEach(([x, z]) => neighbors.add(ball(0.8, 0x6cc070, x, 0.5, z)));
+  }
+
   function setLevel(lv) {
     level = lv;
-    soilMat.color.setHex(SOILS[lv.soil].color);
+    setSoilKnown(soilKnown);
+    buildNeighbors(lv);
     backdrop.clear();
-    if (lv.key === "rocky") { backdrop.add(mountain(-20, -22, 14), mountain(-6, -26, 18, 0x8f9aa6), mountain(12, -24, 12)); }
+    if (lv.key === "rocky") { backdrop.add(mountain(-24, -34, 18), mountain(-6, -40, 24, 0x8f9aa6), mountain(16, -36, 16)); }
     if (lv.key === "prairie") {
-      backdrop.add(rbox(10, 0.3, 6, 0xf2d27a, -18, -0.2, -18, 0.2), rbox(8, 0.3, 6, 0xe8c25a, 8, -0.2, -20, 0.2));
-      const barn = rbox(5, 4, 4, 0xd9534f, 18, 2, -18, 0.3); backdrop.add(barn);
+      backdrop.add(rbox(16, 0.1, 8, 0xf2d27a, -22, 0.03, -24, 0.05), rbox(12, 0.1, 8, 0xe8c25a, 8, 0.03, -26, 0.05), rbox(14, 0.1, 7, 0xc5e1a5, 30, 0.03, -22, 0.05));
+      backdrop.add(rbox(6, 4.5, 5, 0xd9534f, 26, 2.25, -32, 0.3), cyl(1.4, 1.4, 7, 0xb0bec5, 32, 3.5, -32));
     }
     if (lv.key === "breezy") {
-      backdrop.add(rbox(40, 0.4, 10, 0xf4dc9c, 0, -0.6, -18, 0.2), rbox(60, 0.3, 20, clay(0x5aa9e6, { roughness: 0.25 }), 0, -0.9, -32, 0.2));
-      const palm = tree(-16, -16, 1.5, 0x4caf50); backdrop.add(palm);
+      backdrop.add(rbox(160, 0.1, 10, 0xf4dc9c, 0, 0.03, -26, 0.05), rbox(200, 0.12, 60, clay(0x5aa9e6, { roughness: 0.25 }), 0, 0.04, -60, 0.05));
+      backdrop.add(tree(-16, -24, 1.5, 0x4caf50), tree(14, -25, 1.4, 0x4caf50));
     }
     if (lv.key === "shaky") {
-      const v = mountain(-14, -26, 16, 0x8d6e63); v.children[1].material = clay(0xff7043); backdrop.add(v, mountain(10, -24, 10, 0xa1887f));
+      const v = mountain(-18, -40, 20, 0x8d6e63); v.children[1].material = clay(0xff7043); backdrop.add(v, mountain(14, -36, 12, 0xa1887f));
     }
     if (lv.key === "mega") {
-      [[-18, -20, 14], [-11, -24, 20], [-3, -26, 17], [7, -24, 24], [15, -21, 12], [21, -16, 16]].forEach(([x, z, h], i) =>
-        backdrop.add(rbox(5, h, 5, [0xb0bec5, 0xcfd8dc, 0x90a4ae][i % 3], x, h / 2 - 0.5, z, 0.4)));
+      [[-22, -28, 14], [-13, -32, 22], [-3, -34, 18], [8, -32, 26], [18, -29, 13], [26, -24, 18]].forEach(([x, z, h], i) =>
+        backdrop.add(rbox(6, h, 6, [0xb0bec5, 0xcfd8dc, 0x90a4ae][i % 3], x, h / 2, z, 0.4)));
     }
     camera.position.set(19, 12 + lv.floors * 2.5, 25);
     controls.target.set(0, 2.5 + lv.floors, 0);
@@ -929,6 +1004,22 @@ export function createSite(container) {
     const idle = 1 + Math.sin(t * 2) * 0.004;
     if (!bounce && !collapse) bld.scale.set(1, idle, 1);
 
+    // Elevator car rides between floors, pausing at the top and bottom; it stops in a blackout.
+    if (parts.lift && !dark) {
+      const k = (Math.sin(t * 0.8) + 1) / 2, e = Math.min(1, Math.max(0, (k - 0.15) / 0.7));
+      parts.lift.car.position.y = parts.lift.bottom + (parts.lift.top - parts.lift.bottom) * e;
+    }
+
+    // Keep panning near the site, and let the ground fade when the camera looks from below.
+    const T = controls.target, clamped = new THREE.Vector3(
+      Math.max(-8, Math.min(8, T.x)), Math.max(-4, Math.min(8, T.y)), Math.max(-8, Math.min(8, T.z)));
+    if (!clamped.equals(T)) { camera.position.add(clamped.clone().sub(T)); T.copy(clamped); }
+    const below = camera.position.y < 0.2;
+    grassMat.opacity = below ? 0.3 : 1;
+    rockMat.opacity = below ? 0.35 : 1;
+    grassMat.depthWrite = rockMat.depthWrite = !below;
+    neighbors.visible = !below; // the street and houses would block the underground view
+
     controls.update();
     if (shakeAmt > 0 && !reduceMotion) {
       const o = new THREE.Vector3((Math.random() - 0.5) * shakeAmt, (Math.random() - 0.5) * shakeAmt, 0);
@@ -942,7 +1033,7 @@ export function createSite(container) {
   return {
     setLevel, setDesign, setRun, startHazard, endHazard, doCollapse, reset,
     setGentle: g => { gentle = g; people.forEach(p => p.m.userData.faceKey = ""); },
-    setPeek, tipShelves,
+    setPeek, tipShelves, setSoilKnown,
     setSpin: on => { controls.autoRotate = on && !reduceMotion; },
     onDeliver: fn => { deliverCb = fn; }, // called with choice.hvac when the helicopter sets a unit down
   };
@@ -982,23 +1073,87 @@ export function createMap(container, levels, onPick) {
   const beach = mesh(new THREE.CylinderGeometry(26.6, 27.6, 1.2, 48), clay(0xf4dc9c), 0, -1.4, 2);
   beach.scale.z = 0.86;
   island.add(beach);
-  island.add(mountain(-20, 0, 7), mountain(-17, -4, 9, 0x8f9aa6), mountain(17, -7, 8, 0x8d6e63));
-  [[-8, 2], [-19, 13], [3, 17], [14, 16], [-11, -9], [18, 4], [6, -3], [-2, 6], [20, -1]].forEach(([x, z], i) => island.add(tree(x, z, 0.9 + (i % 3) * 0.15)));
+  const LAND = 0.3; // top of the island
+  island.add(mountain(-20, 0, 7), mountain(-17, -4, 9, 0x8f9aa6), mountain(-20, 5, 5));
+  [[-19, 14], [-22, 9], [3, 22], [-8, -8], [-12, -12], [21, 3], [-1, 8], [20, 17]].forEach(([x, z], i) => island.add(tree(x, z, 0.9 + (i % 3) * 0.15)));
   const clouds = [cloud(-26, 12, -6, 2), cloud(22, 14, 18, 1.6), cloud(4, 16, -16, 2.2)];
   clouds.forEach(c => scene.add(c));
 
-  // Dotted path between pins
+  // River: from the mountains, past Breezy Bay, out to the sea on the east.
+  const riverPts = [[-17, -5], [-11, -2], [-5, 1], [0, 3.5], [5, 5], [11, 5], [16, 7.5], [21, 10.5], [26.5, 13]];
+  const riverCurve = new THREE.CatmullRomCurve3(riverPts.map(([x, z]) => new THREE.Vector3(x, 0, z)));
+  const river = mesh(new THREE.TubeGeometry(riverCurve, 90, 1.1, 8), clay(0x4fa8e0, { roughness: 0.25, emissive: 0x1e6fb0, emissiveIntensity: 0.1 }));
+  river.position.y = LAND + 0.02;
+  river.scale.y = 0.1;
+  river.castShadow = false;
+  island.add(river);
+  const riverSamples = riverCurve.getSpacedPoints(120);
+  const nearRiver = (x, z, d) => riverSamples.some(p => Math.hypot(p.x - x, p.z - z) < d);
+
+  // Terrain under each site, so kids can tell them apart before reading the labels.
+  const lift = { rocky: 1.4 }; // Rocky Ridge's pin sits on top of its ridge
+  const at = key => levels.find(l => l.key === key).map;
+  {
+    const [x, z] = at("rocky"); // rocky ridge: a grey plateau with boulders
+    island.add(cyl(4, 4.8, 1.4, 0xa7a3a0, x, LAND + 0.7, z));
+    [[-4.5, -1, 0.9], [4.2, -1.5, 0.7], [-3, 3.5, 0.6], [3.6, 3, 0.8], [0, -4.6, 1]].forEach(([dx, dz, r]) => island.add(ball(r, 0x9a958f, x + dx, LAND + r * 0.5, z + dz)));
+  }
+  {
+    const [x, z] = at("prairie"); // wheat and hay fields, a barn and bales
+    for (let s = 0; s < 6; s++) island.add(rbox(0.9, 0.12, 5, s % 2 ? 0xc5e1a5 : 0xf2d27a, x - 7 + s * 1, LAND + 0.06, z + 5, 0.05));
+    for (let s = 0; s < 5; s++) island.add(rbox(4.5, 0.12, 0.9, s % 2 ? 0xc5e1a5 : 0xe8c25a, x + 6, LAND + 0.06, z + 3 + s, 0.05));
+    island.add(rbox(2, 1.6, 1.6, 0xd9534f, x + 6, LAND + 0.8, z - 2.2, 0.15), cyl(0.6, 0.6, 2.6, 0xb0bec5, x + 7.6, LAND + 1.3, z - 2.2));
+    [[-6, 9], [-4.5, 9.3], [3.5, 8.6]].forEach(([dx, dz]) => { const b = cyl(0.45, 0.45, 0.7, 0xe8c25a, x + dx, LAND + 0.45, z + dz); b.rotation.z = Math.PI / 2; island.add(b); });
+  }
+  {
+    const [x, z] = at("breezy"); // coast by the river mouth: sand, palms and a dock
+    island.add(cyl(4.6, 4.8, 0.12, 0xf4dc9c, x, LAND + 0.06, z));
+    island.add(tree(x + 4.5, z + 2.5, 1.2, 0x4caf50), tree(x - 4, z + 3, 1, 0x4caf50));
+    const dock = rbox(3.5, 0.25, 1, 0x8d6e63, 22, LAND + 0.2, 13.5, 0.05);
+    dock.rotation.y = -0.5;
+    island.add(dock);
+  }
+  {
+    const [x, z] = at("shaky"); // brown rolling hills and a smoking volcano
+    [[4, 1, 2.6], [-3.5, -4, 2.2], [3.5, -4.5, 2], [-4, 2.5, 1.6]].forEach(([dx, dz, r]) => {
+      const h = mesh(new THREE.SphereGeometry(r, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2), clay(0xa1887f), x + dx, LAND - 0.05, z + dz);
+      h.scale.y = 0.55;
+      island.add(h);
+    });
+  }
+  const volcano = mountain(18, -8, 8, 0x8d6e63);
+  volcano.children[1].material = clay(0xff7043);
+  island.add(volcano);
+  const smoke = [0, 1, 2].map(i => { const s = ball(0.7, 0xe0e0e0, 18, 8.5, -8); s.castShadow = false; s.userData.phase = i / 3; island.add(s); return s; });
+  {
+    const [x, z] = at("mega"); // city: a cluster of towers on a street grid
+    island.add(rbox(16, 0.08, 1, 0x5d5a66, x, LAND + 0.04, z - 3.6, 0.03), rbox(1, 0.08, 10, 0x5d5a66, x - 4.6, LAND + 0.04, z - 3, 0.03), rbox(1, 0.08, 10, 0x5d5a66, x + 4.6, LAND + 0.04, z - 3, 0.03));
+    [[-6.5, -6, 6], [-2.5, -6.5, 8], [2, -6, 5], [6.5, -5.5, 7], [-7, -1, 4], [7, 0, 4.5], [-2, -9.5, 5], [3.5, -9.5, 6]].forEach(([dx, dz, h], i) =>
+      island.add(rbox(2.2, h, 2.2, [0xb0bec5, 0xcfd8dc, 0x90a4ae][i % 3], x + dx, LAND + h / 2, z + dz, 0.2)));
+  }
+
+  // Dotted path between pins, with a little bridge where it crosses the river
   for (let i = 0; i < levels.length - 1; i++) {
     const [ax, az] = levels[i].map, [bx, bz] = levels[i + 1].map;
-    for (let k = 1; k < 8; k++) {
-      const u = k / 8;
-      island.add(ball(0.32, 0xfff3c4, ax + (bx - ax) * u, 0.35, az + (bz - az) * u + Math.sin(u * Math.PI) * 2));
+    let bridged = false;
+    for (let k = 1; k < 16; k++) {
+      const u = k / 16, x = ax + (bx - ax) * u, z = az + (bz - az) * u + Math.sin(u * Math.PI) * 2;
+      if (nearRiver(x, z, 1.5)) {
+        if (!bridged) {
+          const br = rbox(4, 0.3, 1.4, 0xb07a4f, x, LAND + 0.35, z, 0.1);
+          br.rotation.y = -Math.atan2(bz - az, bx - ax);
+          island.add(br);
+          bridged = true;
+        }
+        continue;
+      }
+      if (k % 2 === 0) island.add(ball(0.32, 0xfff3c4, x, LAND + 0.05, z));
     }
   }
 
   const pins = levels.map((lv, i) => {
     const g = new THREE.Group();
-    g.position.set(lv.map[0], 0, lv.map[1]);
+    g.position.set(lv.map[0], lift[lv.key] || 0, lv.map[1]);
     const pad = cyl(3.2, 3.4, 0.8, 0xf6f0e3, 0, 0.4, 0);
     g.add(pad);
     const house = new THREE.Group();
@@ -1075,8 +1230,14 @@ export function createMap(container, levels, onPick) {
       p.userData.icon.position.y = 3.6 + levels[i].floors * 1.3 + Math.sin(t * 2.5 + i) * 0.3;
     });
     const [cx, cz] = levels[current].map;
-    token.position.set(cx - 3, 3 + Math.abs(Math.sin(t * 4)) * 1.2, cz + 1.5);
+    token.position.set(cx - 3, 3 + (lift[levels[current].key] || 0) + Math.abs(Math.sin(t * 4)) * 1.2, cz + 1.5);
     clouds.forEach((c, i) => { c.position.x += dt * (0.6 + i * 0.2); if (c.position.x > 40) c.position.x = -40; });
+    smoke.forEach(s => {
+      const k = (t * 0.25 + s.userData.phase) % 1;
+      s.position.set(18 + k * 1.5, 8.5 + k * 5, -8 - k);
+      s.scale.setScalar(0.6 + k * 1.4);
+    });
+    river.material.emissiveIntensity = 0.1 + Math.sin(t * 2) * 0.05;
     // Keep the island on screen while panning
     const T = controls.target;
     const cx2 = Math.max(-20, Math.min(20, T.x)), cz2 = Math.max(-14, Math.min(18, T.z));

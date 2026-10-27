@@ -44,17 +44,20 @@ firebase deploy --only hosting --project <your-firebase-project-id>
    - the year's weather, month by month
 
    Retrying a site plays the same year, so kids can learn from it.
-4. **Design, all on one screen.** Five sections, each with a few rows of choices: Structure, Outside, Inside, Power & Air, Eco.
+4. **Design, all on one screen.** Sections of choices: Structure, Outside, Inside, Power & Air, People Systems (2+ storeys only), Eco. Each button shows icon, name and cost; Fran explains what it does when you tap it.
+   - **Soil report:** the ground is a mystery (❓) until you buy a 🔬 Soil Report for 2 coins. Then Fran names the soil and the foundation it needs, and the soil shows its colour in 3D.
+   - **People Systems:** stairs or an elevator, and enough or extra restrooms. The taller the building, the more they matter to happiness (`systemsHappy()` in `js/sim.js`).
    - The cash-flow strip shows **Budget − Building − Upgrades = Repair fund**.
    - Meters show strength against this site's worst weather and whether the foundation suits the soil.
    - You can't run while over budget.
-5. **Run the year (forward only).** The design is locked once the year starts. The year takes about 60 s at 1× (⏩ for 2× / 4×).
+   - Drag to orbit, right-drag (two fingers) to pan. Orbit down past the grass to look under the ground at the foundation.
+5. **Run the year (forward only).** The design is locked once the year starts. The year is shown as 52 weeks and takes about 45 s at 1× (⏩ for 2× / 4×). Inside, the sim still counts 360 days.
    - People walk in fast and bouncy and earn coins.
    - Hazards come with a warning banner and an over-the-top shake, wind or flood.
    - When something breaks, tap **🔧** to fix that part. It costs coins, and the doors stay closed while the crew works (downtime).
    - A hazard that beats the building by 2 or more turns someone, or Biscuit the dog, into a floating ghost 👻 (🩹 in Gentle mode).
 6. **Report card or game over.**
-   - **Report card:** a grade for each subject (Safety, Happiness, Open Days, Eco Points, Budget), an overall grade from A+ to F, stars, and Fran's tips based on what actually happened.
+   - **Report card:** a grade for each subject (Safety, Happiness, Open Weeks, Eco Points, Budget), an overall grade from A+ to F, stars, and Fran's tips based on what actually happened.
    - **Game over:** the building collapses, or it stays closed for 45 days with no coins for a repair.
 
 ## Files

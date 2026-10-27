@@ -8,8 +8,10 @@ export const DAYS = 360;
 export const MONTH_DAYS = 30;
 export const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-// Run speed: days of game time per real second at 1x. 6 days/s = 60 s year.
-export const DAYS_PER_SEC = 6;
+// Run speed: days of game time per real second at 1x. 8 days/s = 45 s year.
+// The sim counts days; the screen shows weeks (WEEKS per year).
+export const DAYS_PER_SEC = 8;
+export const WEEKS = 52;
 export const SPEEDS = [1, 2, 4];
 export const WARN_DAYS = 12;       // banner shows this many days before a hazard
 export const HAZARD_DAYS = 4;      // how long a hazard shakes / blows / floods
@@ -59,6 +61,10 @@ export const BREAKS = {
 // power keeps the lights on in an outage; bolted keeps shelves standing.
 export const SECTIONS = [
   { key: "structure", name: "Structure", ico: "🏗️", color: "#e8655a", items: [
+    // info: tells you something instead of making the building stronger (no Code Minimum tag).
+    { key: "soil", name: "Soil Report", info: true, options: [
+      { label: "Guess", ico: "🤷", cost: 0, tip: "Build without testing the ground, and hope you picked the right foundation." },
+      { label: "Soil Report", ico: "🔬", cost: 2, report: true, tip: "An engineer drills holes and tests the ground, so you know which foundation you need." } ] },
     { key: "found", name: "Foundation", foundation: true, options: [
       { label: "Shallow Footings", ico: "🦶", cost: 2, level: 1, tip: "Concrete \"feet\" just under the ground. Great on rock or firm soil." },
       { label: "Mat Slab", ico: "🟫", cost: 5, level: 2, tip: "One big thick slab under the whole building. It spreads the weight like a snowshoe." },
@@ -99,6 +105,16 @@ export const SECTIONS = [
     { key: "lights", name: "Lights", options: [
       { label: "Old Bulbs", ico: "💡", cost: 0, tip: "Regular bulbs." },
       { label: "LED Lights", ico: "✨", cost: 1, eco: 1, tip: "Bright lights that use way less electricity." } ] },
+  ]},
+  // Only buildings with minFloors or more storeys show these. Their happiness effect depends on height,
+  // so it lives in systemsHappy() in sim.js, not in a fixed `happy` number here.
+  { key: "people", name: "People Systems", ico: "🛗", color: "#4db6ac", items: [
+    { key: "lift", name: "Getting Upstairs", minFloors: 2, info: true, options: [
+      { label: "Stairs Only", ico: "🪜", cost: 0, tip: "Cheap, but people in wheelchairs or with strollers can't reach upper floors, and the taller the building, the grumpier everyone gets. Real public buildings usually need an elevator for exactly this reason." },
+      { label: "Elevator", ico: "🛗", cost: 4, tip: "Everyone can reach every floor. It needs power, so in a blackout it stops unless you have backup power." } ] },
+    { key: "wc", name: "Restrooms", minFloors: 2, options: [
+      { label: "Just Enough", ico: "🚻", cost: 0, tip: "The number of restrooms the plumbing rules require for this many people." },
+      { label: "Extra Restrooms", ico: "🚽", cost: 2, tip: "Shorter lines on every floor. Bigger buildings feel the difference most." } ] },
   ]},
   { key: "eco", name: "Eco", ico: "🌱", color: "#5cb85c", items: [
     { key: "energy", name: "Energy", options: [

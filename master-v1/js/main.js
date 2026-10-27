@@ -5,11 +5,11 @@
 
 import {
   LEVELS, SECTIONS, ITEMS, SOILS, HAZARDS, POWER_NAMES, MONTH_NAMES, MONTH_DAYS, DAYS,
-  DAYS_PER_SEC, SPEEDS, HEALTH_CLOSED, REPAIR_DAYS,
+  DAYS_PER_SEC, SPEEDS, HEALTH_CLOSED, REPAIR_DAYS, WEEKS,
 } from "./data.js";
 import {
   defaultChoice, designCost, designStats, coinsLeft, canRun, soilNeed, strength,
-  createRun, advance, repair, reportCard, lessons, isUnlocked,
+  createRun, advance, repair, reportCard, lessons, isUnlocked, systemsHappy,
 } from "./sim.js";
 import { createSite, createMap } from "./scene.js";
 
@@ -31,6 +31,11 @@ const name = () => esc(save.name || "Builder");
 let levelIdx = 0, choice = defaultChoice(), S = null, speedIdx = 0, paused = false;
 let site = null, map = null, lastCoins = null;
 const L = () => LEVELS[levelIdx];
+const knowsSoil = () => choice.soil > 0; // bought the soil report
+// The sim counts days; players see weeks.
+const weekOf = day => Math.min(WEEKS, Math.floor((day / DAYS) * WEEKS) + 1);
+const weeks = days => Math.round((days / DAYS) * WEEKS);
+const UNKNOWN_GROUND = "❓ Unknown. Buy a 🔬 <b>Soil Report</b> in the design screen to find out!";
 
 // ---------- small UI helpers ----------
 function show(id) {
@@ -138,7 +143,7 @@ function pickSite(i) {
     ${locked ? `<p>🔒 Locked! Pass <b>${LEVELS[i - 1].name}</b> with a <b>C</b> or better to open this site, ${name()}.</p>`
       : `<ul>
           <li>${lv.bico} Build a <b>${lv.building}</b> (${lv.floors} floor${lv.floors > 1 ? "s" : ""})</li>
-          <li>🪨 Ground: <b>${SOILS[lv.soil].name}</b></li>
+          <li>🪨 Ground: ${UNKNOWN_GROUND}</li>
           <li>🫙 Budget: <b>${lv.budget} coins</b></li>
           <li>⚠️ Weather this year:<br>${hazardSummary(lv)}</li>
           ${best ? `<li>📝 Your best grade: <b>${best.grade}</b></li>` : ""}
@@ -153,17 +158,15 @@ function openBrief(i) {
   levelIdx = i;
   const lv = L();
   choice = defaultChoice();
-  const need = soilNeed(lv);
   overlay(`<div class="brief">
     <h2>${lv.ico} Mission: ${lv.name}</h2>
     <div class="mascot" style="padding:0"><div class="fran">👷‍♀️</div>
       <div class="bubble">${name()}, ${lv.brief}! You have <b>🫙 ${lv.budget} coins</b>. The building itself costs ${lv.shell}, so you have
       <b>${lv.budget - lv.shell} coins</b> for upgrades. Coins you don't spend become your <b>repair fund</b>.</div></div>
     <div class="facts">
-      <div><b>🪨 The ground</b>${SOILS[lv.soil].name}. ${SOILS[lv.soil].desc}${lv.tall ? " This tower is tall and heavy, so it needs one foundation step more." : ""}
-        <br><small>Needs: <b>${ITEMS.found.options[need - 1].label}</b> or better</small></div>
+      <div><b>🪨 The ground</b>${UNKNOWN_GROUND}${lv.tall ? "<br><small>This tower is tall and heavy, so it needs a stronger foundation than a small building would.</small>" : ""}</div>
       <div><b>⚠️ This year's weather</b>${hazardSummary(lv)}</div>
-      <div><b>📝 Your report card</b>Safety · Happiness · Open Days · Eco · Budget${lv.hospital ? "<br><small>🏥 Hospitals must stay open: Open Days count double!</small>" : ""}</div>
+      <div><b>📝 Your report card</b>Safety · Happiness · Open Weeks · Eco · Budget${lv.hospital ? "<br><small>🏥 Hospitals must stay open: Open Weeks count double!</small>" : ""}</div>
       <div><b>🔓 To pass</b>Get a <b>C</b> or better to unlock the next site.</div>
     </div>
     <div class="btns"><button class="btn ghost" id="briefBack">🗺️ Map</button><button class="btn go" id="briefGo">Start designing! ✏️</button></div>
@@ -188,6 +191,7 @@ function startDesign(keepChoice) {
   site.reset();
   site.setLevel(L());
   site.setDesign(L(), choice);
+  site.setSoilKnown(knowsSoil());
   site.setRun(null);
   site.setSpin(true);
   $("runBtn").hidden = false; $("ffBtn").hidden = true; $("pauseBtn").hidden = true;
@@ -196,7 +200,7 @@ function startDesign(keepChoice) {
   document.body.classList.remove("quake");
   renderMonths();
   renderDesign();
-  say(`Okay ${name()}, everything is on one screen. Pick an upgrade in each row. The meters show if you're strong enough for <b>${L().name}</b>'s weather. Press <b>▶ Run the year!</b> when you're ready.`);
+  say(`Okay ${name()}, everything is on one screen. What's under <b>${L().name}</b>? A 🔬 <b>Soil Report</b> tells you which foundation you need. The meters show if you're strong enough for the weather. Press <b>▶ Run the year!</b> when you're ready.`);
 }
 
 function effectText(o) {
@@ -215,8 +219,9 @@ function effectText(o) {
 function renderChecks() {
   const lv = L(), st = designStats(choice);
   const types = [...new Set(lv.events.map(e => e[0]))];
-  const need = soilNeed(lv);
-  const rows = [`<div class="check ${st.found >= need ? "ok" : "bad"}"><span class="what">🪨 Foundation</span>
+  // Without a soil report, the ground's needs stay a mystery.
+  const need = knowsSoil() ? soilNeed(lv) : 0;
+  const rows = [`<div class="check ${!need ? "" : st.found >= need ? "ok" : "bad"}"><span class="what">🪨 Foundation${need ? "" : " ❓"}</span>
     <span class="bars">${[1, 2, 3].map(n => `<i class="${n <= st.found ? "on" : ""} ${n === need ? "need" : ""}"></i>`).join("")}</span></div>`];
   for (const t of types) {
     const max = Math.max(...lv.events.filter(e => e[0] === t).map(e => e[1]));
@@ -230,26 +235,29 @@ function renderChecks() {
 
 function renderDesign() {
   const lv = L(), cost = designCost(choice), left = coinsLeft(lv, choice), st = designStats(choice);
+  // Kept short on purpose: each button is icon, name and cost. Fran explains the rest when you tap it.
   $("panel").innerHTML = `
-    <div class="clay cash" title="Where your coins go">
-      <span class="step">🫙 Budget <b>${lv.budget}</b></span><span class="arrow">−</span>
-      <span class="step">${lv.bico} Building <b>${lv.shell}</b></span><span class="arrow">−</span>
-      <span class="step">🛠️ Upgrades <b>${cost}</b></span><span class="arrow">=</span>
-      <span class="step left ${left < 0 ? "neg" : ""}">🔧 Repair fund <b>${left}</b></span>
+    <div class="clay topCard">
+      <div class="cash" title="Where your coins go">
+        <span class="step">🫙 <b>${lv.budget}</b></span><span class="arrow">−</span>
+        <span class="step">${lv.bico} <b>${lv.shell}</b></span><span class="arrow">−</span>
+        <span class="step">🛠️ <b>${cost}</b></span><span class="arrow">=</span>
+        <span class="step left ${left < 0 ? "neg" : ""}">🔧 Repair fund <b>${left}</b></span>
+      </div>
+      <div class="checks">${renderChecks()}</div>
     </div>
-    <div class="clay checks">${renderChecks()}</div>
-    <div class="secGrid">${SECTIONS.map((sec, si) => `<div class="clay section ${si === 0 ? "wide" : ""}" style="--c:${sec.color}"><h3>${sec.ico} ${sec.name}</h3>
+    <p class="legend">Left choice in each row = 📏 Code Minimum. Tap any choice to hear what it does.</p>
+    <div class="secGrid">${SECTIONS.map(sec => ({ ...sec, items: sec.items.filter(it => lv.floors >= (it.minFloors || 1)) }))
+      .filter(sec => sec.items.length).map((sec, si) => `<div class="clay section ${si === 0 ? "wide" : ""}" style="--c:${sec.color}"><h3>${sec.ico} ${sec.name}</h3>
       ${sec.items.map(it => `<div class="item"><span class="nm">${it.name}</span><div class="opts">
         ${it.options.map((o, i) => `<button class="opt ${choice[it.key] === i ? "sel" : ""}" data-item="${it.key}" data-opt="${i}" title="${esc(o.tip)}">
-          <span class="ico">${o.ico}</span><span class="txt"><span class="lb">${o.label}</span>
-          <span class="meta"><span class="cost">${o.cost ? "🪙" + o.cost : "Free"}</span>
-          ${i === 0 && !it.foundation ? `<span class="min">📏 Code Min</span>` : `<span class="fx">${effectText(o)}</span>`}</span></span>
+          <span class="ico">${o.ico}</span><span class="lb">${o.label}</span><span class="cost">${o.cost ? "🪙" + o.cost : "Free"}</span>
         </button>`).join("")}
       </div></div>`).join("")}
     </div>`).join("")}</div>`;
   setCoins(Math.max(0, left));
   $("ecoCount").textContent = `${st.eco * 10}/yr`;
-  setHappy(Math.min(100, 70 + st.happy));
+  setHappy(Math.max(0, Math.min(100, 70 + st.happy + systemsHappy(lv, choice))));
   $("runBtn").disabled = !canRun(lv, choice);
   $("phase").textContent = left < 0 ? `🙈 Over budget by ${-left}! Take something back.` : `✏️ Design your ${lv.building}`;
 }
@@ -264,9 +272,22 @@ $("panel").addEventListener("click", e => {
   sound(after < before ? "kaching" : "pop");
   flyCoin(b, after > before);
   site.setDesign(L(), choice);
+  site.setSoilKnown(knowsSoil());
   renderDesign();
-  const fnd = k === "found" ? (o.level >= soilNeed(L()) ? " ✅ Strong enough for this ground!" : " ⚠️ Too weak for this ground. It will sink!") : "";
-  say(`<b>${o.ico} ${o.label}</b>: ${o.tip}${fnd}${after < 0 ? ` <b>Uh oh, ${name()}, that's over budget!</b>` : ""}`);
+  const lv = L(), it = ITEMS[k];
+  if (k === "soil") {
+    const soil = SOILS[lv.soil];
+    say(knowsSoil()
+      ? `🔬 Soil report is back, ${name()}: <b>${soil.name}</b>! ${soil.desc} Your foundation needs to be at least: <b>${ITEMS.found.options[soilNeed(lv) - 1].label}</b>.`
+      : `🤷 Okay, no soil test. You'll have to guess the foundation, ${name()}!`);
+    return;
+  }
+  const fnd = k !== "found" ? ""
+    : !knowsSoil() ? " 🤔 Is it strong enough? Only a soil report can tell!"
+    : o.level >= soilNeed(lv) ? " ✅ Strong enough for this ground!" : " ⚠️ Too weak for this ground. It will sink!";
+  const fx = effectText(o), min = i === 0 && !it.foundation && !it.info;
+  say(`<b>${o.ico} ${o.label}</b>${min ? " (📏 Code Minimum)" : ""}: ${o.tip}${fx ? ` <span class="fxline">${fx}</span>` : ""}${fnd}` +
+    `${after < 0 ? ` <b>Uh oh, ${name()}, that's over budget!</b>` : ""}`);
 });
 
 // ---------- 5. run the year ----------
@@ -301,26 +322,23 @@ function renderRun() {
     const working = S.repairing && S.repairing.id === b.id;
     return `<button class="btn repair" data-fix="${b.id}" ${can ? "" : "disabled"}>${working ? "🚧 Fixing" : "🔧 Fix"} ${b.ico} ${b.label} · 🪙${b.cost}</button>`;
   }).join("");
+  const recent = S.log.slice(-4).reverse();
   $("panel").innerHTML = `
     <div class="clay runStats">
-      <div><b>${Math.floor(S.daysOpen)}</b>🏪 days open</div>
-      <div><b>${S.visitors}</b>👥 visitors</div>
+      <div><b>${weeks(S.daysOpen)}</b>🏪 weeks open</div>
       <div><b>+${S.earned}</b>🪙 earned</div>
       <div><b>${Math.round(S.eco)}</b>🌱 eco points</div>
-      <div><b>${S.ghosts}</b>${save.gentle ? "🩹 hurt" : "👻 ghosts"}</div>
-      <div><b>🪙${S.repairSpent}</b>🔧 on repairs</div>
     </div>
     <div class="clay health"><b>🏗️ Building health ${Math.round(S.health)}%</b>
       <div class="meter"><i style="width:${S.health}%;background:${S.health >= 75 ? "var(--green)" : S.health >= HEALTH_CLOSED ? "var(--orange)" : "var(--red)"}"></i></div>
-      <small>Below ${HEALTH_CLOSED}% the doors must close until it's fixed.</small></div>
-    <div class="clay fixes"><h3>🔧 Repairs</h3>${fixes || "<span class='small'>Nothing broken. 💪</span>"}
-      ${S.broken.length ? `<span class="small">Each fix takes ${REPAIR_DAYS} days. The building is closed while the crew works.</span>` : ""}</div>
-    <div class="clay logBox"><h3>📓 This year</h3><ol>${S.log.map(l => `<li><b>${MONTH_NAMES[l.month]}:</b> ${l.text}</li>`).join("") || "<li>Opening day! 🎀</li>"}</ol></div>`;
+      ${fixes ? `<div class="fixes">${fixes}</div><small>Each fix takes about ${weeks(REPAIR_DAYS)} weeks, and the doors stay closed while the crew works.</small>`
+        : `<small>Nothing broken 💪 Below ${HEALTH_CLOSED}% the doors must close until it's fixed.</small>`}</div>
+    <div class="clay logBox"><h3>📓 Latest news</h3><ul>${recent.map(l => `<li><b>${MONTH_NAMES[l.month]}:</b> ${l.text}</li>`).join("") || "<li>Opening day! 🎀</li>"}</ul></div>`;
   setCoins(S.coins);
   $("ecoCount").textContent = Math.round(S.eco);
   setHappy(S.happy);
   const month = Math.min(11, Math.floor(S.day / MONTH_DAYS));
-  $("phase").textContent = `📅 ${MONTH_NAMES[month]} · Day ${Math.floor(S.day)} of ${DAYS}`;
+  $("phase").textContent = `📅 ${MONTH_NAMES[month]} · Week ${weekOf(S.day)} of ${WEEKS}`;
   $("openBadge").textContent = S.over ? "💥 Fell down" : S.repairing ? "🚧 Closed: repairing" : S.open ? "🟢 Open" : "🔴 Closed";
   const fixable = S.broken.some(b => !S.repairing && !S.hazard && S.coins >= b.cost);
   $("fixPop").hidden = !fixable;
@@ -417,7 +435,7 @@ $("ffBtn").onclick = () => {
 $("pauseBtn").onclick = () => { paused = !paused; $("pauseBtn").textContent = paused ? "▶" : "⏸"; };
 
 // ---------- 6. report card / game over ----------
-const SUBJECTS = [["safety", "💪 Safety"], ["happy", "😊 Happiness"], ["open", "🏪 Open Days"], ["eco", "🌱 Eco Points"], ["budget", "🫙 Budget"]];
+const SUBJECTS = [["safety", "💪 Safety"], ["happy", "😊 Happiness"], ["open", "🏪 Open Weeks"], ["eco", "🌱 Eco Points"], ["budget", "🫙 Budget"]];
 
 function comment(r) {
   const n = name();
@@ -476,6 +494,35 @@ function showGameOver(R) {
   $("gMap").onclick = () => openMap(levelIdx);
   $("gRetry").onclick = () => { closeOverlay(); startDesign(true); };
 }
+
+// ---------- about ----------
+const TEAM = [
+  ["Anandharam Mourougassamy", "MKA · Seattle", "https://www.linkedin.com/in/amurugas/"],
+  ["Alexander Alaura Reyes", "ZFA · San Francisco", "https://www.linkedin.com/in/alexander-alaura-reyes-se-46761085/"],
+  ["Nancy Abdo", "SSOE Group", "https://www.linkedin.com/in/nancyabdo/"],
+  ["Tom Kovalcik", "Structured AI", "https://www.linkedin.com/in/tomaskovalcik/"],
+  ["Andrew Sundal", "HGA · Minneapolis", "https://www.linkedin.com/in/andrew-sundal-b374169/"],
+  ["Carlos Navea", "SDSU", "https://www.linkedin.com/in/carlosnavea/"],
+  ["Rao Patri", "Logan Patri Engineering", "https://www.linkedin.com/in/rao-patri-pe-se-425a0319/"],
+  ["Joel Kramer", "SSOE Group", "https://www.linkedin.com/in/joel-kramer-pe-35662817/"],
+];
+function showAbout() {
+  overlay(`<div class="about">
+    <h2>👷 About BuildCraft</h2>
+    <p>BuildCraft puts kids in the builder's seat. Pick a site, test the soil, spend a budget wisely, and see whether your building
+      keeps its people safe and happy through a year of earthquakes, storms, floods and heat waves. Along the way you learn how
+      structure, architecture, building systems and sustainability work together.</p>
+    <p class="event">🏆 Made at the <b>NCSEA Hackathon 2026</b></p>
+    <h3>💛 Thank you to the team</h3>
+    <ul class="team">${TEAM.map(([n, org, url]) => `<li><b>${n}</b><span>${org}</span>
+      <a href="${url}" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a></li>`).join("")}</ul>
+    <p class="small">A game, not engineering: every number in it is made up to teach the big ideas. Real buildings are designed by licensed engineers.</p>
+    <div class="btns"><button class="btn go" id="aboutClose">Back to building ▶</button></div>
+  </div>`);
+  $("aboutClose").onclick = closeOverlay;
+}
+$("aboutBtn").onclick = showAbout;
+$("aboutLink").onclick = showAbout;
 
 // ---------- HUD buttons ----------
 $("mapBtn").onclick = () => {
