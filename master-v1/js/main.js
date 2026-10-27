@@ -324,6 +324,13 @@ function pickSite(i) {
 }
 
 // ---------- 3. brief ----------
+// The dig-down picture of the ground (PLAN.md M3): grass, then each soil layer, sized by thickness.
+const hex = c => "#" + c.toString(16).padStart(6, "0");
+function soilBars(soil) {
+  const rows = [{ name: "Grass", h: 0.8, color: 0x9fd27a }, ...soil.layers];
+  return `<span class="profile">${rows.map(l =>
+    `<span style="flex:${l.h};background:${hex(l.color)}">${l.rock ? "🪨 " : ""}${l.name}</span>`).join("")}</span>`;
+}
 function openBrief(i) {
   levelIdx = i;
   const lv = L();
@@ -336,7 +343,7 @@ function openBrief(i) {
       <b>${lv.budget - lv.shell} coins</b> for upgrades. Coins you don't spend become your <b>repair fund</b>.</div></div>
     <div class="facts">
       <div><b>🪨 The ground</b>${SOILS[lv.soil].name}. ${SOILS[lv.soil].desc}${lv.tall ? " This tower is tall and heavy, so it needs one foundation step more." : ""}
-        <br><small>Needs: <b>${ITEMS.found.options[need - 1].label}</b> or better</small></div>
+        <br><small>Needs: <b>${ITEMS.found.options[need - 1].label}</b> or better</small>${soilBars(SOILS[lv.soil])}</div>
       <div><b>⚠️ This year's weather</b>${hazardSummary(lv)}</div>
       <div><b>📝 Your report card</b>Safety · Happiness · Open Days · Eco · Budget${lv.hospital ? "<br><small>🏥 Hospitals must stay open: Open Days count double!</small>" : ""}</div>
       <div><b>🔓 To pass</b>Get a <b>C</b> or better to unlock the next site.</div>

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { LEVELS, ITEMS, CAST } from "../js/data.js";
+import { LEVELS, ITEMS, CAST, SOILS, SOIL_DEPTH } from "../js/data.js";
 import {
   defaultChoice, createRun, advance, simulate, reportCard, canRun, coinsLeft, isUnlocked, gradeFor, repair, TICK,
   designStats, designCost, strength,
@@ -133,4 +133,16 @@ test("fire sprinklers add 2 fire strength and cost what data.js says", () => {
   assert.equal(designStats(spr).fire, 2);
   assert.equal(strength(lv("rocky"), designStats(spr), "fire"), 3);
   assert.equal(designCost(spr) - designCost(defaultChoice()), opts[yes].cost - opts[0].cost);
+});
+
+test("every soil has layers that fill the dig, and piles end in rock", () => {
+  const PILE_TIP = 4.7; // scene.js: deep piles reach this far below the grass
+  for (const [key, s] of Object.entries(SOILS)) {
+    assert.ok(s.layers.length > 0 && s.layers.every(l => l.name && l.h > 0 && Number.isInteger(l.color)), key);
+    assert.ok(Math.abs(s.layers.reduce((n, l) => n + l.h, 0) - SOIL_DEPTH) < 1e-9, key);
+    if (s.need < 3) continue;
+    const bottom = s.layers[s.layers.length - 1];
+    assert.ok(bottom.rock, key);
+    assert.ok(SOIL_DEPTH - bottom.h < PILE_TIP, `${key}: piles reach the rock`);
+  }
 });

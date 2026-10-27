@@ -185,6 +185,8 @@ header { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding
 .brief .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; margin: 10px 0; }
 .brief .facts div { background: #f5efe9; border-radius: 14px; padding: 8px 10px; }
 .brief .facts b { display: block; }
+.brief .profile { display: flex; flex-direction: column; height: 140px; margin-top: 8px; border-radius: 10px; overflow: hidden; border: 2px solid #d8ccc0; }
+.brief .profile span { display: flex; align-items: center; min-height: 16px; padding: 0 8px; font-size: 12px; font-weight: 600; }
 
 .report { background: repeating-linear-gradient(#fffdf6 0 31px, #d7e6f5 31px 32px); font-family: "Fredoka", sans-serif; position: relative; }
 .report .school { text-align: center; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); font-size: 13px; }
