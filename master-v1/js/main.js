@@ -127,7 +127,7 @@ const LINES = {
     flood: ["The floor's soggy! 🌊", "Water's coming in!", "My shoes are wet!"],
   },
   love: {
-    furniture: ["Comfy couches! 🛋️", "Best seat in town!"], garden: ["Look, butterflies! 🦋", "Pretty rain garden! 🌼"],
+    lights: ["LED lights, so bright! ✨", "I can read so well now!"], sprinklers: ["Sprinklers keep us safe! 🚿"], garden: ["Look, butterflies! 🦋", "Pretty rain garden! 🌼"],
     energy: ["Yay, sun power! ☀️", "Clean energy rocks!"], hvac: ["Just-right temperature!", "Fresh air, yay! 🌬️"],
     trees: ["I love the shade trees! 🌳", "So shady and nice!"],
   },
