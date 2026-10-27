@@ -21,6 +21,8 @@
     .name { font-weight:700; }
     .note { color:var(--muted); font-size:.9rem; }
     .play { font-weight:700; background:var(--hazard); color:#1b1400; border-radius:4px; padding:6px 12px; white-space:nowrap; }
+    h2 { font-family:"Archivo", "Arial Narrow", sans-serif; font-stretch:75%; font-weight:800; font-size:1.3rem; text-transform:uppercase; margin:12px 0 0; }
+    .who { color:var(--muted); font-family:"JetBrains Mono", monospace; font-size:.75rem; margin-left:8px; }
     .latest { font-family:"JetBrains Mono", monospace; font-size:.7rem; text-transform:uppercase; letter-spacing:.1em; color:var(--line); margin-left:8px; }
     @media (max-width: 520px) { a.iter { grid-template-columns: 1fr; gap:6px; } }
   </style>
@@ -31,6 +33,7 @@
       <h1>BuildCraft</h1>
       <p class="sub">Hackathon iterations. Each folder is a complete, playable version; newest first.</p>
     </header>
+    <h2>Team mainline</h2>
     <!-- To add an iteration: copy the newest folder, rename it (buildcraft-v0.2), and add a row at the top linking to its index.html. -->
     <ul>
       <li>
@@ -47,6 +50,42 @@
           <span><span class="name">Starter: Riverside Library</span><br>
             <span class="note">One brief, Minneapolis weather, 9 decisions, demo year and random year.</span></span>
           <span class="play">Play</span>
+        </a>
+      </li>
+    </ul>
+    <h2>Prototypes</h2>
+    <!-- To add a prototype: make a folder under prototypes/ and add a row here. -->
+    <ul>
+      <li>
+        <a class="iter" href="prototypes/alex/index.html">
+          <span class="ver">alex</span>
+          <span><span class="name">Towns, soils and surprise quakes</span><span class="who">Alex</span><br>
+            <span class="note">Pick a town, building type and floors. 90-second build, then a 12-month year of earthquakes and windstorms; foundations must match the soil. Earlier v1 and v2 are in the same folder.</span></span>
+          <span class="play">Play</span>
+        </a>
+      </li>
+      <li>
+        <a class="iter" href="prototypes/sky-high-builders/index.html">
+          <span class="ver">sky-high</span>
+          <span><span class="name">Sky High Builders: the wind challenge</span><span class="who">Logan</span><br>
+            <span class="note">Stack pieces on a grid to build a tower for a windy city.</span></span>
+          <span class="play">Play</span>
+        </a>
+      </li>
+      <li>
+        <a class="iter" href="prototypes/buildcraft-3d/index.html">
+          <span class="ver">3d</span>
+          <span><span class="name">BuildCraft 3D</span><span class="who">Logan</span><br>
+            <span class="note">Orbitable 3D tower, house, bridge and frame templates with six adjustable loads and a demand/capacity score. Needs internet for Three.js.</span></span>
+          <span class="play">Play</span>
+        </a>
+      </li>
+      <li>
+        <a class="iter" href="https://ncseahackathon.ssoe.abacus.ai/">
+          <span class="ver">next.js</span>
+          <span><span class="name">Neighborhood learning hub</span><span class="who">nabdo</span><br>
+            <span class="note">3D design against a budget, an area target and a hot-day cooling simulation. Hosted on Abacus.AI; source in prototypes/learning-hub-nextjs/.</span></span>
+          <span class="play">Open</span>
         </a>
       </li>
     </ul>
