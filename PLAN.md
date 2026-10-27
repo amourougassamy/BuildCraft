@@ -20,7 +20,7 @@ Sizes: **S** is under an hour, **M** is 1–3 hours, **L** is half a day or more
 | ID | Task | Area | Size | Needs | Who | Done |
 | --- | --- | --- | --- | --- | --- | --- |
 | 0 | Merge `master_V1` into `main` so Master V1 goes live | Setup | S | | Anand | ✅ |
-| U3 | Remove the Furniture option (Basic / Cozy & Colorful) | UI | S | | TK | ⬜ |
+| U3 | Remove the Furniture option (Basic / Cozy & Colorful) | UI | S | | TK | ✅ |
 | M4 | Level 1 can fail: running without changes should not pass | Levels | S | | ADAR | ⬜ |
 | M5 | Bigger buildings: at least 2 storeys and a larger footprint | Levels | M | | ADAR | ⬜ |
 | M6 | L-shaped building (re-entrant corner) on a later level | Levels | M | M5 | | ⬜ |
@@ -38,7 +38,7 @@ Sizes: **S** is under an hour, **M** is 1–3 hours, **L** is half a day or more
 | U2 | Drawing sheet: a plan-view mini drawing that updates as you choose | UI | L | U1 | | ⬜ |
 | S1 | Elevators for taller buildings | Systems | M | | | ⬜ |
 | S2 | Number of restrooms for bigger buildings | Systems | S | | ADAR | ⬜ |
-| S3 | Fire sprinklers: yes / no option | Systems | S | | TK | ⬜ |
+| S3 | Fire sprinklers: yes / no option | Systems | S | | TK | ✅ |
 | S4 | Fire event (and a MEGA "flaming tornado") | Systems | M | S3 | | ⬜ |
 | S5 | A helicopter flies in the rooftop HVAC unit | Systems | M | | TK | ✅ |
 
