@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BuildCraft</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #2d2a32; --yellow: #ffd23f; --red: #e53935; --blue: #1e88e5;
+    --green: #43a047; --orange: #fb8c00; --purple: #8e24aa; --paper: #fff8e1;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Fredoka", "Trebuchet MS", sans-serif; background: var(--paper); color: var(--ink); }
+  .card { background: #fff; border: 3px solid var(--ink); border-radius: 16px; box-shadow: 0 4px 0 var(--ink); }
+
+  header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 10px 16px;
+    background: repeating-linear-gradient(-45deg, var(--yellow) 0 24px, #ffc107 24px 48px); border-bottom: 4px solid var(--ink); }
+  .logo { font-size: 34px; font-weight: 700; background: #fff; border: 3px solid var(--ink); border-radius: 14px; padding: 2px 14px; box-shadow: 0 4px 0 var(--ink); }
+  .logo span { color: var(--red); }
+  .stat { display: flex; align-items: center; gap: 8px; background: #fff; border: 3px solid var(--ink); border-radius: 30px; padding: 4px 14px; font-size: 22px; font-weight: 600; }
+  .stat.happy { flex: 1 1 260px; max-width: 420px; }
+  .meter { flex: 1; height: 22px; border: 3px solid var(--ink); border-radius: 12px; overflow: hidden; background: #eee; }
+  #fill { height: 100%; width: 50%; transition: width .6s, background .6s; }
+  #face { font-size: 28px; }
+
+  main { display: flex; flex-wrap: wrap; gap: 16px; padding: 16px; }
+  .left { flex: 3 1 520px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .right { flex: 2 1 340px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+  .scene { position: relative; overflow: hidden; padding: 0; }
+  canvas { display: block; width: 100%; height: auto; }
+  .badge { position: absolute; top: 10px; right: 10px; background: #fff; border: 3px solid var(--ink); border-radius: 20px; padding: 2px 12px; font-weight: 600; }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 10px 12px; }
+  .controls b { font-size: 18px; }
+  select { font: inherit; font-size: 17px; padding: 6px 8px; border: 3px solid var(--ink); border-radius: 10px; background: #fff; }
+  .btn { font: inherit; font-size: 18px; font-weight: 600; padding: 8px 14px; border: 3px solid var(--ink); border-radius: 12px; cursor: pointer; color: #fff; box-shadow: 0 3px 0 var(--ink); }
+  .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+  .btn:disabled { opacity: .5; cursor: wait; }
+  .btn.quake { background: #8d5524; }
+  .btn.wind { background: var(--blue); }
+  .btn.repair { background: var(--orange); display: none; }
+
+  .mascot { display: flex; gap: 12px; align-items: center; padding: 10px 12px; }
+  .fran { font-size: 54px; line-height: 1; }
+  .bubble { flex: 1; background: #fffde7; border: 3px solid var(--ink); border-radius: 14px; padding: 8px 12px; font-size: 17px; position: relative; }
+  .bubble::before { content: ""; position: absolute; left: -14px; top: 18px; border: 8px solid transparent; border-right: 12px solid var(--ink); }
+
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tab { font: inherit; font-size: 15px; font-weight: 600; padding: 6px 10px; border: 3px solid var(--ink); border-radius: 12px; background: #fff; cursor: pointer; }
+  .tab.on { background: var(--c); color: #fff; }
+  .tab .n { background: var(--yellow); color: var(--ink); border-radius: 8px; padding: 0 5px; margin-left: 4px; font-size: 13px; }
+  #items { padding: 10px 14px; }
+  #items h2 { margin: 0; font-size: 24px; }
+  .sub { margin: 0 0 6px; color: #666; }
+  .item { border-top: 2px dashed #ccc; padding: 8px 0; }
+  .item h3 { margin: 0 0 6px; font-size: 18px; }
+  .choices { display: flex; gap: 8px; }
+  .choice { flex: 1; font: inherit; border: 3px solid #bbb; border-radius: 12px; background: #fafafa; padding: 6px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .choice .tag { font-size: 13px; font-weight: 600; border-radius: 8px; padding: 0 6px; }
+  .choice.min .tag { background: #e0e0e0; }
+  .choice.beyond .tag { background: var(--yellow); }
+  .choice .ico { font-size: 28px; }
+  .choice .cost { font-weight: 700; color: var(--green); }
+  .choice.sel { border-color: var(--ink); background: #e3f2fd; box-shadow: 0 3px 0 var(--ink); }
+  .choice:disabled { opacity: .4; cursor: not-allowed; }
+  .tip { margin: 6px 0 0; font-size: 14px; color: #555; }
+
+  .report { padding: 10px 14px; }
+  .report h3 { margin: 0 0 6px; }
+  #report { margin: 0; padding: 0; list-style: none; }
+  #report li { display: flex; justify-content: space-between; gap: 8px; padding: 2px 0; }
+  .plus { color: var(--green); font-weight: 700; }
+  .minus { color: var(--red); font-weight: 700; }
+  .legend { font-size: 14px; padding: 8px 12px; }
+
+  @media (max-width: 600px) {
+    header, main { padding: 10px 16px; }
+    .logo { font-size: 26px; }
+    .choices { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">👷 Build<span>Craft</span></div>
+  <div class="stat">💰 $<b id="money">0</b> left</div>
+  <div class="stat happy"><span id="face">🙂</span><div class="meter"><div id="fill"></div></div><b id="hnum">50</b></div>
+</header>
+
+<main>
+  <section class="left">
+    <div class="card scene">
+      <canvas id="cv" width="900" height="440"></canvas>
+      <div class="badge" id="inside"></div>
+    </div>
+    <div class="card controls">
+      <b>Test it:</b>
+      <select id="power">
+        <option value="1">Small</option>
+        <option value="2" selected>Medium</option>
+        <option value="3">Big</option>
+        <option value="4">MEGA</option>
+      </select>
+      <button class="btn quake" data-hazard="quake">🌋 Earthquake</button>
+      <button class="btn wind" data-hazard="wind">🌪️ Windstorm</button>
+      <button class="btn repair" id="repair">🔧 Repair</button>
+    </div>
+    <div class="card mascot">
+      <div class="fran">👷‍♀️</div>
+      <div class="bubble" id="say"></div>
+    </div>
+  </section>
+
+  <section class="right">
+    <div class="tabs" id="tabs"></div>
+    <div class="card" id="items"></div>
+    <div class="card report">
+      <h3>😊 Happiness Report</h3>
+      <ul id="report"></ul>
+    </div>
+    <div class="card legend">
+      <b>📏 Code Minimum</b> = what the building rules require to keep people safe.<br>
+      <b>⭐ Beyond Code</b> = extra strong, comfy, or green. Costs more!
+    </div>
+  </section>
+</main>
+
+<script>
+// ---------- Game data ----------
+// Every item has a Code Minimum (min) and Beyond Code (beyond) option.
+// quake / wind add to building strength; happy adds to happiness;
+// power = keeps lights on after damage; bolted = shelves stay put in quakes.
+const BUDGET = 120;
+const CATS = [
+  { key: "structural", name: "Structural", icon: "🏗️", color: "#e53935", items: [
+    { key: "frame", name: "Building Frame",
+      min:    { label: "Wood Frame", ico: "🪵", cost: 15, tip: "Meets the rules. Strong enough to keep people safe." },
+      beyond: { label: "Braced Steel Frame", ico: "🔩", cost: 30, quake: 1, wind: 1, tip: "Steel X-braces hold the building steady when it shakes or gets pushed by wind." } },
+    { key: "found", name: "Foundation",
+      min:    { label: "Standard Footings", ico: "🧱", cost: 10, tip: "Concrete feet that hold the building up." },
+      beyond: { label: "Shake Absorbers", ico: "🛞", cost: 30, quake: 2, tip: "Rubber pads (base isolators) let the ground move while the building stays calm." } },
+  ]},
+  { key: "arch", name: "Architectural", icon: "🏠", color: "#1e88e5", items: [
+    { key: "windows", name: "Windows",
+      min:    { label: "Standard Windows", ico: "🪟", cost: 5, tip: "Regular glass windows." },
+      beyond: { label: "Storm-Proof Windows", ico: "🛡️", cost: 15, wind: 1, tip: "Extra-tough glass that won't break when things fly around in the wind." } },
+    { key: "roof", name: "Roof",
+      min:    { label: "Standard Roof", ico: "🏠", cost: 5, tip: "Keeps the rain out." },
+      beyond: { label: "Strapped-Down Roof", ico: "⛓️", cost: 15, wind: 1, tip: "Metal straps tie the roof to the walls so wind can't lift it off." } },
+  ]},
+  { key: "interior", name: "Interior Design", icon: "🛋️", color: "#8e24aa", items: [
+    { key: "furniture", name: "Furniture & Colors",
+      min:    { label: "Basic Furniture", ico: "🪑", cost: 5, tip: "Simple chairs and tables." },
+      beyond: { label: "Cozy & Colorful", ico: "🛋️", cost: 15, happy: 10, why: "Cozy, colorful rooms", tip: "Comfy couches, bright colors, and plants make people happy!" } },
+    { key: "shelves", name: "Bookshelves",
+      min:    { label: "Standing Shelves", ico: "📚", cost: 0, tip: "Shelves just stand against the wall." },
+      beyond: { label: "Bolted Shelves", ico: "🔩", cost: 5, bolted: true, tip: "Bolting shelves to the wall stops them from tipping over in an earthquake." } },
+  ]},
+  { key: "mep", name: "MEP", sub: "Mechanical, Electrical & Plumbing", icon: "💡", color: "#fb8c00", items: [
+    { key: "hvac", name: "Heating & Cooling",
+      min:    { label: "Basic Heat & AC", ico: "🌡️", cost: 10, tip: "Keeps the building warm enough and cool enough." },
+      beyond: { label: "Fresh-Air System", ico: "🌬️", cost: 20, happy: 10, why: "Fresh air & just-right temperature", tip: "Quiet, fresh air and the perfect temperature in every room." } },
+    { key: "backup", name: "Backup Power",
+      min:    { label: "No Backup", ico: "🔌", cost: 0, tip: "If the power goes out, the lights go off." },
+      beyond: { label: "Backup Generator", ico: "⚡", cost: 15, power: true, tip: "Keeps the lights and fridge on after a storm." } },
+  ]},
+  { key: "sust", name: "Sustainability", icon: "🌱", color: "#43a047", items: [
+    { key: "energy", name: "Energy",
+      min:    { label: "Grid Power", ico: "🏭", cost: 0, tip: "Electricity comes from the power plant." },
+      beyond: { label: "Solar Panels", ico: "☀️", cost: 20, happy: 5, power: true, why: "Clean energy from the sun", tip: "Free, clean energy from the sun. Works even when the power plant is down!" } },
+    { key: "water", name: "Rainwater",
+      min:    { label: "Storm Drain", ico: "🕳️", cost: 0, tip: "Rainwater goes down the drain." },
+      beyond: { label: "Rain Garden", ico: "🌼", cost: 10, happy: 5, why: "Rain garden with flowers & butterflies", tip: "Plants soak up rainwater, and butterflies come to visit." } },
+  ]},
+];
+const ITEMS = Object.fromEntries(CATS.flatMap(c => c.items.map(i => [i.key, i])));
+const POWER_NAMES = ["", "small", "medium", "big", "MEGA"];
+
+// ---------- State ----------
+const choice = Object.fromEntries(Object.keys(ITEMS).map(k => [k, "min"]));
+let tab = "structural";
+let damage = 0, lastHazard = null, hazard = null, happy = 50;
+
+const $ = id => document.getElementById(id);
+const opt = k => ITEMS[k][choice[k]];
+const beyond = k => choice[k] === "beyond";
+const spent = () => Object.keys(ITEMS).reduce((s, k) => s + opt(k).cost, 0);
+
+function stats() {
+  const s = { quake: 1, wind: 1, power: false, bolted: false };
+  for (const k in ITEMS) {
+    const o = opt(k);
+    s.quake += o.quake || 0;
+    s.wind += o.wind || 0;
+    s.power = s.power || !!o.power;
+    s.bolted = s.bolted || !!o.bolted;
+  }
+  return s;
+}
+
+// ---------- Happiness ----------
+function calcHappiness() {
+  const s = stats(), lines = [["🏢 Safe building that meets code", 50]];
+  for (const k in ITEMS) { const o = opt(k); if (o.happy) lines.push(["✨ " + o.why, o.happy]); }
+  if (lastHazard) {
+    const { type, power, damage: d } = lastHazard;
+    const name = type === "quake" ? "earthquake" : "windstorm";
+    if (d === 0) lines.push([`💪 No damage from the ${name}!`, 10]);
+    else lines.push([`💥 Damage from the ${name}`, -10 * d]);
+    if (d >= 2) lines.push(["🚧 Closed for repairs", -10]);
+    if (type === "quake" && power >= 2) {
+      lines.push(s.bolted ? ["📚 Bolted shelves stayed put", 5] : ["📚 Stuff fell off the shelves", -10]);
+    }
+    if (d >= 1) lines.push(s.power ? ["💡 Lights stayed on (backup power)", 5] : ["🔌 The power went out", -10]);
+  }
+  const total = lines.reduce((t, l) => t + l[1], 0);
+  return { value: Math.max(0, Math.min(100, total)), lines };
+}
+
+// ---------- UI ----------
+function say(msg) { $("say").innerHTML = msg; }
+
+function renderShop() {
+  const left = BUDGET - spent();
+  $("tabs").innerHTML = CATS.map(c => {
+    const n = c.items.filter(i => beyond(i.key)).length;
+    return `<button class="tab ${c.key === tab ? "on" : ""}" style="--c:${c.color}" data-tab="${c.key}">${c.icon} ${c.name}${n ? `<span class="n">⭐${n}</span>` : ""}</button>`;
+  }).join("");
+  const c = CATS.find(c => c.key === tab);
+  $("items").innerHTML = `<h2 style="color:${c.color}">${c.icon} ${c.name}</h2>${c.sub ? `<p class="sub">${c.sub}</p>` : ""}` +
+    c.items.map(it => {
+      const cur = choice[it.key];
+      return `<div class="item"><h3>${it.name}</h3><div class="choices">` +
+        ["min", "beyond"].map(lv => {
+          const o = it[lv], dis = hazard || o.cost - it[cur].cost > left;
+          return `<button class="choice ${lv} ${cur === lv ? "sel" : ""}" data-item="${it.key}" data-lv="${lv}" ${dis ? "disabled" : ""}>
+            <span class="tag">${lv === "min" ? "📏 Code Minimum" : "⭐ Beyond Code"}</span>
+            <span class="ico">${o.ico}</span><b>${o.label}</b><span class="cost">$${o.cost}</span></button>`;
+        }).join("") + `</div><p class="tip">${it[cur].tip}</p></div>`;
+    }).join("");
+  $("money").textContent = left;
+}
+
+function renderHappiness() {
+  const h = calcHappiness();
+  happy = h.value;
+  $("hnum").textContent = happy;
+  $("fill").style.width = happy + "%";
+  $("fill").style.background = happy >= 70 ? "#43a047" : happy >= 40 ? "#ffd23f" : "#e53935";
+  $("face").textContent = happy >= 85 ? "🤩" : happy >= 65 ? "😄" : happy >= 45 ? "🙂" : happy >= 25 ? "😟" : "😭";
+  $("report").innerHTML = h.lines.map(([t, v]) =>
+    `<li><span>${t}</span><span class="${v >= 0 ? "plus" : "minus"}">${v >= 0 ? "+" : ""}${v}</span></li>`).join("") +
+    `<li style="border-top:2px solid #2d2a32;margin-top:4px"><b>Total</b><b>${happy}</b></li>`;
+  $("repair").style.display = damage ? "inline-block" : "none";
+}
+
+function update() { renderShop(); renderHappiness(); }
+
+$("tabs").addEventListener("click", e => {
+  const b = e.target.closest(".tab");
+  if (b) { tab = b.dataset.tab; renderShop(); }
+});
+
+$("items").addEventListener("click", e => {
+  const b = e.target.closest(".choice");
+  if (!b || b.disabled) return;
+  choice[b.dataset.item] = b.dataset.lv;
+  damage = 0; lastHazard = null;
+  say(ITEMS[b.dataset.item][b.dataset.lv].tip);
+  update();
+});
+
+document.querySelectorAll("[data-hazard]").forEach(b => b.addEventListener("click", () => {
+  damage = 0; lastHazard = null;
+  hazard = { type: b.dataset.hazard, power: +$("power").value, start: performance.now() };
+  document.querySelectorAll(".btn").forEach(x => x.disabled = true);
+  say(hazard.type === "quake" ? "🌋 Earthquake! Everybody out, nice and calm!" : "🌪️ Here comes the wind! Everybody out!");
+  update();
+}));
+
+$("repair").addEventListener("click", () => {
+  damage = 0; lastHazard = null;
+  say("🔧 All fixed up! People can come back inside.");
+  update();
+});
+
+function finishHazard() {
+  const { type, power } = hazard, s = stats();
+  const strength = type === "quake" ? s.quake : s.wind;
+  damage = Math.max(0, Math.min(3, power - strength));
+  lastHazard = { type, power, damage };
+  hazard = null;
+  document.querySelectorAll(".btn").forEach(x => x.disabled = false);
+  const name = `${POWER_NAMES[power]} ${type === "quake" ? "earthquake" : "windstorm"}`;
+  if (damage === 0) say(`Wow! Your building handled the <b>${name}</b> with no damage. People can stay inside! 💪`);
+  else if (damage === 1) say(`Everyone got out safely from the <b>${name}</b>, but there's a little damage. Try some ⭐ Beyond Code parts!`);
+  else say(`Everyone got out safely. That's the building code's job! 👍 But after the <b>${name}</b> the building needs repairs before anyone can go back in. ⭐ Beyond Code parts can keep it open.`);
+  update();
+}
+
+// ---------- Scene ----------
+const cv = $("cv"), ctx = cv.getContext("2d");
+const W = 900, H = 440, GY = 360, BW = 240, FH = 65, DOOR_X = 450, INK = "#2d2a32";
+const HAZARD_MS = 3500;
+const SHIRTS = ["#e53935", "#1e88e5", "#43a047", "#8e24aa", "#fb8c00", "#00acc1", "#f06292"];
+const SKINS = ["#f5d0a9", "#e0ac69", "#c68642", "#8d5524", "#ffdbac"];
+const CRACKS = [[-80, -50], [60, -120], [-30, -170], [95, -40], [10, -100], [-100, -150]];
+const clouds = [{ x: 160, y: 60, v: .2, s: 1 }, { x: 480, y: 40, v: .15, s: 1.3 }, { x: 760, y: 85, v: .25, s: .9 }];
+let people = [], parts = [], inside = 4, lastArrive = 0, lastLeave = 0;
+
+const pick = a => a[Math.floor(Math.random() * a.length)];
+function shape(fill, path, lw = 4) {
+  ctx.beginPath(); path();
+  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+  ctx.lineWidth = lw; ctx.strokeStyle = INK; ctx.lineJoin = "round"; ctx.stroke();
+}
+const rr = (x, y, w, h, r, fill) => shape(fill, () => ctx.roundRect(x, y, w, h, r));
+const circ = (x, y, r, fill) => shape(fill, () => ctx.arc(x, y, r, 0, Math.PI * 2));
+function line(x1, y1, x2, y2, c = INK, w = 4) {
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+  ctx.strokeStyle = c; ctx.lineWidth = w; ctx.lineCap = "round"; ctx.stroke();
+}
+function smile(x, y, r, mood) {
+  ctx.fillStyle = INK;
+  ctx.beginPath(); ctx.arc(x - r * .35, y - r * .15, r * .12, 0, 7); ctx.arc(x + r * .35, y - r * .15, r * .12, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.lineWidth = 2; ctx.strokeStyle = INK;
+  if (mood === "scared") ctx.arc(x, y + r * .35, r * .2, 0, 7);
+  else if (mood === "sad") ctx.arc(x, y + r * .6, r * .35, Math.PI * 1.2, Math.PI * 1.8);
+  else ctx.arc(x, y + r * .1, r * .4, Math.PI * .15, Math.PI * .85);
+  ctx.stroke();
+}
+
+function spawnArriver() {
+  const fromLeft = Math.random() < .5;
+  people.push({ x: fromLeft ? -20 : W + 20, dir: fromLeft ? 1 : -1, state: "in", speed: .7 + Math.random() * .5,
+    lane: Math.random() * 20, phase: 0, shirt: pick(SHIRTS), skin: pick(SKINS), hat: Math.random() < .2 });
+}
+function spawnLeaver(run) {
+  inside--;
+  people.push({ x: DOOR_X, dir: Math.random() < .5 ? -1 : 1, state: "out", speed: run ? 3 : .7 + Math.random() * .5,
+    lane: Math.random() * 20, phase: 0, shirt: pick(SHIRTS), skin: pick(SKINS), hat: Math.random() < .2, scared: run });
+}
+
+function tick(dt, now) {
+  const open = damage < 2 && !hazard;
+  if (hazard) {
+    people.forEach(p => { if (p.state === "in") { p.state = "out"; p.dir *= -1; } p.speed = 3; p.scared = true; });
+    if (inside > 0 && now - lastLeave > 120) { spawnLeaver(true); lastLeave = now; }
+    if (now - hazard.start > HAZARD_MS) finishHazard();
+  } else {
+    const gap = 4200 - happy * 32;  // happier building = more visitors
+    if (open && now - lastArrive > gap) { spawnArriver(); lastArrive = now; }
+    if (inside > 0 && now - lastLeave > gap * 1.15) { spawnLeaver(false); lastLeave = now; }
+    if (!open) people.forEach(p => { if (p.state === "in") { p.state = "out"; p.dir *= -1; p.sad = true; } });
+  }
+  people.forEach(p => {
+    p.x += p.dir * p.speed * dt / 16;
+    p.phase += p.speed * dt / 70;
+    if (p.state === "in" && Math.abs(p.x - DOOR_X) < 4) { p.gone = true; inside++; }
+    if (p.x < -40 || p.x > W + 40) p.gone = true;
+  });
+  people = people.filter(p => !p.gone);
+
+  if (hazard) {
+    const n = hazard.power;
+    for (let i = 0; i < n; i++) {
+      if (hazard.type === "wind") parts.push({ x: -20, y: Math.random() * GY, vx: 10 + n * 3, vy: 2 + Math.random() * 2, kind: Math.random() < .8 ? "rain" : "leaf", life: 200 });
+      else if (Math.random() < .4) parts.push({ x: 200 + Math.random() * 500, y: GY, vx: (Math.random() - .5) * 2, vy: -2 - Math.random() * 2, kind: "dust", life: 40 });
+    }
+  }
+  parts.forEach(p => { p.x += p.vx * dt / 16; p.y += p.vy * dt / 16; if (p.kind === "dust") p.vy += .1; p.life--; });
+  parts = parts.filter(p => p.life > 0 && p.x < W + 20 && p.y < H);
+  $("inside").textContent = `👥 ${inside} inside`;
+}
+
+function drawCloud(x, y, s, color) {
+  ctx.fillStyle = color; ctx.beginPath();
+  ctx.arc(x, y, 22 * s, 0, 7); ctx.arc(x + 25 * s, y - 12 * s, 26 * s, 0, 7); ctx.arc(x + 52 * s, y, 22 * s, 0, 7);
+  ctx.fill();
+}
+
+function drawCrane(now) {
+  const x = 790;
+  rr(x - 10, 110, 20, GY - 110, 0, "#ffc107");
+  for (let y = 115; y < GY - 10; y += 22) line(x - 8, y, x + 8, y + 22, INK, 2);
+  rr(x - 120, 100, 180, 12, 3, "#ffc107");
+  rr(x - 16, 112, 32, 24, 5, "#e53935");
+  const hx = x - 90 + Math.sin(now * .0008) * 25;
+  line(hx, 112, hx, 200, INK, 2);
+  rr(hx - 30, 200, 60, 10, 2, "#e53935");
+}
+
+function drawPerson(x, y, p, mood) {
+  const sw = Math.sin(p.phase) * 6;
+  line(x, y - 14, x - sw * .7, y); line(x, y - 14, x + sw * .7, y);
+  rr(x - 9, y - 38, 18, 26, 7, p.shirt);
+  circ(x, y - 48, 11, p.skin);
+  smile(x, y - 48, 11, mood);
+  if (p.hat) shape("#ffd23f", () => { ctx.arc(x, y - 52, 11, Math.PI, 0); ctx.lineTo(x + 15, y - 52); ctx.lineTo(x - 15, y - 52); ctx.closePath(); }, 3);
+}
+
+function drawBuilding(now) {
+  const base = -14, top = base - FH * 3, eave = BW / 2 + 16;
+  // Foundation
+  if (beyond("found")) {
+    [-90, 0, 90].forEach(x => rr(x - 14, base + 2, 28, 12, 5, "#333"));
+    rr(-BW / 2 - 8, base - 2, BW + 16, 6, 3, "#9e9e9e");
+  } else rr(-BW / 2 - 10, base, BW + 20, 14, 3, "#a7a7a7");
+
+  // Walls
+  const steel = beyond("frame");
+  rr(-BW / 2, top, BW, FH * 3, 6, steel ? "#b0c4d8" : "#f4c27a");
+  if (!steel) for (let y = top + 13; y < base; y += 13) line(-BW / 2 + 4, y, BW / 2 - 4, y, "#d9a35b", 2);
+  for (let f = 1; f < 3; f++) line(-BW / 2, base - f * FH, BW / 2, base - f * FH, INK, 3);
+  if (steel) for (let f = 0; f < 3; f++) {
+    const yb = base - f * FH, yt = yb - FH;
+    [[-BW / 2 + 4, -BW / 2 + 32], [BW / 2 - 32, BW / 2 - 4]].forEach(([a, b]) => {
+      line(a, yt + 4, b, yb - 4, "#c62828", 3); line(b, yt + 4, a, yb - 4, "#c62828", 3);
+    });
+  }
+
+  // Windows
+  const storm = beyond("windows"), cozy = beyond("furniture");
+  let idx = 0;
+  for (let f = 0; f < 3; f++) for (const cx of [-62, 0, 62]) {
+    if (f === 0 && cx === 0) continue;
+    const x = cx - 19, y = base - f * FH - FH + 14, broken = damage >= 2 && idx++ % 3 === 0;
+    ctx.save();
+    rr(x, y, 38, 36, 4, broken ? "#4a4f5a" : "#bfe9ff");
+    if (broken) { line(x + 6, y + 6, x + 20, y + 20, "#fff", 2); line(x + 20, y + 20, x + 32, y + 10, "#fff", 2); }
+    else {
+      line(x + 8, y + 26, x + 18, y + 8, "#fff", 3);
+      if (cozy) {
+        shape("#f06292", () => { ctx.moveTo(x + 2, y + 2); ctx.lineTo(x + 12, y + 2); ctx.lineTo(x + 2, y + 18); ctx.closePath(); }, 2);
+        shape("#f06292", () => { ctx.moveTo(x + 36, y + 2); ctx.lineTo(x + 26, y + 2); ctx.lineTo(x + 36, y + 18); ctx.closePath(); }, 2);
+        circ(x + 27, y + 28, 5, "#43a047");
+      }
+    }
+    if (storm) { ctx.lineWidth = 7; ctx.strokeStyle = "#1a3d8f"; ctx.strokeRect(x, y, 38, 36); }
+    ctx.restore();
+  }
+
+  // Door
+  rr(-20, base - 54, 40, 54, 6, "#1e88e5");
+  circ(12, base - 27, 3, "#ffd23f");
+
+  // Roof (blows crooked with heavy damage)
+  ctx.save();
+  if (damage >= 3) { ctx.translate(-eave, top); ctx.rotate(-.14); ctx.translate(eave, -top); }
+  shape("#e53935", () => { ctx.moveTo(-eave, top); ctx.lineTo(0, top - 62); ctx.lineTo(eave, top); ctx.closePath(); });
+  const roofY = x => top - 62 * (1 - Math.abs(x) / eave);
+  if (beyond("roof")) for (const x of [-95, -50, 50, 95]) line(x, roofY(x) + 3, x, top - 2, "#78909c", 5);
+  if (beyond("energy")) {
+    const a = 22, b = 102;
+    shape("#1f3c88", () => { ctx.moveTo(a, roofY(a) + 4); ctx.lineTo(b, roofY(b) + 4); ctx.lineTo(b, roofY(b) + 14); ctx.lineTo(a, roofY(a) + 14); ctx.closePath(); }, 3);
+    for (let x = a + 20; x < b; x += 20) line(x, roofY(x) + 5, x, roofY(x) + 13, "#90caf9", 2);
+  }
+  ctx.restore();
+
+  // Cracks
+  CRACKS.slice(0, damage * 2).forEach(([x, y]) => {
+    ctx.beginPath(); ctx.moveTo(x, y);
+    for (let i = 1; i <= 4; i++) ctx.lineTo(x + (i % 2 ? 8 : -4), y + i * 8);
+    ctx.strokeStyle = INK; ctx.lineWidth = 3; ctx.stroke();
+  });
+}
+
+function drawProps(now) {
+  // Tree
+  rr(52, GY - 70, 16, 70, 4, "#8d5524");
+  circ(60, GY - 90, 38, "#66bb6a");
+
+  // Rain garden or storm drain
+  if (beyond("water")) {
+    shape("#64b5f6", () => ctx.ellipse(190, GY + 2, 55, 10, 0, 0, 7), 3);
+    [[150, "#f06292"], [175, "#ffd23f"], [210, "#ab47bc"], [235, "#ff7043"]].forEach(([x, c]) => {
+      line(x, GY, x, GY - 22, "#2e7d32", 3); circ(x, GY - 26, 6, c);
+    });
+    const bx = 190 + Math.sin(now * .002) * 40, by = GY - 60 + Math.sin(now * .005) * 10;
+    ctx.font = "20px sans-serif"; ctx.fillText("🦋", bx, by);
+  } else {
+    rr(220, GY - 4, 30, 8, 2, "#757575");
+    for (let x = 226; x < 250; x += 6) line(x, GY - 3, x, GY + 3, INK, 1);
+  }
+
+  // Generator
+  if (beyond("backup")) {
+    rr(255, GY - 40, 56, 40, 6, "#ffd23f");
+    ctx.font = "22px sans-serif"; ctx.fillText("⚡", 271, GY - 12);
+  }
+
+  // Heating & cooling unit with spinning fan
+  const big = beyond("hvac"), hx = 595, hw = big ? 64 : 50, hh = big ? 52 : 40;
+  rr(hx, GY - hh, hw, hh, 6, big ? "#e3f2fd" : "#cfd8dc");
+  const fx = hx + hw / 2, fy = GY - hh / 2, a = now * .01;
+  circ(fx, fy, 14, "#fff");
+  for (let i = 0; i < 3; i++) line(fx, fy, fx + Math.cos(a + i * 2.1) * 11, fy + Math.sin(a + i * 2.1) * 11, INK, 3);
+  if (big) { ctx.font = "16px sans-serif"; ctx.fillText("🍃", hx + hw - 20, GY - hh + 18); }
+}
+
+function drawRepairCrew(now) {
+  [-34, 34].forEach(dx => shape("#ff7043", () => {
+    const x = DOOR_X + dx, y = GY + 40;
+    ctx.moveTo(x, y - 26); ctx.lineTo(x + 10, y); ctx.lineTo(x - 10, y); ctx.closePath();
+  }, 3));
+  line(DOOR_X - 130, GY + 40, DOOR_X - 130, GY - 10, INK, 4);
+  rr(DOOR_X - 185, GY - 40, 110, 34, 6, "#fff");
+  ctx.fillStyle = "#e53935"; ctx.font = "bold 13px Fredoka, sans-serif"; ctx.textAlign = "center";
+  ctx.fillText("CLOSED FOR", DOOR_X - 130, GY - 26); ctx.fillText("REPAIRS 🔧", DOOR_X - 130, GY - 11);
+  ctx.textAlign = "left";
+  [[DOOR_X + 80, 0], [DOOR_X + 125, 1.5]].forEach(([x, off]) => {
+    const y = GY + 42, swing = Math.sin(now * .012 + off) * .8;
+    drawPerson(x, y, { phase: 0, shirt: "#fb8c00", skin: SKINS[off ? 3 : 0], hat: true }, "happy");
+    const hx = x - 10 + Math.cos(-2 + swing) * 18, hy = y - 30 + Math.sin(-2 + swing) * 18;
+    line(x - 8, y - 30, hx, hy, INK, 4);
+    rr(hx - 6, hy - 5, 12, 8, 2, "#9e9e9e");
+  });
+}
+
+function draw(now) {
+  const h = hazard, prog = h ? (now - h.start) / HAZARD_MS : 0;
+  const env = h ? Math.sin(Math.PI * Math.min(1, prog)) : 0;
+  const windy = h && h.type === "wind", quaky = h && h.type === "quake";
+
+  // Sky, sun, clouds, hills, crane
+  const g = ctx.createLinearGradient(0, 0, 0, GY);
+  g.addColorStop(0, windy ? "#7a8ea8" : "#6ec6ff"); g.addColorStop(1, windy ? "#b8c4d4" : "#d4f1ff");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  if (!windy) { circ(70, 70, 34, "#ffd23f"); smile(70, 72, 30, "happy"); }
+  clouds.forEach(c => {
+    c.x += c.v * (windy ? 6 * h.power : 1);
+    if (c.x > W + 60) c.x = -150;
+    drawCloud(c.x, c.y, c.s, windy ? "#dfe5ec" : "#fff");
+  });
+  shape("#8fd16a", () => { ctx.moveTo(-20, GY + 5); ctx.quadraticCurveTo(200, 210, 440, GY + 5); });
+  shape("#7cc55a", () => { ctx.moveTo(380, GY + 5); ctx.quadraticCurveTo(640, 240, W + 20, GY - 20); ctx.lineTo(W + 20, GY + 5); });
+  drawCrane(now);
+
+  // Ground and everything on it (shakes in an earthquake)
+  const gdx = quaky ? Math.sin(now * .07) * h.power * 3 * env : 0;
+  ctx.save(); ctx.translate(gdx, 0);
+  rr(-20, GY, W + 40, H - GY + 20, 0, "#6cbf4b");
+  rr(-20, GY + 10, W + 40, 38, 0, "#f1dca7");
+  rr(DOOR_X - 24, GY, 48, 12, 0, "#f1dca7");
+  drawProps(now);
+
+  // Building: isolators calm the shaking, wind makes it sway, damage makes it lean
+  ctx.save();
+  const bdx = quaky ? gdx * (beyond("found") ? -.7 : .6) : 0;
+  ctx.translate(DOOR_X + bdx, GY);
+  if (damage >= 2) ctx.rotate((damage - 1) * .025);
+  if (windy) {
+    const weak = Math.max(.3, 1.2 - stats().wind * .25);
+    ctx.transform(1, 0, -(.03 + Math.sin(now * .012) * .015) * h.power * env * weak, 1, 0, 0);
+  }
+  drawBuilding(now);
+  ctx.restore();
+
+  if (damage >= 2 && !h) drawRepairCrew(now);
+  people.sort((a, b) => a.lane - b.lane).forEach(p => {
+    const mood = p.scared ? "scared" : p.sad || happy < 30 ? "sad" : "happy";
+    drawPerson(p.x, GY + 20 + p.lane, p, mood);
+  });
+  ctx.restore();
+
+  // Weather
+  parts.forEach(p => {
+    if (p.kind === "rain") line(p.x, p.y, p.x - 10, p.y - 4, "#e3f2fd", 2);
+    else if (p.kind === "leaf") { ctx.fillStyle = "#66bb6a"; ctx.beginPath(); ctx.ellipse(p.x, p.y, 6, 3, p.x * .05, 0, 7); ctx.fill(); }
+    else { ctx.fillStyle = "rgba(141,85,36,.5)"; ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, 7); ctx.fill(); }
+  });
+}
+
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(50, now - last); last = now;
+  tick(dt, now); draw(now);
+  requestAnimationFrame(frame);
+}
+
+for (let i = 0; i < 3; i++) { spawnArriver(); people[i].x = 100 + i * 280; people[i].dir = people[i].x < DOOR_X ? 1 : -1; }
+say("Hi! I'm Foreman Fran. 👋 You have <b>$" + BUDGET + "</b>. Pick parts in each tab, then test your building with an earthquake or windstorm!");
+update();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

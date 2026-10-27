@@ -1,0 +1,979 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BuildCraft</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #2d2a32; --yellow: #ffd23f; --red: #e53935; --blue: #1e88e5;
+    --green: #43a047; --orange: #fb8c00; --purple: #8e24aa; --paper: #fff8e1;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font-family: "Fredoka", "Trebuchet MS", sans-serif; background: var(--paper); color: var(--ink); }
+  .card { background: #fff; border: 3px solid var(--ink); border-radius: 16px; box-shadow: 0 4px 0 var(--ink); }
+
+  header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 10px 16px;
+    background: repeating-linear-gradient(-45deg, var(--yellow) 0 24px, #ffc107 24px 48px); border-bottom: 4px solid var(--ink); }
+  .logo { font-size: 34px; font-weight: 700; background: #fff; border: 3px solid var(--ink); border-radius: 14px; padding: 2px 14px; box-shadow: 0 4px 0 var(--ink); }
+  .logo span { color: var(--red); }
+  .stat { display: flex; align-items: center; gap: 8px; background: #fff; border: 3px solid var(--ink); border-radius: 30px; padding: 4px 14px; font-size: 20px; font-weight: 600; }
+  .stat.happy { flex: 1 1 240px; max-width: 420px; }
+  .neg { color: var(--red); }
+  .meter { flex: 1; height: 22px; border: 3px solid var(--ink); border-radius: 12px; overflow: hidden; background: #eee; }
+  #fill { height: 100%; width: 50%; transition: width .6s, background .6s; }
+  #face { font-size: 28px; }
+
+  .btn { font: inherit; font-size: 18px; font-weight: 600; padding: 8px 14px; border: 3px solid var(--ink); border-radius: 12px; cursor: pointer; color: #fff; box-shadow: 0 3px 0 var(--ink); background: var(--blue); }
+  .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn.go { background: var(--green); font-size: 22px; padding: 10px 22px; }
+  .btn.repair { background: var(--orange); }
+  .btn.pause { background: #757575; }
+
+  /* Setup screen */
+  #setup { max-width: 1100px; margin: 0 auto; padding: 16px; }
+  .intro { padding: 12px 18px; display: flex; gap: 14px; align-items: center; }
+  .intro .fran { font-size: 60px; }
+  .intro h2 { margin: 0; }
+  .intro p { margin: 4px 0 0; font-size: 18px; }
+  .step { margin: 18px 0 8px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .pick { font: inherit; text-align: left; padding: 10px 14px; cursor: pointer; background: #fff; }
+  .pick.sel { background: #e3f2fd; outline: 4px solid var(--blue); }
+  .pick .big { font-size: 44px; }
+  .pick h3 { margin: 2px 0; font-size: 22px; }
+  .pick p { margin: 4px 0; font-size: 15px; }
+  .pick .like { color: #777; font-style: italic; }
+  .startRow { text-align: center; margin: 22px 0 30px; }
+
+  /* Game screen */
+  main { display: flex; flex-wrap: wrap; gap: 16px; padding: 16px; }
+  .left { flex: 3 1 520px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .right { flex: 2 1 340px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .scene { position: relative; overflow: hidden; padding: 0; }
+  canvas { display: block; width: 100%; height: auto; }
+  .badge { position: absolute; top: 10px; right: 10px; background: #fff; border: 3px solid var(--ink); border-radius: 20px; padding: 2px 12px; font-weight: 600; }
+  #banner { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: var(--red); color: #fff; border: 3px solid var(--ink); border-radius: 14px; padding: 6px 14px; font-size: 18px; font-weight: 600; text-align: center; animation: pulse .6s infinite alternate; max-width: 70%; }
+  @keyframes pulse { to { transform: translateX(-50%) scale(1.05); } }
+
+  .status { padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  #phase { font-size: 20px; font-weight: 700; flex: 1; }
+  .months { display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px; }
+  .mo { border: 2px solid var(--ink); border-radius: 8px; text-align: center; font-size: 12px; padding: 2px 0; background: #fff; min-height: 40px; }
+  .mo .ev { display: block; font-size: 16px; }
+  .mo.past { background: #c8e6c9; }
+  .mo.now { background: var(--yellow); }
+
+  .mascot { display: flex; gap: 12px; align-items: center; padding: 10px 12px; }
+  .fran { font-size: 54px; line-height: 1; }
+  .bubble { flex: 1; background: #fffde7; border: 3px solid var(--ink); border-radius: 14px; padding: 8px 12px; font-size: 17px; position: relative; }
+  .bubble::before { content: ""; position: absolute; left: -14px; top: 18px; border: 8px solid transparent; border-right: 12px solid var(--ink); }
+
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tab { font: inherit; font-size: 15px; font-weight: 600; padding: 6px 10px; border: 3px solid var(--ink); border-radius: 12px; background: #fff; cursor: pointer; }
+  .tab.on { background: var(--c); color: #fff; }
+  .tab .n { background: var(--yellow); color: var(--ink); border-radius: 8px; padding: 0 5px; margin-left: 4px; font-size: 13px; }
+  #items { padding: 10px 14px; }
+  #items h2 { margin: 0; font-size: 24px; }
+  .sub { margin: 0 0 6px; color: #666; }
+  .item { border-top: 2px dashed #ccc; padding: 8px 0; }
+  .item h3 { margin: 0 0 6px; font-size: 18px; }
+  .soilNote { background: #efebe9; border-radius: 10px; padding: 4px 8px; font-size: 14px; margin-bottom: 6px; }
+  .choices { display: flex; gap: 8px; }
+  .choice { flex: 1; font: inherit; border: 3px solid #bbb; border-radius: 12px; background: #fafafa; padding: 6px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
+  .choice .tag { font-size: 12px; font-weight: 600; border-radius: 8px; padding: 0 6px; }
+  .tag.min { background: #e0e0e0; }
+  .tag.beyond { background: var(--yellow); }
+  .tag.weak { background: #ffcdd2; color: #b71c1c; }
+  .choice .ico { font-size: 26px; }
+  .choice .cost { font-weight: 700; color: var(--green); }
+  .choice.sel { border-color: var(--ink); background: #e3f2fd; box-shadow: 0 3px 0 var(--ink); }
+  .choice:disabled { opacity: .45; cursor: not-allowed; }
+  .tip { margin: 6px 0 0; font-size: 14px; color: #555; }
+
+  .report { padding: 10px 14px; }
+  .report h3 { margin: 0 0 6px; }
+  #report { margin: 0; padding: 0; list-style: none; }
+  #report li { display: flex; justify-content: space-between; gap: 8px; padding: 2px 0; }
+  .plus { color: var(--green); font-weight: 700; }
+  .minus { color: var(--red); font-weight: 700; }
+  .legend { font-size: 14px; padding: 8px 12px; }
+
+  /* End screen */
+  .overlay { position: fixed; inset: 0; background: rgba(45, 42, 50, .6); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 10; }
+  .endCard { max-width: 640px; width: 100%; max-height: 92vh; overflow: auto; padding: 18px 22px; text-align: center; }
+  .stars { font-size: 56px; letter-spacing: 6px; }
+  .endStats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin: 12px 0; }
+  .endStats div { background: #fff8e1; border: 2px solid var(--ink); border-radius: 12px; padding: 6px; }
+  .endStats b { display: block; font-size: 24px; }
+  .endCard ul { text-align: left; padding-left: 20px; }
+
+  @media (max-width: 600px) {
+    header, main, #setup { padding: 10px 16px; }
+    .logo { font-size: 26px; }
+    .choices { flex-direction: column; }
+    .mo { font-size: 10px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">👷 Build<span>Craft</span></div>
+  <div class="stat" id="townChip" hidden></div>
+  <div class="stat" id="moneyChip" hidden>💰 $<b id="money">0</b></div>
+  <div class="stat happy" id="happyChip" hidden><span id="face">🙂</span><div class="meter"><div id="fill"></div></div><b id="hnum">50</b></div>
+</header>
+
+<section id="setup"></section>
+
+<main id="game" hidden>
+  <section class="left">
+    <div class="card scene">
+      <canvas id="cv" width="900" height="500"></canvas>
+      <div class="badge" id="inside"></div>
+      <div id="banner" hidden></div>
+    </div>
+    <div class="card status">
+      <div class="row">
+        <span id="phase"></span>
+        <button class="btn go" id="open">🎉 Open for Business!</button>
+        <button class="btn repair" id="repair" hidden></button>
+        <button class="btn pause" id="pause">⏸ Pause</button>
+      </div>
+      <div class="months" id="months"></div>
+    </div>
+    <div class="card mascot">
+      <div class="fran">👷‍♀️</div>
+      <div class="bubble" id="say"></div>
+    </div>
+  </section>
+
+  <section class="right">
+    <div class="tabs" id="tabs"></div>
+    <div class="card" id="items"></div>
+    <div class="card report">
+      <h3>😊 Happiness Report</h3>
+      <ul id="report"></ul>
+    </div>
+    <div class="card legend">
+      <b>📏 Code Minimum</b> = what the building rules require to keep people safe.<br>
+      <b>⭐ Beyond Code</b> = extra strong, comfy, or green. Costs more!<br>
+      <b>🔧 Retrofit</b> = upgrading after the building is open costs 1.5× as much.
+    </div>
+  </section>
+</main>
+
+<div class="overlay" id="end" hidden><div class="card endCard" id="endCard"></div></div>
+
+<script>
+// ================= Game data =================
+const MONTH_MS = 15000, MONTHS = 12, BUILD_MS = 90000, WARN_MS = 10000, HAZARD_MS = 3500, REPAIR_MS = 6000;
+const FLOOR_COST = 20, RETROFIT = 1.5, REPAIR_COST = 15;
+const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const POWER_NAMES = ["", "small", "medium", "big", "MEGA"];
+
+// need = foundation level the soil needs (1 shallow, 2 mat, 3 deep). Tall buildings on soil need one more.
+// top = where the rock layer starts in the ground cut-away.
+const SOILS = {
+  rock: { name: "Solid Rock", need: 1, color: "#9e9e9e", top: 8, desc: "Super strong ground. Shallow footings work great!" },
+  firm: { name: "Firm Gravel", need: 1, color: "#c8a165", top: 125, desc: "Strong, packed ground. Shallow footings are fine for short buildings. Tall ones need a mat slab." },
+  clay: { name: "Soft Clay", need: 2, color: "#a1887f", top: 135, desc: "Squishy ground! Heavy buildings sink unless the foundation spreads out (mat slab) or goes deep (piles)." },
+  sand: { name: "Loose Wet Sand", need: 2, color: "#e6c97a", top: 130, liquefy: true,
+          desc: "In an earthquake, wet sand can turn soupy like a milkshake (liquefaction)! Deep piles reach the solid rock below." },
+};
+
+// events: [hazard, min power, max power]
+const TOWNS = [
+  { key: "rocky", name: "Rocky Ridge", ico: "🏔️", like: "Like the Rocky Mountains", scene: "mountains", soil: "rock", budget: 150, windName: "windstorm",
+    desc: "A quiet mountain town built on solid rock. A good place to start!", events: [["quake", 1, 2], ["wind", 1, 3]] },
+  { key: "shaky", name: "Shaky Hills", ico: "🌋", like: "Like California or Japan", scene: "hills", soil: "sand", budget: 190, windName: "windstorm",
+    desc: "The ground here rumbles a lot! Earthquakes are the big danger.", events: [["quake", 2, 4], ["quake", 1, 3], ["wind", 1, 2]] },
+  { key: "breezy", name: "Breezy Bay", ico: "🌀", like: "Like Florida or the Gulf Coast", scene: "beach", soil: "clay", budget: 180, windName: "hurricane",
+    desc: "A sunny beach town where hurricanes blow in from the ocean.", events: [["wind", 2, 4], ["wind", 2, 3], ["quake", 1, 1]] },
+  { key: "prairie", name: "Prairie Plains", ico: "🌾", like: "Like Kansas or Oklahoma", scene: "prairie", soil: "firm", budget: 165, windName: "tornado",
+    desc: "Wide open farmland where tornadoes can spin up fast.", events: [["wind", 3, 4], ["wind", 1, 2], ["quake", 1, 1]] },
+];
+
+const TYPES = [
+  { key: "school", name: "School", ico: "🏫", fee: 1, desc: "Kids learn and play here every day.",
+    mission: "Keep the average happiness at 60 or more.", check: r => r.avgHappy >= 60 },
+  { key: "hospital", name: "Hospital", ico: "🏥", fee: 2, desc: "Must keep working after a disaster. Closing or losing power hurts twice as much!",
+    mission: "Never close! Sick people need you.", check: r => r.closedMs === 0 },
+  { key: "library", name: "Library", ico: "📚", fee: 1, desc: "A cozy place to read. Interior design counts double!",
+    mission: "Welcome 80 visitors this year.", check: r => r.visitors >= 80 },
+];
+
+const FLOORS = [
+  { n: 1, desc: "Cheapest and steadiest. Fewer visitors." },
+  { n: 2, desc: "In the middle. A good balance." },
+  { n: 3, desc: "Most visitors! But tall buildings sway more and are heavy on soft soil." },
+];
+
+// Items with tier min/beyond show Code Minimum / Beyond Code. The foundation's tag depends on the soil.
+// quake / wind add strength; happy adds happiness; power = lights stay on; bolted = shelves stay put.
+const CATS = [
+  { key: "structural", name: "Structural", icon: "🏗️", color: "#e53935", items: [
+    { key: "found", name: "Foundation", foundation: true, options: [
+      { label: "Shallow Footings", ico: "🦶", cost: 10, level: 1, tip: "Concrete \"feet\" just under the ground. Great on rock or firm soil." },
+      { label: "Mat Slab", ico: "🟫", cost: 25, level: 2, tip: "One big thick slab under the whole building. It spreads the weight like a snowshoe." },
+      { label: "Deep Piles", ico: "📍", cost: 45, level: 3, tip: "Long poles driven deep down to solid rock. Best for soft or sandy soil." } ] },
+    { key: "frame", name: "Building Frame", options: [
+      { tier: "min", label: "Wood Frame", ico: "🪵", cost: 15, tip: "Meets the rules. Strong enough to keep people safe." },
+      { tier: "beyond", label: "Braced Steel Frame", ico: "🔩", cost: 30, quake: 1, wind: 1, tip: "Steel X-braces hold the building steady when it shakes or gets pushed by wind." } ] },
+    { key: "iso", name: "Earthquake Protection", options: [
+      { tier: "min", label: "Bolted Down", ico: "🔧", cost: 0, tip: "The building is bolted to its foundation so it can't slide off." },
+      { tier: "beyond", label: "Shake Absorbers", ico: "🛞", cost: 30, quake: 2, tip: "Rubber pads (base isolators) let the ground move while the building stays calm." } ] },
+  ]},
+  { key: "arch", name: "Architectural", icon: "🏠", color: "#1e88e5", items: [
+    { key: "windows", name: "Windows", options: [
+      { tier: "min", label: "Standard Windows", ico: "🪟", cost: 5, tip: "Regular glass windows." },
+      { tier: "beyond", label: "Storm-Proof Windows", ico: "🛡️", cost: 15, wind: 1, tip: "Extra-tough glass that won't break when things fly around in the wind." } ] },
+    { key: "roof", name: "Roof", options: [
+      { tier: "min", label: "Standard Roof", ico: "🏠", cost: 5, tip: "Keeps the rain out." },
+      { tier: "beyond", label: "Strapped-Down Roof", ico: "⛓️", cost: 15, wind: 1, tip: "Metal straps tie the roof to the walls so wind can't lift it off." } ] },
+  ]},
+  { key: "interior", name: "Interior Design", icon: "🛋️", color: "#8e24aa", items: [
+    { key: "furniture", name: "Furniture & Colors", options: [
+      { tier: "min", label: "Basic Furniture", ico: "🪑", cost: 5, tip: "Simple chairs and tables." },
+      { tier: "beyond", label: "Cozy & Colorful", ico: "🛋️", cost: 15, happy: 10, why: "Cozy, colorful rooms", tip: "Comfy couches, bright colors, and plants make people happy!" } ] },
+    { key: "shelves", name: "Bookshelves", options: [
+      { tier: "min", label: "Standing Shelves", ico: "📚", cost: 0, tip: "Shelves just stand against the wall." },
+      { tier: "beyond", label: "Bolted Shelves", ico: "🔩", cost: 5, bolted: true, tip: "Bolting shelves to the wall stops them from tipping over in an earthquake." } ] },
+  ]},
+  { key: "mep", name: "MEP", sub: "Mechanical, Electrical & Plumbing", icon: "💡", color: "#fb8c00", items: [
+    { key: "hvac", name: "Heating & Cooling", options: [
+      { tier: "min", label: "Basic Heat & AC", ico: "🌡️", cost: 10, tip: "Keeps the building warm enough and cool enough." },
+      { tier: "beyond", label: "Fresh-Air System", ico: "🌬️", cost: 20, happy: 10, why: "Fresh air & just-right temperature", tip: "Quiet, fresh air and the perfect temperature in every room." } ] },
+    { key: "backup", name: "Backup Power", options: [
+      { tier: "min", label: "No Backup", ico: "🔌", cost: 0, tip: "If the power goes out, the lights go off." },
+      { tier: "beyond", label: "Backup Generator", ico: "⚡", cost: 15, power: true, tip: "Keeps the lights and fridge on after a storm." } ] },
+  ]},
+  { key: "sust", name: "Sustainability", icon: "🌱", color: "#43a047", items: [
+    { key: "energy", name: "Energy", options: [
+      { tier: "min", label: "Grid Power", ico: "🏭", cost: 0, tip: "Electricity comes from the power plant." },
+      { tier: "beyond", label: "Solar Panels", ico: "☀️", cost: 20, happy: 5, power: true, why: "Clean energy from the sun", tip: "Free, clean energy from the sun. Works even when the power plant is down!" } ] },
+    { key: "water", name: "Rainwater", options: [
+      { tier: "min", label: "Storm Drain", ico: "🕳️", cost: 0, tip: "Rainwater goes down the drain." },
+      { tier: "beyond", label: "Rain Garden", ico: "🌼", cost: 10, happy: 5, why: "Rain garden with flowers & butterflies", tip: "Plants soak up rainwater, and butterflies come to visit." } ] },
+  ]},
+];
+const ITEMS = Object.fromEntries(CATS.flatMap(c => c.items.map(i => [i.key, { ...i, cat: c.key }])));
+
+// ================= State =================
+const setup = { town: "rocky", type: "school", floors: 2 };
+let S = null, tab = "structural", happy = 50;
+
+const $ = id => document.getElementById(id);
+const rand = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = rand(0, i); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const town = () => TOWNS.find(t => t.key === S.town);
+const btype = () => TYPES.find(t => t.key === S.type);
+const soil = () => SOILS[town().soil];
+const opt = k => ITEMS[k].options[S.choice[k]];
+const beyond = k => ITEMS[k].foundation ? opt(k).level > soilNeed() : opt(k).tier === "beyond";
+const foundLevel = () => opt("found").level;
+const soilNeed = () => Math.min(3, soil().need + (S.floors === 3 && town().soil !== "rock" ? 1 : 0));
+const closed = () => S.damage >= 2 || S.repairing > 0;
+const hazName = (type, power) => `${POWER_NAMES[power]} ${type === "quake" ? "earthquake" : town().windName}`;
+
+function stats() {
+  const s = { quake: 1, wind: 1, power: false, bolted: false };
+  for (const k in ITEMS) {
+    const o = opt(k);
+    s.quake += o.quake || 0;
+    s.wind += o.wind || 0;
+    s.power = s.power || !!o.power;
+    s.bolted = s.bolted || !!o.bolted;
+  }
+  return s;
+}
+
+// ================= Setup screen =================
+function hazardList(t) {
+  const q = t.events.filter(e => e[0] === "quake").length, w = t.events.length - q;
+  return [q && `🌋 ${q} earthquake${q > 1 ? "s" : ""}`, w && `🌪️ ${w} ${t.windName}${w > 1 ? "s" : ""}`].filter(Boolean).join(", ");
+}
+
+function renderSetup() {
+  $("setup").innerHTML = `
+    <div class="card intro"><div class="fran">👷‍♀️</div><div>
+      <h2>Welcome to BuildCraft!</h2>
+      <p>I'm Foreman Fran. Pick a town and a building. Then build it strong, open it up, and keep people happy through a whole year of weather!</p>
+    </div></div>
+    <h2 class="step">1️⃣ Pick a town</h2>
+    <div class="grid">${TOWNS.map(t => `
+      <button class="card pick ${setup.town === t.key ? "sel" : ""}" data-town="${t.key}">
+        <div class="big">${t.ico}</div><h3>${t.name}</h3><p class="like">${t.like}</p><p>${t.desc}</p>
+        <p>🪨 <b>Ground:</b> ${SOILS[t.soil].name}</p>
+        <p>⚠️ <b>Weather:</b> ${hazardList(t)}</p>
+        <p>💰 <b>Budget:</b> $${t.budget}</p>
+      </button>`).join("")}</div>
+    <h2 class="step">2️⃣ Pick a building</h2>
+    <div class="grid">${TYPES.map(t => `
+      <button class="card pick ${setup.type === t.key ? "sel" : ""}" data-type="${t.key}">
+        <div class="big">${t.ico}</div><h3>${t.name}</h3><p>${t.desc}</p>
+        <p>🎯 <b>Mission:</b> ${t.mission}</p><p>🎟️ Visitors pay $${t.fee} each</p>
+      </button>`).join("")}</div>
+    <h2 class="step">3️⃣ How many floors? <small>($${FLOOR_COST} per floor)</small></h2>
+    <div class="grid">${FLOORS.map(f => `
+      <button class="card pick ${setup.floors === f.n ? "sel" : ""}" data-floors="${f.n}">
+        <div class="big">${"🟧".repeat(f.n)}</div><h3>${f.n} floor${f.n > 1 ? "s" : ""}</h3><p>${f.desc}</p>
+      </button>`).join("")}</div>
+    <div class="startRow"><button class="btn go" id="start">🏗️ Start Building!</button></div>`;
+}
+
+$("setup").addEventListener("click", e => {
+  const p = e.target.closest(".pick");
+  if (p) {
+    if (p.dataset.town) setup.town = p.dataset.town;
+    if (p.dataset.type) setup.type = p.dataset.type;
+    if (p.dataset.floors) setup.floors = +p.dataset.floors;
+    renderSetup();
+  }
+  if (e.target.closest("#start")) startBuild();
+});
+
+// ================= Game flow =================
+function startBuild() {
+  S = {
+    ...setup, phase: "build", choice: Object.fromEntries(Object.keys(ITEMS).map(k => [k, 0])),
+    money: 0, damage: 0, settle: 0, lastHazard: null, hazard: null, repairing: 0, paused: false,
+    clock: 0, month: -1, buildLeft: BUILD_MS, events: [], settleMonths: [], log: [],
+    visitors: 0, closedMs: 0, happySamples: [], repairSpent: 0, settleCount: 0, liqCount: 0, hazardDamage: 0,
+  };
+  S.money = town().budget - S.floors * FLOOR_COST;
+  people = []; parts = []; floats = []; inside = 0; lastArrive = 0; lastLeave = 0;
+  tab = "structural";
+  $("setup").hidden = true; $("end").hidden = true; $("game").hidden = false;
+  ["townChip", "moneyChip", "happyChip"].forEach(id => $(id).hidden = false);
+  $("townChip").textContent = `${town().ico} ${town().name} · ${btype().ico} ${btype().name}`;
+  const sl = soil(), weak = foundLevel() < soilNeed();
+  say(`Welcome to <b>${town().name}</b>! The ground here is <b>${sl.name}</b>. ${sl.desc} ` +
+      (weak ? "⚠️ Check your <b>Foundation</b> first!" : "") +
+      ` You have 1½ minutes to build. 🎯 Mission: ${btype().mission}`);
+  update();
+}
+
+function openForBusiness() {
+  const t = town(), n = t.events.length;
+  S.phase = "season";
+  S.events = shuffle(t.events.map(([type, a, b]) => ({ type, power: rand(a, b) }))).map((e, i) => {
+    const month = Math.min(11, Math.floor((i + .5) * MONTHS / n) + rand(-1, 1));
+    return { ...e, month, at: month * MONTH_MS + 6000, done: false };
+  });
+  S.settleMonths = foundLevel() < soilNeed() ? [3, 7] : [];
+  say(`🎉 You're open! Each visitor pays <b>$${btype().fee}</b>. Watch the calendar. Weather is coming, and you'll get a warning before it hits!`);
+  update();
+}
+
+function addLog(text) { S.log.push(`<b>${MONTH_NAMES[Math.max(0, S.month)]}:</b> ${text}`); }
+
+function settleEvent() {
+  S.damage = Math.min(3, S.damage + 1);
+  S.settle += 7;
+  S.settleCount++;
+  addLog(`The building sank into the ${soil().name.toLowerCase()} 😬`);
+  say(`😬 Uh oh! The building is sinking into the <b>${soil().name}</b>. Shallow foundations can't hold heavy buildings on soft ground. A mat slab or deep piles would stop this!`);
+  update();
+}
+
+function startHazard(ev) {
+  S.hazard = { type: ev.type, power: ev.power, start: S.clock, ev };
+  say(ev.type === "quake" ? "🌋 Earthquake! Everybody out, nice and calm!" : `🌪️ Here comes the ${town().windName}! Everybody out!`);
+  update();
+}
+
+function finishHazard() {
+  const { type, power, ev } = S.hazard, s = stats();
+  const tall = S.floors === 3 ? 1 : 0;
+  let d = Math.max(0, power + tall - (type === "quake" ? s.quake : s.wind));
+  const liq = type === "quake" && soil().liquefy && foundLevel() < 3 && power >= 2;
+  if (liq) { d++; S.liqCount++; }
+  d = Math.min(3, d);
+  S.damage = Math.min(3, S.damage + d);
+  S.hazardDamage += d;
+  S.lastHazard = { type, power, damage: d, shelves: type === "quake" && power >= 2 ? s.bolted : null };
+  ev.result = d;
+  S.hazard = null;
+  const name = hazName(type, power);
+  addLog(`${type === "quake" ? "🌋" : "🌪️"} A ${name}: ${d ? `${d} damage${liq ? " (the sand turned soupy!)" : ""}` : "no damage 💪"}`);
+  if (liq) say(`🥤 The wet sand turned soupy in the <b>${name}</b> (liquefaction)! Deep piles reach the solid rock below and stop this.`);
+  else if (d === 0) say(`Wow! Your building handled the <b>${name}</b> with no damage. People can stay inside! 💪`);
+  else if (S.damage < 2) say(`Everyone got out safely from the <b>${name}</b>. There's a little damage, but you can stay open. You could pay to fix it, or retrofit with ⭐ Beyond Code parts!`);
+  else say(`Everyone got out safely. That's the building code's job! 👍 But the building has to <b>close</b> until you pay for repairs. 🔧`);
+  update();
+}
+
+function startRepair() {
+  const cost = REPAIR_COST * S.damage;
+  S.money -= cost; S.repairSpent += cost; S.repairing = REPAIR_MS;
+  addLog(`🔧 Paid $${cost} for repairs`);
+  say(S.money < 0 ? "🔧 The builders are on it! You had to borrow money, so your bank is below zero." : "🔧 The builders are on it! Fixing things takes a little time.");
+  update();
+}
+
+function endGame() {
+  S.phase = "end";
+  const avgHappy = Math.round(S.happySamples.reduce((a, b) => a + b, 0) / Math.max(1, S.happySamples.length));
+  const r = { avgHappy, visitors: S.visitors, closedMs: S.closedMs, money: S.money };
+  const mission = btype().check(r);
+  const stars = 1 + (avgHappy >= 60 ? 1 : 0) + (mission ? 1 : 0);
+  const lessons = [];
+  if (S.settleCount) lessons.push(`🪨 <b>${soil().name}</b> needs a stronger foundation. Try <b>${soilNeed() === 3 ? "Deep Piles" : "a Mat Slab"}</b> next time.`);
+  if (S.liqCount) lessons.push("🥤 Wet sand turned soupy in an earthquake (liquefaction). <b>Deep Piles</b> reach the solid rock under it!");
+  if (S.hazardDamage) lessons.push("⭐ <b>Beyond Code</b> parts (braces, shake absorbers, storm windows, roof straps) stop damage so the building stays open.");
+  if (!S.hazardDamage && !S.settleCount) lessons.push("🏆 No damage all year. That's great engineering!");
+  if (S.repairSpent) lessons.push(`💸 You spent <b>$${S.repairSpent}</b> on repairs. Sometimes spending more up front saves money later!`);
+  $("endCard").innerHTML = `
+    <h2>🎆 The year is over in ${town().name}!</h2>
+    <div class="stars">${"⭐".repeat(stars)}${"☆".repeat(3 - stars)}</div>
+    <p>🎯 <b>Mission:</b> ${btype().mission} ${mission ? "✅ Done!" : "❌ Not this time."}</p>
+    <div class="endStats">
+      <div>😊 Avg. happiness<b>${avgHappy}</b></div>
+      <div>👥 Visitors<b>${S.visitors}</b></div>
+      <div>💰 Money left<b class="${S.money < 0 ? "neg" : ""}">$${S.money}</b></div>
+      <div>🚧 Days closed<b>${Math.round(S.closedMs / MONTH_MS * 30)}</b></div>
+    </div>
+    <h3>📖 What happened</h3><ul>${S.log.map(l => `<li>${l}</li>`).join("") || "<li>A calm year!</li>"}</ul>
+    <h3>💡 What we learned</h3><ul>${lessons.map(l => `<li>${l}</li>`).join("")}</ul>
+    <div class="row" style="justify-content:center">
+      <button class="btn go" id="again">🔁 Play Again</button>
+      <button class="btn" id="newTown">🗺️ New Town</button>
+    </div>`;
+  $("end").hidden = false;
+}
+
+$("endCard").addEventListener("click", e => {
+  if (e.target.closest("#again")) startBuild();
+  if (e.target.closest("#newTown")) {
+    $("end").hidden = true; $("game").hidden = true; $("setup").hidden = false;
+    ["townChip", "moneyChip", "happyChip"].forEach(id => $(id).hidden = true);
+    S = null; renderSetup();
+  }
+});
+
+// ================= Happiness =================
+function calcHappiness() {
+  const s = stats(), hosp = S.type === "hospital" ? 2 : 1, L = [["🏢 Safe building that meets code", 50]];
+  for (const k in ITEMS) {
+    const o = opt(k);
+    if (o.happy) L.push(["✨ " + o.why, S.type === "library" && ITEMS[k].cat === "interior" ? o.happy * 2 : o.happy]);
+  }
+  if (S.damage) L.push(["💥 Building damage", -10 * S.damage]);
+  if (closed()) L.push(["🚧 Closed for repairs", -10 * hosp]);
+  const lh = S.lastHazard;
+  if (lh) {
+    if (lh.damage === 0) L.push([`💪 Strong in the ${hazName(lh.type, lh.power)}`, 10]);
+    if (lh.shelves !== null) L.push(lh.shelves ? ["📚 Bolted shelves stayed put", 5] : ["📚 Stuff fell off the shelves", -10]);
+    if (lh.damage > 0) L.push(s.power ? ["💡 Backup power kept the lights on", 5] : ["🔌 The power went out", -10 * hosp]);
+  }
+  const total = L.reduce((t, l) => t + l[1], 0);
+  return { value: Math.max(0, Math.min(100, total)), lines: L };
+}
+
+// ================= UI =================
+function say(msg) { $("say").innerHTML = msg; }
+
+function tagFor(it, o) {
+  if (!it.foundation) return o.tier === "min" ? ["min", "📏 Code Minimum"] : ["beyond", "⭐ Beyond Code"];
+  const need = soilNeed();
+  return o.level < need ? ["weak", "⚠️ Too weak here"] : o.level === need ? ["min", "📏 Code Minimum"] : ["beyond", "⭐ Beyond Code"];
+}
+
+// Price to switch an item to option idx. Free swaps while building; 1.5x retrofit (no refunds) once open.
+function switchCost(k, idx) {
+  const diff = ITEMS[k].options[idx].cost - opt(k).cost;
+  return S.phase === "build" ? diff : Math.max(0, Math.ceil(diff * RETROFIT));
+}
+const locked = k => ITEMS[k].foundation && S.phase !== "build";
+
+function renderShop() {
+  $("tabs").innerHTML = CATS.map(c => {
+    const n = c.items.filter(i => beyond(i.key)).length;
+    return `<button class="tab ${c.key === tab ? "on" : ""}" style="--c:${c.color}" data-tab="${c.key}">${c.icon} ${c.name}${n ? `<span class="n">⭐${n}</span>` : ""}</button>`;
+  }).join("");
+  const c = CATS.find(c => c.key === tab);
+  $("items").innerHTML = `<h2 style="color:${c.color}">${c.icon} ${c.name}</h2>${c.sub ? `<p class="sub">${c.sub}</p>` : ""}` +
+    c.items.map(it => {
+      const cur = S.choice[it.key];
+      const note = it.foundation ? `<div class="soilNote">🪨 <b>${soil().name}:</b> ${soil().desc}${S.floors === 3 && town().soil !== "rock" ? " Your 3 floors are extra heavy!" : ""}</div>` : "";
+      return `<div class="item"><h3>${it.name}${locked(it.key) ? " 🔒" : ""}</h3>${note}<div class="choices">` +
+        it.options.map((o, i) => {
+          const [cls, label] = tagFor(it, o);
+          const price = S.phase === "build" ? `$${o.cost}` : i === cur ? "Installed" : locked(it.key) ? "🔒 Can't change now" : `Retrofit $${switchCost(it.key, i)}`;
+          return `<button class="choice ${i === cur ? "sel" : ""}" data-item="${it.key}" data-i="${i}">
+            <span class="tag ${cls}">${label}</span><span class="ico">${o.ico}</span><b>${o.label}</b><span class="cost">${price}</span></button>`;
+        }).join("") + `</div><p class="tip">${it.options[cur].tip}</p></div>`;
+    }).join("");
+  refreshButtons();
+}
+
+// Enable/disable shop buttons without rebuilding them (money changes every time a visitor pays).
+function refreshButtons() {
+  document.querySelectorAll(".choice").forEach(b => {
+    const k = b.dataset.item, i = +b.dataset.i;
+    b.disabled = S.phase === "end" || !!S.hazard || locked(k) || (i !== S.choice[k] && switchCost(k, i) > S.money);
+  });
+}
+
+function renderHappiness() {
+  const h = calcHappiness();
+  happy = h.value;
+  $("hnum").textContent = happy;
+  $("fill").style.width = happy + "%";
+  $("fill").style.background = happy >= 70 ? "#43a047" : happy >= 40 ? "#ffd23f" : "#e53935";
+  $("face").textContent = happy >= 85 ? "🤩" : happy >= 65 ? "😄" : happy >= 45 ? "🙂" : happy >= 25 ? "😟" : "😭";
+  $("report").innerHTML = h.lines.map(([t, v]) =>
+    `<li><span>${t}</span><span class="${v >= 0 ? "plus" : "minus"}">${v >= 0 ? "+" : ""}${v}</span></li>`).join("") +
+    `<li style="border-top:2px solid #2d2a32;margin-top:4px"><b>Total</b><b>${happy}</b></li>`;
+}
+
+function update() { renderShop(); renderHappiness(); hud(true); }
+
+// Per-frame status bar: money, timers, calendar, warning banner, buttons.
+let lastMonthsKey = "";
+function hud(force) {
+  $("money").textContent = S.money;
+  $("money").className = S.money < 0 ? "neg" : "";
+  $("inside").textContent = S.phase === "build" ? "🚧 Under construction" : `👥 ${inside} inside`;
+  $("open").hidden = S.phase !== "build";
+  $("pause").textContent = S.paused ? "▶️ Play" : "⏸ Pause";
+
+  if (S.phase === "build") {
+    const s = Math.ceil(S.buildLeft / 1000);
+    $("phase").textContent = `🏗️ Build time: ${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  } else {
+    const m = Math.min(11, Math.max(0, S.month));
+    $("phase").textContent = `📅 ${MONTH_NAMES[m]} · Month ${m + 1} of 12 · 👥 ${S.visitors} visitors`;
+  }
+
+  const rp = $("repair");
+  rp.hidden = !(S.phase === "season" && (S.damage > 0 || S.repairing > 0));
+  rp.disabled = S.repairing > 0 || !!S.hazard;
+  rp.textContent = S.repairing > 0 ? "🔨 Repairing..." : `🔧 Repair ($${REPAIR_COST * S.damage})`;
+
+  const next = S.events.find(e => !e.done);
+  const until = next ? next.at - S.clock : Infinity;
+  const warn = S.phase === "season" && until > 0 && until <= WARN_MS;
+  $("banner").hidden = !warn && !S.paused;
+  if (S.paused) $("banner").textContent = "⏸ Paused";
+  else if (warn) $("banner").innerHTML = `⚠️ A <b>${hazName(next.type, next.power)}</b> is coming in ${Math.ceil(until / 1000)}s! Quick, upgrade now!`;
+
+  // Calendar: show an event icon once it has been announced
+  const key = S.phase + S.month + S.events.map(e => (e.done ? "d" + e.result : "") + (e.at - S.clock <= WARN_MS ? "w" : "")).join();
+  if (force || key !== lastMonthsKey) {
+    lastMonthsKey = key;
+    $("months").innerHTML = MONTH_NAMES.map((n, i) => {
+      const ev = S.events.find(e => e.month === i && (e.done || e.at - S.clock <= WARN_MS));
+      const icon = ev ? (ev.type === "quake" ? "🌋" : "🌪️") + (ev.done ? (ev.result ? "💥" : "✅") : "") : "";
+      const cls = S.phase === "build" ? "" : i < S.month ? "past" : i === S.month ? "now" : "";
+      return `<div class="mo ${cls}">${n}<span class="ev">${icon}</span></div>`;
+    }).join("");
+  }
+}
+
+$("tabs").addEventListener("click", e => {
+  const b = e.target.closest(".tab");
+  if (b) { tab = b.dataset.tab; renderShop(); }
+});
+
+$("items").addEventListener("click", e => {
+  const b = e.target.closest(".choice");
+  if (!b || b.disabled) return;
+  const k = b.dataset.item, i = +b.dataset.i;
+  if (i === S.choice[k]) return;
+  const cost = switchCost(k, i);
+  S.money -= cost;
+  if (S.phase === "season" && cost > 0) addLog(`🔧 Retrofit: ${ITEMS[k].options[i].label} ($${cost})`);
+  S.choice[k] = i;
+  say(ITEMS[k].options[i].tip);
+  update();
+});
+
+$("open").addEventListener("click", () => openForBusiness());
+$("repair").addEventListener("click", () => startRepair());
+$("pause").addEventListener("click", () => { S.paused = !S.paused; hud(true); });
+
+// ================= Simulation =================
+const W = 900, H = 500, GY = 330, BW = 240, FH = 62, DOOR_X = 450, INK = "#2d2a32";
+const SHIRTS = ["#e53935", "#1e88e5", "#43a047", "#8e24aa", "#fb8c00", "#00acc1", "#f06292"];
+const SKINS = ["#f5d0a9", "#e0ac69", "#c68642", "#8d5524", "#ffdbac"];
+const CRACKS = [[-80, -50], [60, -110], [-30, -150], [95, -40], [10, -90], [-100, -130]];
+const clouds = [{ x: 160, y: 60, v: .2, s: 1 }, { x: 480, y: 40, v: .15, s: 1.3 }, { x: 760, y: 85, v: .25, s: .9 }];
+const DOTS = Array.from({ length: 60 }, () => [Math.random() * W, Math.random(), 2 + Math.random() * 3]);
+let people = [], parts = [], floats = [], inside = 0, lastArrive = 0, lastLeave = 0;
+
+const pick = a => a[Math.floor(Math.random() * a.length)];
+
+function spawnArriver() {
+  const fromLeft = Math.random() < .5;
+  people.push({ x: fromLeft ? -20 : W + 20, dir: fromLeft ? 1 : -1, state: "in", speed: .7 + Math.random() * .5,
+    lane: Math.random() * 6, phase: 0, shirt: pick(SHIRTS), skin: pick(SKINS), hat: Math.random() < .2 });
+}
+function spawnLeaver(run) {
+  inside--;
+  people.push({ x: DOOR_X, dir: Math.random() < .5 ? -1 : 1, state: "out", speed: run ? 3 : .7 + Math.random() * .5,
+    lane: Math.random() * 6, phase: 0, shirt: pick(SHIRTS), skin: pick(SKINS), hat: Math.random() < .2, scared: run });
+}
+
+function tick(dt) {
+  if (S.phase === "build") {
+    S.buildLeft -= dt;
+    if (S.buildLeft <= 0) openForBusiness();
+    return;
+  }
+  if (S.phase !== "season") return;
+
+  S.clock += dt;
+  const month = Math.floor(S.clock / MONTH_MS);
+  if (month !== S.month) {
+    if (month >= MONTHS) {
+      if (!S.hazard) { S.happySamples.push(happy); return endGame(); }
+    } else {
+      if (S.month >= 0) S.happySamples.push(happy);
+      S.month = month;
+      if (S.settleMonths.includes(month)) settleEvent();
+    }
+  }
+  for (const ev of S.events) if (!ev.done && !S.hazard && S.clock >= ev.at) { ev.done = true; startHazard(ev); }
+  if (S.hazard && S.clock - S.hazard.start > HAZARD_MS) finishHazard();
+  if (S.repairing > 0 && (S.repairing -= dt) <= 0) {
+    S.repairing = 0; S.damage = 0; S.lastHazard = null;
+    say("🔧 All fixed up! People can come back inside.");
+    update();
+  }
+  if (closed()) S.closedMs += dt;
+
+  // Visitors: happier and taller buildings get more of them
+  const now = S.clock, open = !closed() && !S.hazard;
+  if (S.hazard) {
+    people.forEach(p => { if (p.state === "in") { p.state = "out"; p.dir *= -1; } p.speed = 3; p.scared = true; });
+    if (inside > 0 && now - lastLeave > 120) { spawnLeaver(true); lastLeave = now; }
+  } else {
+    const gap = (4200 - happy * 32) / (.6 + .4 * S.floors);
+    if (open && now - lastArrive > gap) { spawnArriver(); lastArrive = now; }
+    if (inside > 0 && now - lastLeave > gap * 1.15) { spawnLeaver(false); lastLeave = now; }
+    if (!open) people.forEach(p => { if (p.state === "in") { p.state = "out"; p.dir *= -1; p.sad = true; } });
+  }
+  people.forEach(p => {
+    p.x += p.dir * p.speed * dt / 16;
+    p.phase += p.speed * dt / 70;
+    if (p.state === "in" && Math.abs(p.x - DOOR_X) < 4) {
+      p.gone = true; inside++; S.visitors++; S.money += btype().fee;
+      floats.push({ x: DOOR_X + 26, y: GY - 60, life: 50, text: `+$${btype().fee}` });
+    }
+    if (p.x < -40 || p.x > W + 40) p.gone = true;
+  });
+  people = people.filter(p => !p.gone);
+  refreshButtons();
+
+  if (S.hazard) {
+    const n = S.hazard.power;
+    for (let i = 0; i < n; i++) {
+      if (S.hazard.type === "wind") parts.push({ x: -20, y: Math.random() * GY, vx: 10 + n * 3, vy: 2 + Math.random() * 2, kind: Math.random() < .8 ? "rain" : "leaf", life: 200 });
+      else if (Math.random() < .4) parts.push({ x: 200 + Math.random() * 500, y: GY, vx: (Math.random() - .5) * 2, vy: -2 - Math.random() * 2, kind: "dust", life: 40 });
+    }
+  }
+  parts.forEach(p => { p.x += p.vx * dt / 16; p.y += p.vy * dt / 16; if (p.kind === "dust") p.vy += .1; p.life--; });
+  parts = parts.filter(p => p.life > 0 && p.x < W + 20 && p.y < H);
+  floats.forEach(f => { f.y -= dt / 30; f.life--; });
+  floats = floats.filter(f => f.life > 0);
+}
+
+// ================= Drawing =================
+const cv = $("cv"), ctx = cv.getContext("2d");
+
+function shape(fill, path, lw = 4) {
+  ctx.beginPath(); path();
+  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+  ctx.lineWidth = lw; ctx.strokeStyle = INK; ctx.lineJoin = "round"; ctx.stroke();
+}
+const rr = (x, y, w, h, r, fill) => shape(fill, () => ctx.roundRect(x, y, w, h, r));
+const circ = (x, y, r, fill) => shape(fill, () => ctx.arc(x, y, r, 0, Math.PI * 2));
+function line(x1, y1, x2, y2, c = INK, w = 4) {
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+  ctx.strokeStyle = c; ctx.lineWidth = w; ctx.lineCap = "round"; ctx.stroke();
+}
+function text(t, x, y, size, color = INK, align = "left") {
+  ctx.font = `bold ${size}px Fredoka, sans-serif`; ctx.fillStyle = color; ctx.textAlign = align;
+  ctx.fillText(t, x, y); ctx.textAlign = "left";
+}
+function smile(x, y, r, mood) {
+  ctx.fillStyle = INK;
+  ctx.beginPath(); ctx.arc(x - r * .35, y - r * .15, r * .12, 0, 7); ctx.arc(x + r * .35, y - r * .15, r * .12, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.lineWidth = 2; ctx.strokeStyle = INK;
+  if (mood === "scared") ctx.arc(x, y + r * .35, r * .2, 0, 7);
+  else if (mood === "sad") ctx.arc(x, y + r * .6, r * .35, Math.PI * 1.2, Math.PI * 1.8);
+  else ctx.arc(x, y + r * .1, r * .4, Math.PI * .15, Math.PI * .85);
+  ctx.stroke();
+}
+function drawCloud(x, y, s, color) {
+  ctx.fillStyle = color; ctx.beginPath();
+  ctx.arc(x, y, 22 * s, 0, 7); ctx.arc(x + 25 * s, y - 12 * s, 26 * s, 0, 7); ctx.arc(x + 52 * s, y, 22 * s, 0, 7);
+  ctx.fill();
+}
+function drawPerson(x, y, p, mood) {
+  const sw = Math.sin(p.phase) * 6;
+  line(x, y - 14, x - sw * .7, y); line(x, y - 14, x + sw * .7, y);
+  rr(x - 9, y - 38, 18, 26, 7, p.shirt);
+  circ(x, y - 48, 11, p.skin);
+  smile(x, y - 48, 11, mood);
+  if (p.hat) shape("#ffd23f", () => { ctx.arc(x, y - 52, 11, Math.PI, 0); ctx.lineTo(x + 15, y - 52); ctx.lineTo(x - 15, y - 52); ctx.closePath(); }, 3);
+}
+
+function drawBackdrop(now, windy) {
+  const sc = town().scene;
+  if (sc === "hills") {
+    shape("#8fd16a", () => { ctx.moveTo(-20, GY + 5); ctx.quadraticCurveTo(200, 190, 440, GY + 5); });
+    shape("#7cc55a", () => { ctx.moveTo(380, GY + 5); ctx.quadraticCurveTo(640, 220, W + 20, GY - 20); ctx.lineTo(W + 20, GY + 5); });
+  } else if (sc === "mountains") {
+    [[150, 120, 200], [420, 90, 240], [720, 110, 220]].forEach(([x, y, w]) => {
+      shape("#90a4ae", () => { ctx.moveTo(x - w / 2, GY); ctx.lineTo(x, y); ctx.lineTo(x + w / 2, GY); ctx.closePath(); });
+      shape("#fff", () => { ctx.moveTo(x - 25, y + 35); ctx.lineTo(x, y); ctx.lineTo(x + 25, y + 35); ctx.lineTo(x + 8, y + 28); ctx.lineTo(x - 8, y + 38); ctx.closePath(); }, 3);
+    });
+  } else if (sc === "beach") {
+    rr(-10, GY - 70, W + 20, 75, 0, "#29b6f6");
+    for (let x = 0; x < W; x += 60) {
+      const y = GY - 50 + Math.sin(now * .003 + x) * (windy ? 8 : 3);
+      line(x, y, x + 30, y, "#e1f5fe", 3);
+    }
+  } else {
+    rr(-10, GY - 40, W + 20, 45, 0, "#ffe082");
+    for (let x = 10; x < W; x += 24) line(x, GY - 36, x + (windy ? 8 : 2), GY - 22, "#f9a825", 3);
+    rr(800, GY - 75, 60, 45, 2, "#c62828");
+    shape("#8e0000", () => { ctx.moveTo(795, GY - 75); ctx.lineTo(830, GY - 100); ctx.lineTo(865, GY - 75); ctx.closePath(); }, 3);
+  }
+}
+
+function drawGround() {
+  const sl = soil(), sc = town().scene;
+  const rockY = GY + sl.top;
+  rr(-20, GY, W + 40, H - GY + 20, 0, sl.color);
+  ctx.fillStyle = "rgba(0,0,0,.12)";
+  DOTS.forEach(([x, f, r]) => { const y = GY + 12 + f * (rockY - GY - 12); if (y < rockY - 4) { ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); } });
+  rr(-20, rockY, W + 40, H - rockY + 20, 0, "#78909c");
+  for (let y = rockY + 18; y < H; y += 22) for (let x = (y % 44 ? 0 : 30); x < W; x += 60) line(x, y, x + 24, y, "#607d8b", 2);
+  rr(-20, GY, W + 40, 10, 0, sc === "beach" ? "#f3e0a0" : sc === "prairie" ? "#9ccc65" : "#6cbf4b");
+  if (sl.top > 8) text(`⬇️ ${sl.name}`, 12, GY + 34, 16, "#3e2723");
+  text("🪨 Solid Rock", 12, Math.max(rockY + 22, GY + 56), 16, "#fff");
+}
+
+function drawFoundation() {
+  const lvl = foundLevel(), rockY = soil().top;
+  if (lvl === 1) [-90, 0, 90].forEach(x => rr(x - 24, 0, 48, 22, 3, "#bdbdbd"));
+  else if (lvl === 2) rr(-BW / 2 - 14, 0, BW + 28, 28, 3, "#bdbdbd");
+  else {
+    [-100, -35, 35, 100].forEach(x => rr(x - 7, 12, 14, Math.max(10, rockY + 6), 2, "#9e9e9e"));
+    rr(-BW / 2 - 10, 0, BW + 20, 16, 3, "#bdbdbd");
+  }
+}
+
+function drawBuilding() {
+  const floors = S.floors, base = -14, top = base - FH * floors, eave = BW / 2 + 16;
+  if (beyond("iso")) [-90, 0, 90].forEach(x => rr(x - 14, base + 2, 28, 12, 5, "#333"));
+  else rr(-BW / 2 - 4, base, BW + 8, 14, 2, "#9e9e9e");
+
+  // Walls and frame
+  const steel = beyond("frame");
+  rr(-BW / 2, top, BW, FH * floors, 6, steel ? "#b0c4d8" : "#f4c27a");
+  if (!steel) for (let y = top + 13; y < base; y += 13) line(-BW / 2 + 4, y, BW / 2 - 4, y, "#d9a35b", 2);
+  for (let f = 1; f < floors; f++) line(-BW / 2, base - f * FH, BW / 2, base - f * FH, INK, 3);
+  if (steel) for (let f = 0; f < floors; f++) {
+    const yb = base - f * FH, yt = yb - FH;
+    [[-BW / 2 + 4, -BW / 2 + 32], [BW / 2 - 32, BW / 2 - 4]].forEach(([a, b]) => {
+      line(a, yt + 4, b, yb - 4, "#c62828", 3); line(b, yt + 4, a, yb - 4, "#c62828", 3);
+    });
+  }
+
+  // Windows
+  const storm = beyond("windows"), cozy = beyond("furniture");
+  let idx = 0;
+  for (let f = 0; f < floors; f++) for (const cx of [-62, 0, 62]) {
+    if (f === 0 && cx === 0) continue;
+    const x = cx - 19, y = base - f * FH - FH + 13, broken = S.damage >= 2 && idx++ % 3 === 0;
+    rr(x, y, 38, 36, 4, broken ? "#4a4f5a" : "#bfe9ff");
+    if (broken) { line(x + 6, y + 6, x + 20, y + 20, "#fff", 2); line(x + 20, y + 20, x + 32, y + 10, "#fff", 2); }
+    else {
+      line(x + 8, y + 26, x + 18, y + 8, "#fff", 3);
+      if (cozy) {
+        shape("#f06292", () => { ctx.moveTo(x + 2, y + 2); ctx.lineTo(x + 12, y + 2); ctx.lineTo(x + 2, y + 18); ctx.closePath(); }, 2);
+        shape("#f06292", () => { ctx.moveTo(x + 36, y + 2); ctx.lineTo(x + 26, y + 2); ctx.lineTo(x + 36, y + 18); ctx.closePath(); }, 2);
+        circ(x + 27, y + 28, 5, "#43a047");
+      }
+    }
+    if (storm) { ctx.lineWidth = 7; ctx.strokeStyle = "#1a3d8f"; ctx.strokeRect(x, y, 38, 36); }
+  }
+
+  // Door
+  rr(-20, base - 52, 40, 52, 6, "#1e88e5");
+  circ(12, base - 26, 3, "#ffd23f");
+
+  // Roof (blown crooked with heavy damage), solar panels, building sign
+  ctx.save();
+  if (S.damage >= 3) { ctx.translate(-eave, top); ctx.rotate(-.14); ctx.translate(eave, -top); }
+  shape("#e53935", () => { ctx.moveTo(-eave, top); ctx.lineTo(0, top - 62); ctx.lineTo(eave, top); ctx.closePath(); });
+  const roofY = x => top - 62 * (1 - Math.abs(x) / eave);
+  if (beyond("roof")) for (const x of [-95, -50, 50, 95]) line(x, roofY(x) + 3, x, top - 2, "#78909c", 5);
+  if (beyond("energy")) {
+    const a = 40, b = 108;
+    shape("#1f3c88", () => { ctx.moveTo(a, roofY(a) + 4); ctx.lineTo(b, roofY(b) + 4); ctx.lineTo(b, roofY(b) + 14); ctx.lineTo(a, roofY(a) + 14); ctx.closePath(); }, 3);
+    for (let x = a + 17; x < b; x += 17) line(x, roofY(x) + 5, x, roofY(x) + 13, "#90caf9", 2);
+  }
+  circ(0, top - 22, 15, "#fff");
+  ctx.font = "18px sans-serif"; ctx.textAlign = "center"; ctx.fillText(btype().ico, 0, top - 15); ctx.textAlign = "left";
+  ctx.restore();
+
+  // Cracks
+  CRACKS.filter(([, y]) => y > top).slice(0, S.damage * 2).forEach(([x, y]) => {
+    ctx.beginPath(); ctx.moveTo(x, y);
+    for (let i = 1; i <= 4; i++) ctx.lineTo(x + (i % 2 ? 8 : -4), y + i * 8);
+    ctx.strokeStyle = INK; ctx.lineWidth = 3; ctx.stroke();
+  });
+}
+
+function drawProps(now) {
+  // Town tree
+  const sc = town().scene;
+  if (sc === "beach") {
+    shape(null, () => { ctx.moveTo(60, GY); ctx.quadraticCurveTo(50, GY - 60, 70, GY - 110); }, 8);
+    [[-1, -.3], [1, -.3], [-1, .3], [1, .3]].forEach(([d, t]) =>
+      shape("#43a047", () => ctx.ellipse(70 + d * 26, GY - 112 + t * 20, 30, 9, d * t * 2, 0, 7), 3));
+  } else if (sc === "mountains") {
+    rr(54, GY - 30, 12, 30, 2, "#8d5524");
+    shape("#2e7d32", () => { ctx.moveTo(25, GY - 25); ctx.lineTo(60, GY - 120); ctx.lineTo(95, GY - 25); ctx.closePath(); });
+  } else {
+    rr(52, GY - 70, 16, 70, 4, "#8d5524");
+    circ(60, GY - 90, 38, "#66bb6a");
+  }
+
+  // Rain garden or storm drain
+  if (beyond("water")) {
+    shape("#64b5f6", () => ctx.ellipse(190, GY + 4, 55, 8, 0, 0, 7), 3);
+    [[150, "#f06292"], [175, "#ffd23f"], [210, "#ab47bc"], [235, "#ff7043"]].forEach(([x, c]) => {
+      line(x, GY, x, GY - 22, "#2e7d32", 3); circ(x, GY - 26, 6, c);
+    });
+    ctx.font = "20px sans-serif"; ctx.fillText("🦋", 190 + Math.sin(now * .002) * 40, GY - 60 + Math.sin(now * .005) * 10);
+  } else {
+    rr(220, GY - 2, 30, 8, 2, "#757575");
+    for (let x = 226; x < 250; x += 6) line(x, GY - 1, x, GY + 5, INK, 1);
+  }
+
+  if (beyond("backup")) {
+    rr(255, GY - 40, 56, 40, 6, "#ffd23f");
+    ctx.font = "22px sans-serif"; ctx.fillText("⚡", 271, GY - 12);
+  }
+
+  // Heating & cooling unit with spinning fan
+  const big = beyond("hvac"), hx = 595, hw = big ? 64 : 50, hh = big ? 52 : 40;
+  rr(hx, GY - hh, hw, hh, 6, big ? "#e3f2fd" : "#cfd8dc");
+  const fx = hx + hw / 2, fy = GY - hh / 2, a = now * .01;
+  circ(fx, fy, 14, "#fff");
+  for (let i = 0; i < 3; i++) line(fx, fy, fx + Math.cos(a + i * 2.1) * 11, fy + Math.sin(a + i * 2.1) * 11, INK, 3);
+  if (big) { ctx.font = "16px sans-serif"; ctx.fillText("🍃", hx + hw - 20, GY - hh + 18); }
+}
+
+function drawCrane(now) {
+  const x = 790;
+  rr(x - 10, 70, 20, GY - 70, 0, "#ffc107");
+  for (let y = 75; y < GY - 10; y += 22) line(x - 8, y, x + 8, y + 22, INK, 2);
+  rr(x - 140, 60, 200, 12, 3, "#ffc107");
+  rr(x - 16, 72, 32, 24, 5, "#e53935");
+  const hx = x - 105 + Math.sin(now * .0008) * 25;
+  line(hx, 72, hx, 160, INK, 2);
+  rr(hx - 30, 160, 60, 10, 2, "#e53935");
+}
+
+function drawCrew(now, label) {
+  [-34, 34].forEach(dx => shape("#ff7043", () => {
+    const x = DOOR_X + dx, y = GY + 6;
+    ctx.moveTo(x, y - 26); ctx.lineTo(x + 10, y); ctx.lineTo(x - 10, y); ctx.closePath();
+  }, 3));
+  line(DOOR_X - 175, GY, DOOR_X - 175, GY - 40, INK, 4);
+  rr(DOOR_X - 235, GY - 76, 120, 38, 6, "#fff");
+  text(label[0], DOOR_X - 175, GY - 61, 13, "#e53935", "center");
+  text(label[1], DOOR_X - 175, GY - 45, 13, "#e53935", "center");
+  [[DOOR_X + 230, 0], [DOOR_X + 270, 1.5]].forEach(([x, off]) => {
+    const y = GY + 4, swing = Math.sin(now * .012 + off) * .8;
+    drawPerson(x, y, { phase: 0, shirt: "#fb8c00", skin: SKINS[off ? 3 : 0], hat: true }, "happy");
+    const hx = x - 10 + Math.cos(-2 + swing) * 18, hy = y - 30 + Math.sin(-2 + swing) * 18;
+    line(x - 8, y - 30, hx, hy, INK, 4);
+    rr(hx - 6, hy - 5, 12, 8, 2, "#9e9e9e");
+  });
+}
+
+function draw(now) {
+  const h = S.hazard, env = h ? Math.sin(Math.PI * Math.min(1, (S.clock - h.start) / HAZARD_MS)) : 0;
+  const windy = h && h.type === "wind", quaky = h && h.type === "quake";
+
+  // Sky, sun, clouds, town backdrop
+  const g = ctx.createLinearGradient(0, 0, 0, GY);
+  g.addColorStop(0, windy ? "#7a8ea8" : "#6ec6ff"); g.addColorStop(1, windy ? "#b8c4d4" : "#d4f1ff");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  if (!windy) { circ(70, 60, 30, "#ffd23f"); smile(70, 62, 26, "happy"); }
+  clouds.forEach(c => {
+    if (!S.paused) c.x += c.v * (windy ? 6 * h.power : 1);
+    if (c.x > W + 60) c.x = -150;
+    drawCloud(c.x, c.y, c.s, windy ? "#dfe5ec" : "#fff");
+  });
+  drawBackdrop(now, windy);
+  if (S.phase === "build") drawCrane(now);
+
+  // Ground and everything on it (shakes in an earthquake)
+  const gdx = quaky ? Math.sin(now * .07) * h.power * 3 * env : 0;
+  ctx.save(); ctx.translate(gdx, 0);
+  drawGround();
+  drawProps(now);
+
+  // Foundation sinks with settling; building leans when damaged, sways in wind, floats on isolators
+  ctx.save();
+  ctx.translate(DOOR_X, GY + S.settle);
+  ctx.rotate(S.settle * .004);
+  drawFoundation();
+  const bdx = quaky ? gdx * (beyond("iso") ? -.7 : .6) : 0;
+  ctx.translate(bdx, 0);
+  if (S.damage >= 2) ctx.rotate((S.damage - 1) * .025);
+  if (windy) {
+    const weak = Math.max(.3, 1.2 - stats().wind * .25);
+    ctx.transform(1, 0, -(.03 + Math.sin(now * .012) * .015) * h.power * env * weak, 1, 0, 0);
+  }
+  drawBuilding();
+  ctx.restore();
+
+  if (S.phase === "build") drawCrew(now, ["UNDER", "CONSTRUCTION"]);
+  else if (closed() && !h) drawCrew(now, ["CLOSED FOR", "REPAIRS 🔧"]);
+  people.sort((a, b) => a.lane - b.lane).forEach(p => {
+    const mood = p.scared ? "scared" : p.sad || happy < 30 ? "sad" : "happy";
+    drawPerson(p.x, GY + 2 + p.lane, p, mood);
+  });
+  ctx.restore();
+
+  // Weather and coins
+  parts.forEach(p => {
+    if (p.kind === "rain") line(p.x, p.y, p.x - 10, p.y - 4, "#e3f2fd", 2);
+    else if (p.kind === "leaf") { ctx.fillStyle = "#66bb6a"; ctx.beginPath(); ctx.ellipse(p.x, p.y, 6, 3, p.x * .05, 0, 7); ctx.fill(); }
+    else { ctx.fillStyle = "rgba(141,85,36,.5)"; ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, 7); ctx.fill(); }
+  });
+  floats.forEach(f => text(f.text, f.x, f.y, 18, "#2e7d32"));
+}
+
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(50, now - last); last = now;
+  if (S && S.phase !== "end") {
+    if (!S.paused) tick(dt);
+    if (S && S.phase !== "end") hud(false);
+  }
+  if (S && !$("game").hidden) draw(now);
+  requestAnimationFrame(frame);
+}
+
+renderSetup();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

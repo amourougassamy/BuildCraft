@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Build It Strong!</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Comic Sans MS", "Trebuchet MS", sans-serif; background: #fdf6e3; color: #333; }
+  header { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; padding: 12px 20px; background: #ffcc4d; border-bottom: 4px solid #e0a800; }
+  h1 { margin: 0; font-size: 28px; }
+  .pill { background: #fff; border-radius: 20px; padding: 6px 16px; font-size: 22px; font-weight: bold; }
+  main { display: flex; flex-wrap: wrap; gap: 16px; padding: 16px; }
+  #shop { flex: 1 1 340px; }
+  #right { flex: 1 1 420px; display: flex; flex-direction: column; gap: 12px; }
+  .cat { background: #fff; border-radius: 14px; padding: 10px 12px; margin-bottom: 12px; box-shadow: 0 2px 0 #ddd; }
+  .cat h2 { margin: 0 0 8px; font-size: 20px; }
+  .opts { display: flex; gap: 8px; flex-wrap: wrap; }
+  .opt { flex: 1 1 100px; border: 3px solid #ccc; border-radius: 12px; background: #fafafa; padding: 8px; cursor: pointer; text-align: center; font: inherit; }
+  .opt .ico { font-size: 28px; display: block; }
+  .opt .cost { font-weight: bold; color: #2a7a2a; }
+  .opt.sel { border-color: #2f80ed; background: #e6f0ff; }
+  .opt:disabled { opacity: .4; cursor: not-allowed; }
+  .tip { font-size: 13px; color: #666; margin-top: 6px; min-height: 18px; }
+
+  /* Scene */
+  #scene { position: relative; height: 320px; border-radius: 14px; overflow: hidden; background: linear-gradient(#8fd3ff, #d9f2ff); }
+  #ground { position: absolute; bottom: 0; left: 0; right: 0; height: 50px; background: #6cbf4b; border-top: 4px solid #4c9a32; }
+  #building { position: absolute; bottom: 50px; left: 50%; width: 160px; margin-left: -80px; transform-origin: bottom center; transition: transform .6s; }
+  .roof { height: 18px; background: #c0392b; border-radius: 6px 6px 0 0; position: relative; }
+  .solar { position: absolute; top: -14px; left: 20px; font-size: 18px; display: none; }
+  .floor { height: 60px; border: 3px solid #555; border-top: none; display: flex; justify-content: space-around; align-items: center; }
+  .win { width: 30px; height: 30px; background: #bfe9ff; border: 3px solid #fff; }
+  .wood .floor { background: #c68642; }
+  .steel .floor { background: #8fa3b8; }
+  .concrete .floor { background: #b8b8b8; }
+  .env-insulated .win { border-color: #f5f5f5; border-width: 5px; }
+  .env-storm .win { border-color: #1e3a8a; border-width: 5px; background: #8ecae6; }
+  #cracks { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 40px; pointer-events: none; }
+  #amenity { position: absolute; bottom: 50px; left: 18px; font-size: 44px; }
+  #ac { position: absolute; bottom: 50px; right: -34px; font-size: 26px; display: none; }
+  #fx { position: absolute; inset: 0; pointer-events: none; font-size: 34px; }
+  .gust { position: absolute; left: -60px; animation: blow 1.2s linear infinite; }
+  @keyframes blow { to { transform: translateX(560px); } }
+  .quake { animation: shake .15s linear infinite; }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+  .sway { animation: sway .5s ease-in-out infinite alternate; }
+  @keyframes sway { from { transform: skewX(-3deg); } to { transform: skewX(3deg); } }
+
+  .panel { background: #fff; border-radius: 14px; padding: 12px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .btn { font: inherit; font-size: 18px; padding: 10px 16px; border: none; border-radius: 12px; cursor: pointer; color: #fff; }
+  .btn.quakeBtn { background: #a0522d; }
+  .btn.windBtn { background: #2f80ed; }
+  .btn.reset { background: #888; }
+  .btn:disabled { opacity: .5; cursor: wait; }
+  select { font: inherit; font-size: 16px; padding: 6px; border-radius: 8px; }
+  #meter { height: 26px; background: #eee; border-radius: 13px; overflow: hidden; flex: 1; min-width: 120px; }
+  #meterFill { height: 100%; width: 50%; background: #4caf50; transition: width .6s, background .6s; }
+  #face { font-size: 36px; }
+  #log { margin: 8px 0 0; padding-left: 20px; font-size: 15px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🏗️ Build It Strong!</h1>
+  <div class="pill">💰 $<span id="money">100</span> left</div>
+</header>
+
+<main>
+  <section id="shop"></section>
+
+  <section id="right">
+    <div class="panel">
+      <div class="row"><span id="face">🙂</span><b>Happiness</b><div id="meter"><div id="meterFill"></div></div><b id="happyNum">50</b></div>
+      <ul id="log"></ul>
+    </div>
+
+    <div id="scene">
+      <div id="fx"></div>
+      <div id="amenity"></div>
+      <div id="building">
+        <div class="roof"><span class="solar">☀️🔲</span></div>
+        <div class="floor"><div class="win"></div><div class="win"></div><div class="win"></div></div>
+        <div class="floor"><div class="win"></div><div class="win"></div><div class="win"></div></div>
+        <div class="floor"><div class="win"></div><div class="win"></div><div class="win"></div></div>
+        <span id="ac">❄️</span>
+        <div id="cracks"></div>
+      </div>
+      <div id="ground"></div>
+    </div>
+
+    <div class="panel">
+      <div class="row">
+        <b>Test your building:</b>
+        <select id="power">
+          <option value="1">Small</option>
+          <option value="2" selected>Medium</option>
+          <option value="3">Big</option>
+        </select>
+        <button class="btn quakeBtn" data-hazard="quake">🌋 Earthquake</button>
+        <button class="btn windBtn" data-hazard="wind">🌪️ Windstorm</button>
+        <button class="btn reset" id="reset">🔄 Fix it</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+const BUDGET = 100;
+
+// Each option: cost, plus points for comfort, fun, quake strength, wind strength.
+const CATEGORIES = [
+  { key: "structure", title: "🧱 Structure", options: [
+    { id: "wood", name: "Wood", ico: "🪵", cost: 20, quake: 2, wind: 1, tip: "Light and bendy. Okay in quakes, but wind can push it around." },
+    { id: "concrete", name: "Concrete", ico: "🧱", cost: 35, quake: 1, wind: 3, tip: "Heavy and stiff. Great in wind, but heavy buildings shake hard in quakes." },
+    { id: "steel", name: "Steel", ico: "🔩", cost: 45, quake: 3, wind: 2, tip: "Strong and bends without breaking. Great in earthquakes!" },
+  ]},
+  { key: "envelope", title: "🪟 Walls & Windows", options: [
+    { id: "basic", name: "Basic", ico: "🏠", cost: 5, tip: "Thin walls. Drafty and cold." },
+    { id: "insulated", name: "Insulated", ico: "🧣", cost: 15, comfort: 1, wind: 1, tip: "Keeps you warm in winter and cool in summer." },
+    { id: "storm", name: "Storm-Proof", ico: "🛡️", cost: 25, comfort: 1, wind: 2, tip: "Tough windows that stay shut in big winds." },
+  ]},
+  { key: "mep", title: "❄️ Heating, Cooling & Power", options: [
+    { id: "none", name: "Open Windows", ico: "🌬️", cost: 0, tip: "Free, but too hot or too cold sometimes." },
+    { id: "hvac", name: "Heat & AC", ico: "❄️", cost: 20, comfort: 2, tip: "Just the right temperature all year." },
+    { id: "solar", name: "Solar + AC", ico: "☀️", cost: 30, comfort: 2, backup: true, tip: "Comfy AND keeps the lights on after a storm." },
+  ]},
+  { key: "amenity", title: "🎈 Fun Stuff", options: [
+    { id: "none", name: "Nothing", ico: "➖", cost: 0, tip: "No extras." },
+    { id: "play", name: "Playground", ico: "🛝", cost: 10, fun: 1, tip: "A place to play!" },
+    { id: "garden", name: "Garden & Library", ico: "🌳", cost: 20, fun: 2, tip: "Books, trees, and quiet places." },
+  ]},
+];
+
+const picks = {};
+CATEGORIES.forEach(c => picks[c.key] = c.options[0]);
+let damage = 0, lastHazard = null;
+
+const $ = id => document.getElementById(id);
+const spent = () => Object.values(picks).reduce((s, o) => s + o.cost, 0);
+
+function renderShop() {
+  const left = BUDGET - spent();
+  $("shop").innerHTML = CATEGORIES.map(c => `
+    <div class="cat">
+      <h2>${c.title}</h2>
+      <div class="opts">
+        ${c.options.map(o => {
+          const canAfford = o.cost - picks[c.key].cost <= left;
+          return `<button class="opt ${picks[c.key] === o ? "sel" : ""}" data-cat="${c.key}" data-id="${o.id}" ${canAfford ? "" : "disabled"}>
+            <span class="ico">${o.ico}</span>${o.name}<br><span class="cost">$${o.cost}</span></button>`;
+        }).join("")}
+      </div>
+      <div class="tip">${picks[c.key].tip}</div>
+    </div>`).join("");
+  $("money").textContent = left;
+}
+
+function renderBuilding() {
+  const b = $("building");
+  b.className = `${picks.structure.id} env-${picks.envelope.id}`;
+  b.style.transform = damage ? `rotate(${damage * 4}deg)` : "";
+  b.querySelector(".solar").style.display = picks.mep.id === "solar" ? "block" : "none";
+  $("ac").style.display = picks.mep.id === "none" ? "none" : "block";
+  $("amenity").textContent = { none: "", play: "🛝", garden: "🌳📚" }[picks.amenity.id];
+  $("cracks").textContent = "💥".repeat(damage);
+}
+
+function renderHappiness() {
+  const comfort = (picks.envelope.comfort || 0) + (picks.mep.comfort || 0);
+  const fun = picks.amenity.fun || 0;
+  const log = [];
+  let h = 40 + comfort * 10 + fun * 10;
+  if (comfort) log.push(`😌 Comfy inside: +${comfort * 10}`);
+  if (fun) log.push(`🎉 Fun things to do: +${fun * 10}`);
+  if (lastHazard) {
+    const name = lastHazard === "quake" ? "earthquake" : "windstorm";
+    if (damage === 0) { h += 10; log.push(`💪 Survived the ${name}! +10`); }
+    else {
+      h -= damage * 25; log.push(`😱 The ${name} damaged the building: -${damage * 25}`);
+      if (picks.mep.backup) { h += 10; log.push("🔋 Solar kept the lights on: +10"); }
+    }
+  }
+  h = Math.max(0, Math.min(100, h));
+  $("happyNum").textContent = h;
+  $("meterFill").style.width = h + "%";
+  $("meterFill").style.background = h >= 70 ? "#4caf50" : h >= 40 ? "#f4b400" : "#e53935";
+  $("face").textContent = h >= 80 ? "😄" : h >= 60 ? "🙂" : h >= 40 ? "😐" : h >= 20 ? "😟" : "😭";
+  $("log").innerHTML = log.length ? log.map(l => `<li>${l}</li>`).join("") : "<li>Pick parts for your building, then test it!</li>";
+}
+
+function update() { renderShop(); renderBuilding(); renderHappiness(); }
+
+$("shop").addEventListener("click", e => {
+  const btn = e.target.closest(".opt");
+  if (!btn || btn.disabled) return;
+  const cat = CATEGORIES.find(c => c.key === btn.dataset.cat);
+  picks[cat.key] = cat.options.find(o => o.id === btn.dataset.id);
+  damage = 0; lastHazard = null;
+  update();
+});
+
+document.querySelectorAll("[data-hazard]").forEach(btn => btn.addEventListener("click", () => {
+  const hazard = btn.dataset.hazard;
+  const power = +$("power").value;
+  const strength = hazard === "quake" ? picks.structure.quake : picks.structure.wind + (picks.envelope.wind || 0);
+  const buttons = document.querySelectorAll(".btn");
+  buttons.forEach(b => b.disabled = true);
+  damage = 0; renderBuilding();
+
+  const target = hazard === "quake" ? $("scene") : $("building");
+  target.classList.add(hazard === "quake" ? "quake" : "sway");
+  if (hazard === "wind") $("fx").innerHTML = Array.from({ length: power * 3 }, (_, i) =>
+    `<span class="gust" style="top:${20 + i * 25}px;animation-delay:${i * .2}s">💨</span>`).join("");
+
+  setTimeout(() => {
+    target.classList.remove("quake", "sway");
+    $("fx").innerHTML = "";
+    damage = Math.max(0, Math.min(3, power + 1 - strength));
+    lastHazard = hazard;
+    renderBuilding(); renderHappiness();
+    buttons.forEach(b => b.disabled = false);
+  }, 2500);
+}));
+
+$("reset").addEventListener("click", () => { damage = 0; lastHazard = null; update(); });
+
+update();
+</script>
+</body>
+</html>
