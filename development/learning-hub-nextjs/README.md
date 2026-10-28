@@ -4,7 +4,7 @@ Owner: nabdo. Live at https://ncseahackathon.ssoe.abacus.ai/
 
 Design a neighborhood learning hub in 3D: footprint, floors, frame members, braces, foundation, insulation and AC units. The game checks the design against a $1.8M budget, a 4,000 sf usable-area target and a 12-hour hot-day cooling simulation, then lists which checks are met, not met, or not evaluated.
 
-Originally uploaded as `ncsea_hackathon_nextjs_space.zip` (exported from Abacus.AI). It was unzipped here so the code can be read and diffed; the generated `tsconfig.tsbuildinfo` and `next-env.d.ts` were left out.
+Originally uploaded as `ncsea_hackathon_nextjs_space.zip` (exported from Abacus.AI). It was unzipped here so the code can be read and diffed; the generated `tsconfig.tsbuildinfo` and `next-env.d.ts` were left out. On 2026-10-28 the newer upload, `ncsea_hackathon_nextjs_space (1).zip`, was unzipped over it the same way. It adds **story mode** (a guide called Nova, `components/game/story-guide.tsx`, `app/story-mode.css`) and a cold-day heating model next to the hot-day cooling one.
 
 ## Where the game is
 
@@ -13,6 +13,7 @@ Originally uploaded as `ncsea_hackathon_nextjs_space.zip` (exported from Abacus.
 | `app/page.tsx` | Entry point; renders the game |
 | `components/game/game.tsx` | Controls, results and review panel |
 | `components/game/building-scene.tsx` | Three.js 3D building |
+| `components/game/story-guide.tsx` | Story mode: Nova guides the player step by step |
 | `lib/game/assumptions.ts` | Every number: budget, costs, thermal properties |
 | `lib/game/design.ts` | Design inputs, baseline design, input validation |
 | `lib/game/engineering.ts` | Area, cost and one-zone hot-day heat balance |

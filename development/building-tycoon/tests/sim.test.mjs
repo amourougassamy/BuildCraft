@@ -1,4 +1,4 @@
-// Run: node --test prototypes/building-tycoon/tests/
+// Run: node --test development/building-tycoon/tests/
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {

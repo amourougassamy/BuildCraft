@@ -1,6 +1,6 @@
 // Prints the design checks and a full no-action year for a set of fixed scenarios.
 // Used to tune the numbers in js/data.js. Deterministic: same output every run.
-// Run: node prototypes/building-tycoon/tools/calibrate.mjs [seed]
+// Run: node development/building-tycoon/tools/calibrate.mjs [seed]
 import { analyze, createGame, step, makeYear, cloneDesign } from "../js/sim.js";
 import { DEFAULT_DESIGN } from "../js/data.js";
 

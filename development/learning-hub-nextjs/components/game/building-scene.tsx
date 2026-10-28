@@ -26,8 +26,12 @@ export default function BuildingScene({design:d, floor, overlay, selected, onSel
   // Simple landscaping gives spatial context without external assets.
   for(const [x,z] of [[-90,-70],[85,-70],[-85,70],[90,65]]) { addBox(scene,x,-0.5,z,3,8,3,'#a88664','site'); const g=new THREE.ConeGeometry(10,19,5); geometries.push(g); const tree=new THREE.Mesh(g,mat('#78a786')); tree.position.set(x,12,z); scene.add(tree) }
   const group=new THREE.Group(); scene.add(group)
-  addBox(group,0,-0.6,0,d.width+3,2,d.depth+3,selected==='foundation'?'#f1b557':'#c7bca8','foundation')
+  const footingSize={small:4,medium:6,large:8}[d.foundation]
+  const footingColor=selected==='foundation'?'#f1b557':'#c7bca8'
+  if(d.foundationType==='mat') addBox(group,0,-0.6,0,d.width+3,2,d.depth+3,footingColor,'foundation')
+  else { addBox(group,0,-1.7,0,d.width+2,0.5,d.depth+2,'#d9d2c1','foundation'); for(const x of [-d.width/2,0,d.width/2]) for(const z of [-d.depth/2,d.depth/2]) { addBox(group,x,-0.8,z,footingSize,1.5,footingSize,footingColor,'foundation'); if(d.foundationType==='deep') addBox(group,x,-3,z,1.3,4,1.3,footingColor,'foundation') } }
   const colsX=Math.ceil(d.width/d.grid),colsZ=Math.ceil(d.depth/d.grid)
+  const frameColor={steel:'#3b6371',concrete:'#929b97',timber:'#a57850'}[d.material]
   const csize={small:1.2,medium:1.8,large:2.4}[d.member]
   const maxFloor=floor===0?d.floors:Math.min(floor,d.floors)
   for(let f=0;f<maxFloor;f++){
@@ -35,7 +39,7 @@ export default function BuildingScene({design:d, floor, overlay, selected, onSel
    addBox(group,0,y+0.15,0,d.width,1,d.depth,selected==='floor'?'#f5c45e':overlay==='temperature'?'#f2be99':'#f8eee0','floor')
    for(let ix=0;ix<=colsX;ix++) for(let iz=0;iz<=colsZ;iz++) {
     const x=-d.width/2+ix*d.width/colsX,z=-d.depth/2+iz*d.depth/colsZ
-    addBox(group,x,y+d.story/2,z,csize,d.story,csize,selected==='frame'||overlay==='structural'?'#e98b62':'#3b6371','frame')
+    addBox(group,x,y+d.story/2,z,csize,d.story,csize,selected==='frame'||overlay==='structural'?'#e98b62':frameColor,'frame')
    }
    for(let iz=0;iz<=colsZ;iz++) addBox(group,0,y+d.story-0.4,-d.depth/2+iz*d.depth/colsZ,d.width,1.3,1.2,selected==='frame'||overlay==='structural'?'#e98b62':'#496e78','frame')
    for(let ix=0;ix<=colsX;ix++) addBox(group,-d.width/2+ix*d.width/colsX,y+d.story-0.4,0,1.2,1.3,d.depth,selected==='frame'||overlay==='structural'?'#e98b62':'#496e78','frame')
@@ -48,8 +52,8 @@ export default function BuildingScene({design:d, floor, overlay, selected, onSel
    if(d.door==='front') addBox(group,0,y+3,d.depth/2,5,6,0.7,doorColor,'door')
    if(d.door==='left') addBox(group,-d.width/2,y+3,0,0.7,6,5,doorColor,'door')
    if(d.door==='right') addBox(group,d.width/2,y+3,0,0.7,6,5,doorColor,'door')
-   for(const side of d.braces){
-    const front=side==='front'||side==='back'; const width=front?d.width/colsX:d.depth/colsZ; const length=Math.sqrt(width*width+d.story*d.story); const geom=new THREE.CylinderGeometry(0.45,0.45,length,6); geometries.push(geom); const brace=new THREE.Mesh(geom,mat(selected==='frame'||overlay==='structural'?'#f39058':'#d9a56d')); brace.userData.part='frame';
+   for(const side of d.lateral==='braced' ? d.braces : []){
+    const front=side==='front'||side==='back'; const width=front?d.width/colsX:d.depth/colsZ; const length=Math.sqrt(width*width+d.story*d.story); const radius={small:0.25,medium:0.45,large:0.7}[d.braceSize]; const geom=new THREE.CylinderGeometry(radius,radius,length,6); geometries.push(geom); const brace=new THREE.Mesh(geom,mat(selected==='frame'||overlay==='structural'?'#f39058':'#d9a56d')); brace.userData.part='frame';
     if(front){brace.position.set(-d.width/2+width/2,y+d.story/2,side==='front'?d.depth/2:-d.depth/2); brace.rotation.z=-Math.atan2(width,d.story)} else {brace.position.set(side==='left'?-d.width/2:d.width/2,y+d.story/2,-d.depth/2+width/2); brace.rotation.x=Math.atan2(width,d.story)} group.add(brace)
    }
   }

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { baseline, validDesign } from '../lib/game/design'
+import { baseline, migrateDesign, validDesign } from '../lib/game/design'
 import { calculate, cToF } from '../lib/game/engineering'
 import { review } from '../lib/game/review'
 import { thermal } from '../lib/game/assumptions'
@@ -29,5 +29,22 @@ assert.ok(calculate({...baseline,ac:9}).cost>base.cost)
 assert.ok(review(baseline).some(c=>c.category==='Code requirements' && c.status==='Not evaluated'))
 assert.ok(review(baseline).some(c=>c.category==='Engineering performance' && c.status==='Not evaluated'))
 assert.equal(base.points.length,13)
+assert.equal(base.coldPoints.length,13)
+assert.ok(!validDesign({...baseline,heating:21}))
+assert.ok(!validDesign({...baseline,lateral:'unknown'}))
+assert.equal(migrateDesign({}),null)
+const {material,lateral,braceSize,foundationType,heating,...v1}=baseline
+assert.deepEqual(migrateDesign(v1),baseline)
+assert.equal(migrateDesign({...v1,width:NaN}),null)
+const coldNone=calculate({...baseline,heating:0,insulation:'basic'})
+const coldWarm=calculate({...baseline,heating:80,insulation:'basic'})
+assert.ok(coldWarm.coldEndF>coldNone.coldEndF)
+assert.ok(coldWarm.coldEndF<=cToF(thermal.heatThermostatC)+1e-9)
+assert.equal(coldNone.heatingEnergyKWh,0)
+assert.ok(coldWarm.heatingEnergyKWh>0)
+assert.ok(calculate({...baseline,heating:0,insulation:'high'}).coldEndF>coldNone.coldEndF)
+assert.ok(calculate({...baseline,heating:80}).cost>base.cost)
+assert.equal(calculate({...baseline,lateral:'moment'}).cost,base.cost-2*18000)
+assert.ok(review({...baseline,lateral:'moment',story:16}).some(c=>c.title==='Lateral system and story height'&&c.status==='Not evaluated'))
 console.log('Model tests passed: bounds, area, cost, hot-day controls, thermostat, energy, and unevaluated checks.')
 console.log(JSON.stringify({baseline: {cost:base.cost,endF:base.endF,energyKWh:base.energyKWh}, noAC:{endF:noAC.endF}, maxAC:{endF:maxAC.endF}},null,2))

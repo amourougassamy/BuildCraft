@@ -3,8 +3,8 @@
 ES modules need http:// (not file://), and browsers cache them hard, so edits
 can look like they did nothing. This server sends no-store on every file.
 
-Run from anywhere:  python3 prototypes/building-tycoon/tools/serve.py [port]
-Then open:          http://127.0.0.1:8765/prototypes/building-tycoon/
+Run from anywhere:  python3 development/building-tycoon/tools/serve.py [port]
+Then open:          http://127.0.0.1:8765/development/building-tycoon/
 """
 
 import functools
@@ -25,7 +25,7 @@ def main() -> None:
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8765
     handler = functools.partial(NoCacheHandler, directory=str(REPO_ROOT))
     with http.server.ThreadingHTTPServer(("127.0.0.1", port), handler) as httpd:
-        print(f"Serving {REPO_ROOT} at http://127.0.0.1:{port}/prototypes/building-tycoon/")
+        print(f"Serving {REPO_ROOT} at http://127.0.0.1:{port}/development/building-tycoon/")
         httpd.serve_forever()
 
 

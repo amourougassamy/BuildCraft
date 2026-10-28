@@ -8,7 +8,7 @@ A 3-storey Chicago office you run for one year, viewed in isometric 3D (orbit, z
 - A helicopter flies in another rooftop unit when it gets hot. The unit then loads the roof framing and the electrical service.
 - Heat pumps drop the gas bill but push the electrical service hard on cold mornings.
 
-Play: https://amourougassamy.github.io/BuildCraft/prototypes/building-tycoon/ (needs internet for Three.js).
+Play: https://amourougassamy.github.io/BuildCraft/development/building-tycoon/ (needs internet for Three.js).
 
 All numbers are illustrative game values, not design values or code checks.
 
@@ -134,9 +134,9 @@ flowchart TB
 ## Run it locally
 
 ```sh
-python3 prototypes/building-tycoon/tools/serve.py   # then open http://127.0.0.1:8765/prototypes/building-tycoon/
-node --test prototypes/building-tycoon/tests/*.test.mjs
-node prototypes/building-tycoon/tools/calibrate.mjs [seed]
+python3 development/building-tycoon/tools/serve.py   # then open http://127.0.0.1:8765/development/building-tycoon/
+node --test development/building-tycoon/tests/*.test.mjs
+node development/building-tycoon/tools/calibrate.mjs [seed]
 ```
 
 Debug from the browser console: `buildcraft.fastForward(24)` skips a day; `buildcraft.state` is the whole game state.

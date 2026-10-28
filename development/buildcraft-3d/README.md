@@ -2,7 +2,7 @@
 
 Owner: Logan. (Originally in `my-version/`.)
 
-Play in your browser at the repository's GitHub Pages URL under `/prototypes/buildcraft-3d/` once Pages is enabled.
+Play in your browser at the repository's GitHub Pages URL under `/development/buildcraft-3d/` once Pages is enabled.
 
 Features: orbitable 3D models, editable components, templates, six adjustable loads, educational demand/capacity score, animated exaggerated sway, JSON export/import.
 
