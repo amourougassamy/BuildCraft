@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BuildCraft Leaderboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/leaderboard.css">
+</head>
+<body class="lb">
+<header class="lbHead">
+  <div class="logo">Build<span>Craft</span></div>
+  <h1>🏆 Leaderboard</h1>
+  <span class="live" id="live">● Connecting…</span>
+  <a class="btn go" href="./">▶ Play</a>
+</header>
+
+<main class="lbMain">
+  <p class="demo" id="demoNote" hidden>🧪 Sample data for previewing the page. These are not real players.</p>
+  <section class="clay off" id="offCard" hidden>
+    <h2>The leaderboard isn't switched on yet</h2>
+    <p>Add the Firebase web <code>apiKey</code> to <code>master-v1/js/board-config.js</code> and deploy the rules in
+      <code>master-v1/firestore.rules</code>. The steps are in <code>master-v1/README.md</code>.</p>
+  </section>
+
+  <section class="tiles" id="tiles" aria-label="Headline numbers"></section>
+
+  <div class="lbGrid">
+    <section class="clay card champs">
+      <h2>👑 Overall champions</h2>
+      <p class="sub">Best score on each site, added up</p>
+      <ol class="rank" id="champs"></ol>
+    </section>
+    <section class="clay card">
+      <h2>📝 Grades so far</h2>
+      <p class="sub">How many years ended with each grade</p>
+      <div class="cols" id="gradeChart" role="img"></div>
+      <details><summary>Show as a table</summary><table class="tbl" id="gradeTable"></table></details>
+    </section>
+    <section class="clay card">
+      <h2>🛠️ Most-picked upgrades</h2>
+      <p class="sub">Times each upgrade was chosen</p>
+      <div class="hbars" id="pickChart"></div>
+      <details><summary>Show as a table</summary><table class="tbl" id="pickTable"></table></details>
+    </section>
+  </div>
+
+  <h2 class="lbH2">🗺️ Top builders on each site</h2>
+  <div class="sites" id="sites"></div>
+</main>
+
+<div class="tip" id="tip" role="tooltip" hidden></div>
+<p class="foot">Only first names or nicknames and scores are shared. A game, not engineering: every number is made up to teach the big ideas.</p>
+<script type="module" src="js/leaderboard.js"></script>
+</body>
+</html>

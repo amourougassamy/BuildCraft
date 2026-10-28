@@ -1,0 +1,65 @@
+/* Leaderboard dashboard. Reuses the tokens and clay cards from styles.css. */
+body.lb { display: block; min-height: 100vh; }
+.lbHead { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; padding: 14px 16px; max-width: 1280px; margin: 0 auto; }
+.lbHead h1 { margin: 0; font-size: 30px; flex: 1; }
+.live { font-weight: 600; font-size: 15px; background: #fff; border-radius: 16px; padding: 4px 12px; box-shadow: var(--clay-shadow); }
+.live.on { color: #2e7d32; }
+.live.on::first-letter { animation: pulse-dot 1.4s ease-in-out infinite; }
+.live.off { color: var(--muted); }
+@keyframes pulse-dot { 50% { opacity: .3; } }
+
+.lbMain { max-width: 1280px; margin: 0 auto; padding: 0 16px 24px; display: flex; flex-direction: column; gap: 16px; }
+.demo { margin: 0; background: #fff8dc; border-radius: 14px; padding: 8px 14px; font-weight: 600; text-align: center; }
+.off { padding: 16px 20px; }
+.off h2 { margin: 0 0 6px; }
+
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.tile { padding: 12px 14px; text-align: center; }
+.tile b { display: block; font-size: 34px; line-height: 1.1; }
+.tile span { color: var(--muted); font-size: 15px; }
+
+.lbGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+.card { padding: 14px 18px; min-width: 0; }
+.card h2, .card h3 { margin: 0; font-size: 21px; }
+.card .sub { margin: 2px 0 10px; color: var(--muted); font-size: 14px; }
+.lbH2 { margin: 8px 0 0; font-size: 24px; }
+
+/* Ranked lists */
+.rank { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.rank li { display: grid; grid-template-columns: 34px 1fr auto auto auto; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 12px; }
+.rank li:nth-child(odd) { background: #f8f3ee; }
+.rank li.me { background: #fff1b8; }
+.rank li.empty { display: block; color: var(--muted); background: none; }
+.rank .pos { font-weight: 700; text-align: center; }
+.rank .who { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rank .pts { font-weight: 700; font-size: 18px; min-width: 32px; text-align: right; }
+.rank .gr { font-weight: 700; color: #c62828; border: 2px solid #c62828; border-radius: 10px; padding: 0 6px; font-size: 14px; }
+.rank .when { min-width: 64px; text-align: right; }
+.champs .rank li { grid-template-columns: 34px 1fr auto auto; }
+
+.sites { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+
+/* Charts: one series each, so no legend box; the card title names it. */
+.cols { display: flex; align-items: flex-end; gap: 10px; height: 170px; padding: 0 4px; border-bottom: 1px solid #e6dfd9; }
+.col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; }
+.col .track { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
+.col i { display: block; width: 100%; max-width: 24px; min-height: 2px; background: #4f8fcf; border-radius: 4px 4px 0 0; }
+.col .lab { font-weight: 600; padding-top: 4px; }
+.hbars { display: flex; flex-direction: column; gap: 8px; }
+.hb { display: grid; grid-template-columns: minmax(110px, 40%) 1fr 32px; align-items: center; gap: 8px; font-size: 14px; }
+.hb .lab { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hb .track { height: 18px; display: flex; align-items: center; }
+.hb i { display: block; height: 14px; min-width: 2px; background: #4f8fcf; border-radius: 0 4px 4px 0; }
+.hb .val { text-align: right; color: var(--muted); }
+.col i, .hb i { cursor: default; }
+details { margin-top: 10px; font-size: 14px; }
+summary { cursor: pointer; color: var(--muted); }
+.tbl { border-collapse: collapse; margin-top: 6px; width: 100%; }
+.tbl th, .tbl td { text-align: left; padding: 3px 6px; border-bottom: 1px solid #eee6e1; }
+.tip { position: fixed; z-index: 70; pointer-events: none; background: #3a3340; color: #fff; border-radius: 10px; padding: 4px 10px; font-size: 14px; }
+
+@media (max-width: 600px) {
+  .lbHead h1 { font-size: 24px; }
+  .rank li { grid-template-columns: 28px 1fr auto auto; }
+  .rank .when { display: none; }
+}

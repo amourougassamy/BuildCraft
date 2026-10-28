@@ -1,0 +1,35 @@
+rules_version = '2';
+
+// Shared leaderboard rules. Anyone may read scores. A signed-in (anonymous) player may add a score,
+// but only with exactly these fields in these shapes, under their own uid, stamped with the server's time.
+// Nobody can change or delete a score from the game. Clean up in the Firebase console if needed.
+// Deploy: firebase deploy --only firestore:rules --project buildcraft-4eee7
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /scores/{scoreId} {
+      allow read: if true;
+      allow create: if request.auth != null && validScore(request.resource.data);
+      allow update, delete: if false;
+    }
+
+    function validScore(d) {
+      let keys = ['name', 'site', 'score', 'grade', 'eco', 'ghosts', 'passed', 'choices', 'uid', 'ts'];
+      return d.keys().hasOnly(keys) && d.keys().hasAll(keys)
+        && d.uid == request.auth.uid
+        && d.ts == request.time
+        && d.name is string && d.name.size() >= 1 && d.name.size() <= 12 && d.name.matches('^[A-Za-z0-9 ]+$')
+        && d.site in ['rocky', 'prairie', 'breezy', 'shaky', 'mega']
+        && d.score is int && d.score >= 0 && d.score <= 100
+        && d.grade in ['A+', 'A', 'B', 'C', 'D', 'F']
+        && d.eco is int && d.eco >= 0 && d.eco <= 200
+        && d.ghosts is int && d.ghosts >= 0 && d.ghosts <= 10
+        && d.passed is bool
+        && d.choices is map && d.choices.size() <= 40;
+    }
+
+    // Everything else is closed.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -21,26 +21,27 @@ Sizes: **S** is under an hour, **M** is 1–3 hours, **L** is half a day or more
 | --- | --- | --- | --- | --- | --- | --- |
 | 0 | Merge `master_V1` into `main` so Master V1 goes live | Setup | S | | Anand | ✅ |
 | U3 | Remove the Furniture option (Basic / Cozy & Colorful) | UI | S | | TK | ✅ |
-| M4 | Level 1 can fail: running without changes should not pass | Levels | S | | ADAR | ⬜ |
+| M4 | Level 1 can fail: running without changes should not pass | Levels | S | | ADAR | ✅ |
 | M5 | Bigger buildings: at least 2 storeys and a larger footprint | Levels | M | | | ⬜ |
 | M6 | L-shaped building (re-entrant corner) on a later level | Levels | M | M5 | | ⬜ |
-| M3 | Soil profiles: show the ground layers under each site | Levels | M | | ADAR | ⬜ |
+| M3 | Soil profiles: show the ground layers under each site | Levels | M | | ADAR | ✅ |
 | M2 | River site on really bad soil (river next to Breezy Bay) | Levels | M | M3 | | ⬜ |
 | M1 | World map shows what each site sits on: mountain, city, river | Map | M | | TK | ✅ |
 | B1 | Building turns see-through when you hover over it | Building | M | | | ⬜ |
 | B2 | People doing activities inside (reading at desks in the library…) | Building | L | B1 | | ⬜ |
 | B3 | Buildings look more structural and realistic, less like a box | Building | L | M5 | | ⬜ |
 | B4 | Bigger ground so the edges of the grass never show | Site | S | | TK | ✅ |
-| B5 | City around the site: neighbouring buildings, streets, lane markings | Site | M | B4 |  | ⬜ |
+| B5 | City around the site: neighbouring buildings, streets, lane markings | Site | M | B4 | Anand | ✅ |
 | B6 | Cars drive up and drop people off | Site | M | B5 |  | ⬜ |
 | P1 | People say things (speech bubbles), not only emoji faces | People | M | | TK | ✅ |
-| U1 | Clean up the cluttered right panel on the design screen | UI | M | | | ⬜ |
+| U1 | Clean up the cluttered right panel on the design screen (first pass done in #14: icon/name/cost buttons, compact run panel) | UI | M | | | ⬜ |
 | U2 | Drawing sheet: a plan-view mini drawing that updates as you choose | UI | L | U1 | | ⬜ |
-| S1 | Elevators for taller buildings | Systems | M | | | ⬜ |
-| S2 | Number of restrooms for bigger buildings | Systems | S | | | ⬜ |
+| S1 | Elevators for taller buildings | Systems | M | | Anand | ✅ |
+| S2 | Number of restrooms for bigger buildings | Systems | S | | Anand | ✅ |
 | S3 | Fire sprinklers: yes / no option | Systems | S | | TK | ✅ |
 | S4 | Fire event (and a MEGA "flaming tornado") | Systems | M | S3 | | ⬜ |
 | S5 | A helicopter flies in the rooftop HVAC unit | Systems | M | | TK | ✅ |
+| L1 | Shared online leaderboard + live dashboard page | Systems | M | | Anand | ✅ |
 
 **Suggested order:** do **0** and **U3** first. U3 touches `data.js`, `sim.js` and the tests that everyone else builds on. After that, tasks in different areas can run in parallel.
 
@@ -76,9 +77,9 @@ Paths are inside `master-v1/`. Every task that changes `js/data.js` or `js/sim.j
 ### Building
 
 - **B1 · See-through on hover.** Raycast from the mouse to the building group in `createSite()`; while hovered, fade the walls and roof to about 30% opacity.
-  - **Gotcha:** after changing `transparent` on a three.js material, set `material.needsUpdate = true`. See `applyHeatView()` in `prototypes/building-tycoon/js/scene.js`.
+  - **Gotcha:** after changing `transparent` on a three.js material, set `material.needsUpdate = true`. See `applyHeatView()` in `development/building-tycoon/js/scene.js`.
   - **Done when:** hovering shows the floors and people inside; leaving restores it; it works on touch (tap to toggle).
-- **B2 · Activities inside.** Each building type gets a scene: library (desks and people reading), school (class), aquarium (tanks), hospital (beds), apartments (sofas). Tycoon has desks with seated people to copy from (`deskPos()` and `makePerson()` in `prototypes/building-tycoon/js/scene.js`).
+- **B2 · Activities inside.** Each building type gets a scene: library (desks and people reading), school (class), aquarium (tanks), hospital (beds), apartments (sofas). Tycoon has desks with seated people to copy from (`deskPos()` and `makePerson()` in `development/building-tycoon/js/scene.js`).
   - **Done when:** with B1 hover on, each of the five building types shows its own activity.
 - **B3 · More structural look.**
   - Show slabs at each floor, columns at the corners and bays, and a visible roof edge.
@@ -95,7 +96,7 @@ Paths are inside `master-v1/`. Every task that changes `js/data.js` or `js/sim.j
 ### People
 
 - **P1 · People say things.** Short speech bubbles tied to what's happening: "Heat wave! 🥵", "Nice view!", "Power's out!", "The floor's soggy!". Pick lines from the sim's feed (`emit()` in `js/sim.js`) and each person's mood.
-  - **Reuse:** Tom's tycoon has a working bubble system: the `SAY` lines plus `say()`/`frame()` in `prototypes/building-tycoon/js/ui.js`, positioned with `screenPos()` in its `scene.js`.
+  - **Reuse:** Tom's tycoon has a working bubble system: the `SAY` lines plus `say()`/`frame()` in `development/building-tycoon/js/ui.js`, positioned with `screenPos()` in its `scene.js`.
   - **Done when:** at most two or three bubbles show at once; they follow the person; the lines match the moment.
 
 ### Design screen
@@ -120,7 +121,7 @@ Paths are inside `master-v1/`. Every task that changes `js/data.js` or `js/sim.j
 - **S4 · Fire event.** A new hazard `fire` in `HAZARDS` and `BREAKS`, added to some levels' `events`, plus flames or smoke in the scene. Sprinklers (S3) reduce the damage. Fun extra: a MEGA "flaming tornado".
   - **Done when:** fire appears on at least one site, sprinklers visibly save the day, tests cover both outcomes, and calibrate passes.
 - **S5 · Helicopter delivers the HVAC unit.** When the year starts (or when a heating and cooling upgrade is picked), a helicopter flies in and lowers the rooftop unit onto the roof.
-  - **Reuse:** copy `makeHeli()`, `heliDeliver()` and `updateHelis()` from `prototypes/building-tycoon/js/scene.js` (cable, landing ring, puff).
+  - **Reuse:** copy `makeHeli()`, `heliDeliver()` and `updateHelis()` from `development/building-tycoon/js/scene.js` (cable, landing ring, puff).
   - **Done when:** the unit arrives by helicopter, the scene doesn't hitch, and the unit stays on the roof afterwards.
 
 ## Workflow

@@ -1,82 +1,101 @@
 # BuildCraft
 
-A browser game that puts students in the client's seat: a budget, a building, every feature a cost decision, and a year of weather that tests the choices.
+A kid-first building game made at the **NCSEA Hackathon 2026**.
 
-## ▶ Play it
+You pick a site, test the soil and spend a coin budget on a building. Then a whole year of earthquakes, storms, floods and heat waves tests your choices. People walk in with emoji faces that show how they feel, and you finish with a school-style report card from F to A+. Along the way you learn how structure, architecture, building systems and sustainability work together.
 
-**https://amourougassamy.github.io/BuildCraft/**
+## ▶ Play online
 
-That page lists every version. Nothing to install; it runs in any modern browser. To play offline, open a folder's `index.html` in a browser.
+### **https://buildcraft.quest**
+
+- Nothing to install. It runs in any modern browser, on laptops, tablets and phones.
+- The same game is also at https://buildcraft-4eee7.web.app (Firebase) and https://amourougassamy.github.io/BuildCraft/ (GitHub Pages).
+- 🏆 **Leaderboard:** https://buildcraft.quest/leaderboard.html. It goes live once the leaderboard is switched on; see [Leaderboard](#leaderboard).
+
+## 💻 Run it on your own computer
+
+The game is plain HTML and JavaScript with no build step and no install. It uses JavaScript modules, which browsers only load from a web address (`http://`), so double-clicking `index.html` won't work. You need a tiny local web server instead.
+
+1. **Get the code.** Either:
+   - `git clone https://github.com/amourougassamy/BuildCraft.git`, or
+   - download https://github.com/amourougassamy/BuildCraft/archive/refs/heads/main.zip and unzip it.
+2. **Start a server from the `BuildCraft` folder.** You need Python 3, which macOS and Linux already have. On Windows, install it from python.org or the Microsoft Store.
+
+   ```
+   python3 master-v1/tools/serve.py          # macOS / Linux
+   py master-v1\tools\serve.py               # Windows
+   ```
+3. **Open http://127.0.0.1:8765/master-v1/.** Stop the server with Ctrl+C.
+
+Notes:
+- **Offline:** three.js is bundled in `master-v1/vendor/`, so the game runs without internet. Only the Google font and the online leaderboard need a connection, and both fail quietly.
+- **No-cache server:** the bundled server turns off caching, so your edits show up on refresh. Any static server also works, for example `python3 -m http.server` or `npx serve`.
+- **Tests:** need Node 18+ and no installs. Run `cd master-v1 && npm test`.
+
+## 🚀 Deploy your own copy (Firebase Hosting)
+
+The game is static files, about 210 KB compressed per player, so a free Firebase project serves a room of hundreds easily. All Firebase settings live in `master-v1/firebase.json`.
+
+```
+npm install -g firebase-tools          # once
+firebase login                          # once
+cd master-v1
+firebase deploy --only hosting --project buildcraft-4eee7
+```
+
+On Windows PowerShell, if you see "running scripts is disabled", type `firebase.cmd` instead of `firebase`. To try a change before going live, use `firebase hosting:channel:deploy preview --project buildcraft-4eee7`; it gives you a private link that lasts 7 days. GitHub Pages also republishes automatically about a minute after every merge to `main`.
+
+**Custom domain:** `buildcraft.quest` is connected in Firebase console → Hosting, with DNS at Porkbun (an A record and a TXT record).
+
+## Leaderboard
+
+Players can choose to post a score from the report card. Only a first name or nickname is sent (letters and numbers, up to 12 characters, with a word filter), along with the score. The **dashboard** (`master-v1/leaderboard.html`) shows:
+- top 10 per site
+- overall champions
+- the grade spread
+- the most-picked upgrades
+- headline numbers
+
+It refreshes every 15 seconds, so it works well on a big screen in the room. Add `?demo` to the address to preview it with labelled sample data.
+
+**Switch it on (once):**
+1. Firebase console → **Build → Firestore Database → Create database** (production mode).
+2. **Authentication → Get started → Anonymous → Enable.**
+3. **Project settings → Your apps → Web app (`</>`)**, then copy `apiKey` into `master-v1/js/board-config.js`.
+4. Deploy the game and the database rules together: `firebase deploy --only hosting,firestore:rules --project buildcraft-4eee7`.
+5. Recommended: in Google Cloud console → APIs & Services → Credentials, restrict the key to the HTTP referrers `buildcraft.quest/*`, `buildcraft-4eee7.web.app/*` and `amourougassamy.github.io/*`.
+
+**Honest limits:**
+- Scores are calculated in the player's browser, so a determined person could post a fake one. That's acceptable for a classroom board.
+- The database rules still check every field, so only well-formed scores get in, and nobody can edit or delete them.
 
 ## Repo layout
 
 ```
-index.html               Launcher for every playable version
-buildcraft-v0.1/         Team mainline: starter (Riverside Library)
-buildcraft-v0.2/         Team mainline: kid edition
-master-v1/               Master version (latest): the best ideas from every version
-prototypes/              Individual explorations, one folder each
-  building-tycoon/         Isometric 3D building-systems tycoon (Tom)
-  alex/                    Alex's single-file versions (v1-v3)
-  sky-high-builders/       Wind-challenge tower builder (Logan)
-  buildcraft-3d/           3D frame builder with loads (Logan)
-  learning-hub-nextjs/     Next.js app: 3D design + hot-day cooling check (nabdo)
-interactive/             3D click-to-build with load testing (Logan)
-earthquake-tower/        Five-storey tower, basic vs braced, in an earthquake (Logan)
-AGENTS.md                Instructions for coding agents: repo map, rules, gotchas
-PLAN.md                  Master V1 task board: claim with initials, tick when merged
-docs/REPO_GUIDE.md       How each game is wired (for agents and developers)
+index.html            Home page: Play, Leaderboard
+master-v1/            The game (this is the current app). See master-v1/README.md
+  js/                   data.js (numbers & words), sim.js (rules), scene.js (3D), main.js (screens),
+                        board*.js (leaderboard), leaderboard.js (dashboard), fx.js (confetti & sound)
+  tests/  tools/        npm test, npm run calibrate, the local server
+  vendor/               three.js 0.160.1 (bundled so it works offline)
+  firebase.json  firestore.rules
+development/          Earlier versions and prototypes from the hackathon: kept in the repo for reference,
+                      not published (_config.yml excludes it from GitHub Pages; Firebase deploys only master-v1/)
+_config.yml           GitHub Pages settings (excludes development/)
+docs/REPO_GUIDE.md    How the code is wired, for developers and coding agents
+AGENTS.md             Standing instructions for coding agents (CLAUDE.md points here)
+PLAN.md               Task board for the next round of work
 ```
-
-## Team mainline
-
-Each `buildcraft-v*` folder is a complete, playable version. Old folders are never edited, so every iteration stays playable side by side.
-
-| Version | Play | What's in it | Source |
-| --- | --- | --- | --- |
-| Master V1 (latest) | [Play](https://amourougassamy.github.io/BuildCraft/master-v1/) | The best of every prototype: kid-first claymation 3D, name, island map with unlockable sites, one-screen design, forward-only year with repairs and downtime, emoji moods, ghosts, eco points, A+ report card, game over | [`master-v1/`](master-v1/) |
-| v0.2 | [Play](https://amourougassamy.github.io/BuildCraft/buildcraft-v0.2/) | Kid edition: toy-box look, six regulars with happy / sad / ghost moods, celebrations, Gentle mode, sound | [`buildcraft-v0.2/`](buildcraft-v0.2/) |
-| v0.1 | [Play](https://amourougassamy.github.io/BuildCraft/buildcraft-v0.1/) | Starter: Riverside Library, Minneapolis weather, 9 decisions | [`buildcraft-v0.1/`](buildcraft-v0.1/) |
-
-Each iteration's own README explains how the game works and which squad owns which file.
-
-## Prototypes
-
-Side explorations built in parallel. Ideas that work here can be pulled into the next mainline version.
-
-| Prototype | Owner | Play | What's in it | Source |
-| --- | --- | --- | --- | --- |
-| Building Tycoon | Tom | [Play](https://amourougassamy.github.io/BuildCraft/prototypes/building-tycoon/) | Isometric 3D office (orbit, zoom, rotate). Tenants' moods follow the design; windows, structure, envelope, HVAC and electrical all affect each other; a helicopter delivers rooftop units. Needs internet for Three.js | [`prototypes/building-tycoon/`](prototypes/building-tycoon/) |
-| Alex's latest (v3) | Alex | [Play](https://amourougassamy.github.io/BuildCraft/prototypes/alex/) | Pick a town, building type and floors; 90 s build, then a 12-month year of earthquakes and windstorms; foundations must match the soil | [`prototypes/alex/`](prototypes/alex/) |
-| Alex's v2 | Alex | [Play](https://amourougassamy.github.io/BuildCraft/prototypes/alex/v2.html) | Live scene with visitors; Code Minimum vs. Beyond Code choices in five categories | [`v2.html`](prototypes/alex/v2.html) |
-| Alex's v1: Build It Strong | Alex | [Play](https://amourougassamy.github.io/BuildCraft/prototypes/alex/v1-build-it-strong.html) | First slim prototype: four categories, a $100 budget, a happiness meter | [`v1-build-it-strong.html`](prototypes/alex/v1-build-it-strong.html) |
-| Sky High Builders | Logan | [Play](https://amourougassamy.github.io/BuildCraft/prototypes/sky-high-builders/) | "The Wind Challenge": stack pieces on a grid to build a tower for a windy city | [`prototypes/sky-high-builders/`](prototypes/sky-high-builders/) |
-| BuildCraft 3D | Logan | [Play](https://amourougassamy.github.io/BuildCraft/prototypes/buildcraft-3d/) | Orbitable 3D models, templates (tower, house, bridge, frame), six adjustable loads, demand/capacity score, JSON export/import. Needs internet for Three.js | [`prototypes/buildcraft-3d/`](prototypes/buildcraft-3d/) |
-| BuildCraft Interactive | Logan | [Play](https://amourougassamy.github.io/BuildCraft/interactive/) | Newer BuildCraft 3D: click on the ground to build, elevation, delete, undo, load test. Needs internet for Three.js | [`interactive/`](interactive/) |
-| Earthquake Tower | Logan | [Play](https://amourougassamy.github.io/BuildCraft/earthquake-tower/) | Five-storey tower, basic vs braced, under an earthquake with an intensity slider. Needs internet for Three.js | [`earthquake-tower/`](earthquake-tower/) |
-| Neighborhood learning hub | nabdo | [Open](https://ncseahackathon.ssoe.abacus.ai/) (hosted on Abacus.AI) | Next.js app: design a learning hub in 3D against a budget, an area target and a 12-hour hot-day cooling simulation. Needs Node; does not run on GitHub Pages | [`prototypes/learning-hub-nextjs/`](prototypes/learning-hub-nextjs/) |
-
-All of these are games. Their numbers are illustrative and are not structural analysis or code checks.
 
 ## Contributing
 
-**Working on Master V1?** Pick a task in [`PLAN.md`](PLAN.md), put your initials on it, and tick it when it's merged. Master V1 grows in place through those tasks; the copy-a-folder steps below are for new standalone versions. Using a coding agent? It reads [`AGENTS.md`](AGENTS.md), which links to the deeper [`docs/REPO_GUIDE.md`](docs/REPO_GUIDE.md).
+- Pick a task in [`PLAN.md`](PLAN.md), put your initials on it, and work on a branch. Open one pull request per task and tick the task once it's merged.
+- Every number and word lives in `master-v1/js/data.js`. Rules live in `sim.js`, which has no DOM or randomness, so the same design always gives the same year.
+- After changing rules or numbers, run `npm test` and `npm run calibrate` in `master-v1/`. The calibration script checks that every site can still be passed.
+- Keep paths relative, and don't commit zip files, `node_modules/` or `.env` files.
 
-**New mainline iteration**
+## Team
 
-1. Copy the newest folder and rename it: `cp -r buildcraft-v0.2 buildcraft-v0.3`
-2. Work only in the new folder.
-3. Add a row for it at the top of the mainline list in the root `index.html` and in the table above (Play link: `https://amourougassamy.github.io/BuildCraft/<folder>/`).
-4. Commit and push. GitHub Pages republishes within a minute or two.
+Anandharam Mourougassamy (MKA), Alexander Alaura Reyes (ZFA), Nancy Abdo (SSOE Group), Tom Kovalcik (Structured AI), Andrew Sundal (HGA), Carlos Navea (SDSU), Rao Patri (Logan Patri Engineering), Joel Kramer (SSOE Group) and Victor Garcia (SSOE Group). The in-game ℹ️ About page has links.
 
-**New prototype**
-
-1. Make a folder under `prototypes/` named for what it is (not `my-version` or `test`).
-2. Put an `index.html` at its root if it runs in the browser, plus a short `README.md`: what it is, who owns it, how to run it.
-3. Add a row to the launcher and to the Prototypes table above (Play link: `https://amourougassamy.github.io/BuildCraft/prototypes/<folder>/`).
-
-**House rules**
-
-- Keep every path inside a folder relative (`js/ui.js`, not `/js/ui.js`) so each version runs from its own folder.
-- Don't commit zip files. Unzip into a folder so the code can be read and diffed on GitHub.
-- Don't commit build output, `node_modules/`, or `.env` files (see `.gitignore`).
+**This is a game, not engineering.** The cause and effect points the right way (piles on soft soil, braces for quakes, straps for wind), but every number is made up to teach the big ideas. None of it is a structural analysis or a code check.

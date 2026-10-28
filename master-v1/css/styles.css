@@ -189,8 +189,9 @@ header { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding
 .brief .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; margin: 10px 0; }
 .brief .facts div { background: #f5efe9; border-radius: 14px; padding: 8px 10px; }
 .brief .facts b { display: block; }
-.brief .profile { display: flex; flex-direction: column; height: 140px; margin-top: 8px; border-radius: 10px; overflow: hidden; border: 2px solid #d8ccc0; }
-.brief .profile span { display: flex; align-items: center; min-height: 16px; padding: 0 8px; font-size: 12px; font-weight: 600; }
+.brief .profile, .bubble .profile { display: flex; flex-direction: column; height: 140px; margin-top: 8px; border-radius: 10px; overflow: hidden; border: 2px solid #d8ccc0; }
+.bubble .profile { height: 110px; }
+.brief .profile span, .bubble .profile span { display: flex; align-items: center; min-height: 16px; padding: 0 8px; font-size: 12px; font-weight: 600; }
 
 .report { background: repeating-linear-gradient(#fffdf6 0 31px, #d7e6f5 31px 32px); font-family: "Fredoka", sans-serif; position: relative; }
 .report .school { text-align: center; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); font-size: 13px; }
@@ -209,6 +210,11 @@ header { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding
 .unlock { text-align: center; font-size: 20px; font-weight: 600; color: #2e7d32; margin: 8px 0 0; animation: wobble 1.2s ease-in-out infinite; }
 
 .linkBtn { font: inherit; font-size: 15px; margin-top: 10px; border: 0; background: none; color: var(--blue); cursor: pointer; text-decoration: underline; }
+a.iconBtn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+a.linkBtn { display: block; }
+.btn.board { background: var(--blue); }
+a.btn { display: inline-block; text-decoration: none; }
+.boardRow { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .about .event { font-size: 18px; text-align: center; background: #fff8dc; border-radius: 14px; padding: 8px; }
 .about .team { list-style: none; padding: 0; margin: 8px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px; }
 .about .team li { background: #f5efe9; border-radius: 14px; padding: 8px 12px; display: flex; flex-direction: column; }

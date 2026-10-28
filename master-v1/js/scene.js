@@ -3,7 +3,7 @@
 //   createSite(el)  the building, its people and the weather
 //   createMap(el)   the island of level pins you pan around
 // Renderer, emoji sprites and the person model follow Tom's
-// prototypes/building-tycoon/js/scene.js.
+// development/building-tycoon/js/scene.js.
 // ============================================================
 
 import * as THREE from "three";
