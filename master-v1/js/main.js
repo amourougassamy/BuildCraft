@@ -718,7 +718,7 @@ const TEAM = [
   ["Carlos Navea", "SDSU", "https://www.linkedin.com/in/carlosnavea/"],
   ["Rao Patri", "Logan Patri Engineering", "https://www.linkedin.com/in/rao-patri-pe-se-425a0319/"],
   ["Joel Kramer", "SSOE Group", "https://www.linkedin.com/in/joel-kramer-pe-35662817/"],
-  ["Victor Garcia", "SSOE Group", ""], // add his LinkedIn URL here when we have it
+  ["Victor Garcia", "SSOE Group", "https://www.linkedin.com/in/victor-garcia-83451b14b/"],
 ];
 function showAbout() {
   overlay(`<div class="about">
