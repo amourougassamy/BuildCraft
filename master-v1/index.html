@@ -27,6 +27,7 @@
   <div class="chip" id="ecoChip" title="Eco points">🌱 <b id="ecoCount">0</b></div>
   <div class="chip happyChip" id="happyChip" title="Happiness"><span id="face">😀</span><div class="meter"><i id="happyFill"></i></div></div>
   <div class="hudBtns">
+    <a class="iconBtn" id="boardBtn" href="leaderboard.html" target="_blank" rel="noopener" title="Leaderboard" hidden>🏆</a>
     <button class="iconBtn" id="aboutBtn" title="About BuildCraft and the team">ℹ️</button>
     <button class="iconBtn" id="mapBtn" title="World map">🗺️</button>
     <button class="iconBtn" id="gentleBtn" title="Gentle mode: no ghosts">👻</button>
@@ -42,11 +43,13 @@
     <div class="fran big">👷‍♀️</div>
     <form id="nameForm">
       <label for="nameInput">What's your name, builder?</label>
-      <input id="nameInput" maxlength="16" autocomplete="off" placeholder="Type your name" required>
+      <input id="nameInput" maxlength="16" autocomplete="off" placeholder="First name or nickname" required>
+      <small class="small">Use a first name or nickname, never your full name.</small>
       <button class="btn go" type="submit">Let's build! 🏗️</button>
     </form>
     <p class="small" id="welcomeBack"></p>
     <button type="button" class="linkBtn" id="aboutLink">ℹ️ About BuildCraft &amp; the team</button>
+    <a class="linkBtn" id="boardLink" href="leaderboard.html" target="_blank" rel="noopener" hidden>🏆 Leaderboard</a>
   </div>
 </section>
 

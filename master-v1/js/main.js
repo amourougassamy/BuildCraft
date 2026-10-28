@@ -12,6 +12,8 @@ import {
   createRun, advance, repair, reportCard, lessons, isUnlocked, systemsHappy,
 } from "./sim.js";
 import { createSite, createMap } from "./scene.js";
+import { boardEnabled, submitScore } from "./board.js";
+import { cleanName } from "./board-stats.js";
 
 const $ = id => document.getElementById(id);
 const FX = window.FX;
@@ -654,17 +656,40 @@ function showReport(R) {
     <div class="comment">👷‍♀️ <b>Foreman Fran says:</b> ${comment(r)}
       ${tips.length ? `<ul>${tips.map(t => `<li>${t}</li>`).join("")}</ul>` : ""}</div>
     ${nowUnlocked ? `<p class="unlock">🔓 New site unlocked: ${LEVELS[levelIdx + 1].ico} ${LEVELS[levelIdx + 1].name}!</p>` : ""}
+    ${boardEnabled() ? `<p class="boardRow"><button class="btn board" id="rBoard">🏆 Add ${name()} to the leaderboard</button>
+      <span class="small" id="rBoardNote">Only your first name or nickname and this score are shared.</span></p>` : ""}
     <div class="btns">
       <button class="btn ghost" id="rMap">🗺️ Map</button>
       <button class="btn ff" id="rRetry">🔁 Try again</button>
       ${r.pass && levelIdx + 1 < LEVELS.length ? `<button class="btn go" id="rNext">Next site ▶</button>` : ""}
     </div>`, "report");
+  if ($("rBoard")) $("rBoard").onclick = () => postScore(R, r, lv);
   if (r.stars >= 2) { sound("win"); FX && FX.confetti(180); FX && FX.fireworks(2600); }
   else if (r.pass) { sound("cheer"); FX && FX.confetti(80); }
   else sound("sad");
   $("rMap").onclick = () => openMap(nowUnlocked ? levelIdx + 1 : levelIdx);
   $("rRetry").onclick = () => { closeOverlay(); startDesign(true); };
   if ($("rNext")) $("rNext").onclick = () => openBrief(levelIdx + 1);
+}
+
+// Opt-in: the player taps the button; nothing is sent otherwise.
+async function postScore(R, r, lv) {
+  const btn = $("rBoard"), note = $("rBoardNote");
+  const nick = cleanName(save.name);
+  if (!nick) { note.textContent = "Pick a first name or nickname with letters and numbers to join the leaderboard."; return; }
+  btn.disabled = true;
+  btn.textContent = "⏳ Sending…";
+  try {
+    await submitScore({ name: nick, site: lv.key, score: r.score, grade: r.grade, eco: Math.round(R.eco),
+      ghosts: R.ghosts, passed: r.pass, choices: { ...R.choice } });
+    btn.textContent = `✅ ${esc(nick)} is on the leaderboard!`;
+    note.innerHTML = `<a href="leaderboard.html" target="_blank" rel="noopener">See the leaderboard ↗</a>`;
+    sound("ding");
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = "🏆 Try again";
+    note.textContent = "Couldn't reach the leaderboard right now. Your grade is still saved on this device.";
+  }
 }
 
 function showGameOver(R) {
@@ -702,6 +727,7 @@ function showAbout() {
       keeps its people safe and happy through a year of earthquakes, storms, floods and heat waves. Along the way you learn how
       structure, architecture, building systems and sustainability work together.</p>
     <p class="event">🏆 Made at the <b>NCSEA Hackathon 2026</b></p>
+    ${boardEnabled() ? `<p><a class="btn board" href="leaderboard.html" target="_blank" rel="noopener">🏆 See the leaderboard</a></p>` : ""}
     <h3>💛 Thank you to the team</h3>
     <ul class="team">${TEAM.map(([n, org, url]) => `<li><b>${n}</b><span>${org}</span>
       ${url ? `<a href="${url}" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>` : ""}</li>`).join("")}</ul>
@@ -712,6 +738,7 @@ function showAbout() {
 }
 $("aboutBtn").onclick = showAbout;
 $("aboutLink").onclick = showAbout;
+$("boardBtn").hidden = $("boardLink").hidden = !boardEnabled();
 
 // ---------- HUD buttons ----------
 $("mapBtn").onclick = () => {
