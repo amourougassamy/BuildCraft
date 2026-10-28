@@ -11,7 +11,7 @@ python3 -m http.server 8000
 # then open http://localhost:8000
 ```
 
-Publish: with GitHub Pages on for this repo, this version runs at `https://amourougassamy.github.io/BuildCraft/buildcraft-v0.1/`.
+This folder is kept in the repo for reference and is not published online.
 Need a single file to share? `python3 tools/bundle.py` writes `dist/build-it.html`.
 
 ## Who owns what

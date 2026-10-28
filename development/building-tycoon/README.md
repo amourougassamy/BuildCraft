@@ -8,7 +8,7 @@ A 3-storey Chicago office you run for one year, viewed in isometric 3D (orbit, z
 - A helicopter flies in another rooftop unit when it gets hot. The unit then loads the roof framing and the electrical service.
 - Heat pumps drop the gas bill but push the electrical service hard on cold mornings.
 
-Play: https://amourougassamy.github.io/BuildCraft/development/building-tycoon/ (needs internet for Three.js).
+This folder is kept in the repo for reference and is not published online. Play it locally with `python3 development/building-tycoon/tools/serve.py` (needs internet for Three.js).
 
 All numbers are illustrative game values, not design values or code checks.
 

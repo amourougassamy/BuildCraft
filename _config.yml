@@ -1,0 +1,4 @@
+# GitHub Pages builds this repo with Jekyll. Everything here is plain static files; this file only
+# keeps the hackathon's earlier versions out of the published site. They stay in the repo for reference.
+exclude:
+  - development/

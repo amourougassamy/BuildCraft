@@ -1,6 +1,6 @@
 # BuildCraft Interactive (click to build)
 
-Owner: Logan (LoganPatri). Play: https://amourougassamy.github.io/BuildCraft/development/interactive/ (needs internet for Three.js).
+Owner: Logan (LoganPatri). This folder is kept in the repo for reference and is not published online. See Run it below (needs internet for Three.js).
 
 The newer version of [BuildCraft 3D](../buildcraft-3d/):
 - Click on the ground to place columns, beams, slabs, braces and walls on a 3 m grid. Raise the build level with the elevation slider.

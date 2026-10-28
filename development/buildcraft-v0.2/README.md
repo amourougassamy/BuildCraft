@@ -4,8 +4,7 @@ Kids are the boss of a real building: 4 million coins, a library by the river, a
 
 ## Run it
 
-Open `index.html` in a browser. No installs, no build step. With GitHub Pages on, it runs at
-`https://amourougassamy.github.io/BuildCraft/buildcraft-v0.2/`.
+Open `index.html` in a browser. No installs, no build step. This folder is kept in the repo for reference and is not published online.
 
 Need one file to share? `python3 tools/bundle.py` writes `dist/buildcraft.html`.
 

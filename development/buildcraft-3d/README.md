@@ -2,7 +2,7 @@
 
 Owner: Logan. (Originally in `my-version/`.)
 
-Play in your browser at the repository's GitHub Pages URL under `/development/buildcraft-3d/` once Pages is enabled.
+This folder is kept in the repo for reference and is not published online. To play, run `python3 -m http.server 8000` from the repo root and open http://localhost:8000/development/buildcraft-3d/ (needs internet for Three.js).
 
 Features: orbitable 3D models, editable components, templates, six adjustable loads, educational demand/capacity score, animated exaggerated sway, JSON export/import.
 

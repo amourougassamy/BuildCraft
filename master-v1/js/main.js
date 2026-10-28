@@ -465,7 +465,7 @@ $("panel").addEventListener("click", e => {
   if (k === "soil") {
     const soil = SOILS[lv.soil];
     say(knowsSoil()
-      ? `🔬 Soil report is back, ${name()}: <b>${soil.name}</b>! ${soil.desc} Your foundation needs to be at least: <b>${ITEMS.found.options[soilNeed(lv) - 1].label}</b>.`
+      ? `🔬 Soil report is back, ${name()}: <b>${soil.name}</b>! ${soil.desc} Your foundation needs to be at least: <b>${ITEMS.found.options[soilNeed(lv) - 1].label}</b>.${soilBars(soil)}`
       : `🤷 Okay, no soil test. You'll have to guess the foundation, ${name()}!`);
     return;
   }

@@ -6,40 +6,33 @@ Standing instructions for any coding agent (Claude Code, Codex, Cursor, …) wor
 
 BuildCraft is a set of browser games built at the NCSEA hackathon (2026-10-27). They teach kids, students and non-engineers how a building's disciplines work together: architecture, structure, envelope, mechanical, electrical. Every game puts the player in the designer's or client's seat, then tests the design with weather, quakes or occupants. All numbers are illustrative game values, and each game says so on screen.
 
-- **Live:** https://amourougassamy.github.io/BuildCraft/ is the launcher page, which lists every game.
-- **Deploy:** GitHub Pages builds from the root of `main`. **Merging to `main` rebuilds the live site within 1–2 minutes**, so try changes locally before merging. Browsers may keep showing the old files for up to about 10 minutes; hard-refresh to check.
-- **Team:** several people push to `main` directly (often through the GitHub web uploader). Pull before you start and again before you push.
+- **Live:** https://buildcraft.quest (Firebase Hosting, project `buildcraft-4eee7`, also at https://buildcraft-4eee7.web.app) and https://amourougassamy.github.io/BuildCraft/ (GitHub Pages: the home page plus `master-v1/`).
+- **Deploy:**
+  - **GitHub Pages** builds from the root of `main`. **Merging to `main` rebuilds it within 1–2 minutes**, so try changes locally before merging. `_config.yml` keeps `development/` out of the published site.
+  - **Firebase** is deployed by hand from `master-v1/`: `firebase deploy --only hosting,firestore:rules --project buildcraft-4eee7`. Only that folder is published.
+  - Browsers may show old files for a few minutes; hard-refresh to check.
+- **Team:** work on a branch and open a PR per task (see `PLAN.md`). Pull before you start and again before you push.
 
-## What's built (as of 2026-10-27)
+## What's built (as of 2026-10-28)
 
 | Path | Owner | What it is | Tech |
 | --- | --- | --- | --- |
-| `index.html` | team | Launcher: one row per playable folder, in two lists (Team mainline, Prototypes) | static HTML |
-| `master-v1/` | Anand | **The team's main game going forward.** Kid-first claymation 3D: name prompt, island map with 5 unlockable sites, one-screen design with coin jar, a forward-only year with repairs and downtime, emoji moods, ghosts, report card | ES modules, three.js 0.160.1 vendored, `npm test` |
-| `buildcraft-v0.1/` | team (andrewdsundal) | Mainline starter "Build It!": Riverside Library, $4.0M budget, 9 decisions, then a Minnesota weather year | classic scripts, `window.GAME`/`SIM` |
-| `buildcraft-v0.2/` | team (andrewdsundal) | Previous mainline (snapshot). Kid edition: six characters (happy / sad / ghost), coins, celebrations, Gentle mode, sound | classic scripts, `GAME`/`SIM`/`ART`/`FX` |
-| `prototypes/alex/` | Alex | v3: pick a town, building type and floors; 90 s build, then a year of quakes and windstorms where foundations must match the soil. v1 and v2 are in the same folder | single HTML, canvas |
-| `prototypes/sky-high-builders/` | Logan | Stack frame and brace pieces on a 3×6 grid, then a wind test | single HTML, minified |
-| `prototypes/buildcraft-3d/` | Logan | Orbitable 3D templates (tower, house, bridge, frame) with six loads and a demand/capacity score | three.js, minified |
-| `interactive/` | Logan | Newer 3D version: click-to-build on a grid, elevation, delete, undo, load test | three.js, minified |
-| `earthquake-tower/` | Logan | Five-storey tower, basic vs braced, under an earthquake with an intensity slider | three.js, minified |
-| `prototypes/building-tycoon/` | Tom | Isometric 3D tycoon: tenants' moods follow the design; windows, structure, envelope, HVAC and electrical affect each other; helicopter delivers rooftop units | ES modules, three.js, `node --test` |
-| `prototypes/learning-hub-nextjs/` | nabdo | Next.js app: design a learning hub in 3D against budget, area and a hot-day cooling check. Hosted on Abacus.AI (https://ncseahackathon.ssoe.abacus.ai/), **not** on Pages | Next 16, React 19, Tailwind, shadcn/ui |
-| `ncsea_hackathon_nextjs_space (1).zip` | nabdo | Newer copy of the learning hub, adding story mode (guide "Nova") and a cold-day/heating model. Not unzipped into the folder yet | zip |
+| `index.html` | team | Home page: Play and Leaderboard | static HTML |
+| `master-v1/` | team (started by Anand) | **The app.** Kid-first claymation 3D: name prompt, island map with 5 unlockable sites, soil report, one-screen design with coin jar, a forward-only 52-week year with repairs and downtime, emoji moods and speech bubbles, ghosts, report card, About page, shared leaderboard and dashboard | ES modules, three.js 0.160.1 vendored, Firestore over REST, `npm test` |
+| `development/` | various | Earlier versions and prototypes from the hackathon, kept for reference and **not published**: `buildcraft-v0.1`, `buildcraft-v0.2` (team / andrewdsundal), `alex` (Alex), `building-tycoon` (Tom), `sky-high-builders`, `buildcraft-3d`, `interactive`, `earthquake-tower` (Logan), `learning-hub-nextjs` (nabdo, with story mode) | mixed; see each folder's README and `docs/REPO_GUIDE.md` |
 
 ## Before you edit
 
 - **Picking up work:** read `PLAN.md`, the team's task board for Master V1. It lives on `main`. **Claim before you code:** your first step is to put your human's initials in the task's **Who** cell and push that change to `main`. If the cell already has someone else's initials, pick another task. Once the PR is merged, change ⬜ to ✅ and push.
-- **Before editing a folder, read its `README.md`:** owner, how to run it, and which squad owns which file. `interactive/` and `earthquake-tower/` have no README yet; this table and `docs/REPO_GUIDE.md` describe them.
-- **For architecture details**, read `docs/REPO_GUIDE.md`: load order, globals, data schemas, sim rules, file formats, and what the zip changes.
+- **Before editing a folder, read its `README.md`:** owner, how to run it, and which squad owns which file.
+- **For architecture details**, read `docs/REPO_GUIDE.md`: module map, data schemas, sim rules, the leaderboard, and how each older version is wired.
 
 ## Working rules
 
-- **Stay in your own folder.** Each folder is a complete, self-contained game. To reuse something, copy it into your folder rather than importing across folders. Ask the owner before changing their folder. Master V1 is the exception: it's the shared team game, and claiming a `PLAN.md` task is your go-ahead to edit the files that task names.
-- **Master V1 grows in place, through `PLAN.md` tasks:** one task per branch and PR. The older `buildcraft-v0.1/` and `buildcraft-v0.2/` are snapshots that stay as they are, so every version stays playable. In every game, content and tuning go in `data.js`.
-- **New prototype:** create `prototypes/<what-it-is>/`, named for what it is, with an `index.html` and a short `README.md` (what it is, owner, how to run).
-- **Every playable folder is listed twice:** one row in the root `index.html` launcher and one row in the `README.md` table, with a Play link of the form `https://amourougassamy.github.io/BuildCraft/<path-to-folder>/` (for example `…/prototypes/alex/`).
-- **Pages serves static files from `main`.** Keep paths inside a folder relative (`js/ui.js`). A game that needs a server or build step gets hosted elsewhere and linked from the launcher, the way the learning hub is.
+- **`master-v1/` is the shared app.** Claiming a `PLAN.md` task is your go-ahead to edit the files that task names. **`development/` is reference only:** leave it as it is unless its owner asks; to reuse something, copy it into `master-v1/`.
+- **Master V1 grows in place, through `PLAN.md` tasks:** one task per branch and PR. Content and tuning go in `data.js`; rules in `sim.js` (pure, tested).
+- **New experiment:** create `development/<what-it-is>/`, named for what it is, with an `index.html` and a short `README.md` (what it is, owner, how to run), and add a row to `development/index.html`. It won't be published.
+- **Keep paths inside a folder relative** (`js/ui.js`, not `/js/ui.js`), so the app works on Pages (under `/BuildCraft/master-v1/`), on Firebase (at the root) and locally.
 - **Commit readable source.** Unzip archives into a folder. Build output, `node_modules/` and `.env` files stay out of git (see `.gitignore`).
 - **Small PRs or small commits**, one feature each. Write commit messages that say what changed for the player.
 
@@ -56,9 +49,10 @@ These patterns are already proven in the repo. Reuse them.
 
 ## Run and test locally
 
-- Classic-script games (v0.1, v0.2, alex, sky-high) also open from `file://`.
-- ES-module games need a local server: `python3 -m http.server 8000` from the repo root, then open `http://localhost:8000/<folder>/`. Master V1 and tycoon each ship a no-cache server on port 8765: `python3 master-v1/tools/serve.py` (open `http://127.0.0.1:8765/master-v1/`) or `python3 prototypes/building-tycoon/tools/serve.py`. Master V1 vendors three.js and runs offline; the other three.js games need internet.
-- Tests: `npm test` and `npm run calibrate` in `master-v1/`; `node --test prototypes/building-tycoon/tests/*.test.mjs` for tycoon. The learning hub has `tests/game-model.test.ts`, probably run with `yarn tsx` (unverified). The other games have no tests.
+- **The app:** `python3 master-v1/tools/serve.py` (no-cache, port 8765), then open `http://127.0.0.1:8765/master-v1/`. It vendors three.js and runs offline.
+- **Leaderboard dashboard:** `http://127.0.0.1:8765/master-v1/leaderboard.html?demo` shows labelled sample data without Firebase.
+- **Tests:** `npm test` and `npm run calibrate` in `master-v1/` (Node 18+, no installs).
+- **Older versions:** `python3 -m http.server 8000` from the repo root, then `http://localhost:8000/development/<folder>/`. Tycoon tests: `node --test development/building-tycoon/tests/*.test.mjs`.
 
 ## Gotchas
 
@@ -66,14 +60,25 @@ These patterns are already proven in the repo. Reuse them.
 - **The three.js games and sky-high are minified single files.** Reformat to read them, keep the single-file shape, and test in a browser after any edit.
 - **`buildcraft-3d` and `interactive` save different JSON formats.** Both say `version: 3`, but neither loads the other's files.
 - **The learning hub carries Abacus.AI hosting config:** `.yarnrc.yml` has a host-specific global cache path, `next.config.js` sets `ignoreBuildErrors`, and `layout.tsx` loads an Abacus script. Its `STYLE_GUIDE.md` is the generic Abacus template.
-- **Renaming a decision or option ID in a mainline `data.js`** breaks `governs`, presets, `defaultChoices`, v0.2's `cast[].loves`, and checks in `sim.js` that use hard-coded IDs.
+- **Renaming an item key or reordering options in `master-v1/js/data.js`** breaks several things:
+  - saved leaderboard `choices`, which are stored as option numbers
+  - `CAST[].loves`
+  - hard-coded keys in `sim.js` (`lift`, `wc`, `soil`, …)
+  - the speech-bubble lines in `main.js`
+
+  Add new items instead of renumbering.
+- **Leaderboard fields are checked twice:** `firestore.rules` must match what `submitScore()` sends. Change both together and redeploy the rules (`firebase deploy --only firestore:rules`), or every post is refused.
+- **The Firebase `apiKey` is public by design.** Access is controlled by `firestore.rules`; restrict the key to the game's domains in Google Cloud. Never put a service-account key or other secret in the repo.
 
 ## Shared vocabulary
 
-- **Brief → design → year → results:** the loop every game shares. v0.1 labels its screens like drawing sheets: G-001 brief, A-101 design, W-201 weather year, R-301 results. Master V1 adds a name prompt and the island map in front.
+- **Brief → design → year → results:** the loop every version shares. Master V1 adds a name prompt and the island map in front, and the leaderboard after.
 - **Hazard rules differ per game.**
   - **v0.1/v0.2:** each hazard (snow, wind, flood, hail, cold, heat) has a 0–10 rating set by the decisions in `GAME.governs`, and the weakest one wins. `damage = max(0, intensity − rating) × repair cost per point`.
-  - **Master V1:** hazards are quake, wind, flood and heat, with power 1–4 against a strength that starts at 1 and grows with upgrades. Each point the hazard wins by costs 25% of the building's health.
+  - **Master V1:** hazards are quake, wind, flood and heat, with power 1–4 against a strength that starts at 1 and grows with upgrades.
+    - Each point the hazard wins by costs 25% of the building's health.
+    - Fire strength exists for sprinklers, but the fire event itself is still a `PLAN.md` task.
+    - The sim counts 360 days; players see 52 weeks.
 - **Squads** (mainline file ownership): 1 Lead and integration, 2 Game logic (`sim.js`), 3 Content (`data.js`), 4 UI, 5 Art.
 - **D/C:** demand over capacity (see "Speak demand/capacity" above).
 
@@ -87,12 +92,19 @@ These patterns are already proven in the repo. Reuse them.
 - **Design screen:** a cleaner panel, a drawing sheet, and no furniture option.
 - **Systems:** elevators, restrooms, sprinklers and a fire event, and a helicopter-delivered HVAC unit.
 
-The prototypes stay as idea sources and stay playable. Housekeeping still open for the owners: unzip nabdo's story-mode update into `prototypes/learning-hub-nextjs/` and delete the zip; move Logan's `interactive/` and `earthquake-tower/` under `prototypes/` with READMEs.
+Many of these shipped on 2026-10-27/28; `PLAN.md` shows what's done and what's open. The earlier versions live in `development/` as idea sources, kept in the repo but not published.
 
 ## Decisions log
 
 Add new entries at the top: date, decision, who decided.
 
+- 2026-10-28: Repo restructured (Anand):
+  - Only the app (`master-v1/`) and a home page are published.
+  - Every earlier version moved to `development/`, kept in the repo but not published (`_config.yml`).
+  - nabdo's story-mode zip unzipped into `development/learning-hub-nextjs/`.
+  - Logan's folders got READMEs.
+- 2026-10-28: Shared leaderboard on Firestore (project `buildcraft-4eee7`): opt-in, nickname only, REST with no SDK, dashboard at `master-v1/leaderboard.html` (Anand).
+- 2026-10-27: Master V1 hosted on Firebase for the NCSEA Hackathon demo, at https://buildcraft.quest (Anand).
 - 2026-10-27: Master V1 merged into `main` (Anand, PR #4).
 - 2026-10-27: Master V1 review meeting. Master V1 is the main game. The upgrade tasks are in `PLAN.md`, claimed with initials and ticked when merged (team).
 - 2026-10-27: Master V1 built on branch `master_V1` from the team's favourite ideas (Anand).

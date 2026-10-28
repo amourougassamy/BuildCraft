@@ -1,6 +1,6 @@
 # Five-Storey Earthquake Tower
 
-Owner: Logan (LoganPatri). Play: https://amourougassamy.github.io/BuildCraft/development/earthquake-tower/ (needs internet for Three.js).
+Owner: Logan (LoganPatri). This folder is kept in the repo for reference and is not published online. See Run it below (needs internet for Three.js).
 
 Build a basic or a braced five-storey tower, set the earthquake intensity with a slider, and watch it shake. It shows in one picture why bracing matters.
 
