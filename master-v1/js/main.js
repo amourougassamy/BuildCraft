@@ -127,11 +127,13 @@ const LINES = {
   warn: {
     quake: ["I feel a rumble…", "Did the ground move?"], wind: ["Look at those clouds!", "It's getting windy…"],
     flood: ["Lots of rain coming…", "The river's rising!"], heat: ["It's getting warm…", "Sunscreen time! ☀️"],
+    fire: ["Do you smell smoke?", "Something's burning…"],
   },
   scared: {
     quake: ["Is the building shaking?!", "Earthquake! Hold on!", "Whoa, the floor's moving!"],
     wind: ["Hold onto your hat! 🌪️", "So windy!", "The roof is rattling!"],
     flood: ["The floor's soggy! 🌊", "Water's coming in!", "My shoes are wet!"],
+    fire: ["Fire! Everybody out! 🔥", "The alarm is ringing!", "Stay low, go outside!"],
   },
   love: {
     lights: ["LED lights, so bright! ✨", "I can read so well now!"], sprinklers: ["Sprinklers keep us safe! 🚿"], garden: ["Look, butterflies! 🦋", "Pretty rain garden! 🌼"],
@@ -415,7 +417,7 @@ function renderChecks() {
     rows.push(`<div class="check ${s >= max ? "ok" : "bad"}"><span class="what">${HAZARDS[t].ico} vs ${POWER_NAMES[max]}</span>
       <span class="bars">${[1, 2, 3, 4].slice(0, Math.max(max, s, 1)).map(n => `<i class="${n <= s ? "on" : ""} ${n === max ? "need" : ""}"></i>`).join("")}</span></div>`);
   }
-  if (lv.events.some(e => e[1] >= 2 && e[0] !== "heat")) rows.push(`<div class="check ${st.power ? "ok" : "bad"}"><span class="what">⚡ Power in a blackout</span></div>`);
+  if (lv.events.some(e => e[1] >= 2 && e[0] !== "heat" && e[0] !== "fire")) rows.push(`<div class="check ${st.power ? "ok" : "bad"}"><span class="what">⚡ Power in a blackout</span></div>`);
   return rows.join("");
 }
 
@@ -563,6 +565,7 @@ function drain() {
       sound("thunder");
       if (f.ev.type === "quake") document.body.classList.add("quake");
       if (f.ev.type === "heat") say(f.over > 0 ? `🥵 Phew, it's SO hot! A heat pump or shade trees would keep everyone cool, ${name()}.` : `😎 Heat wave outside, but nice and cool inside. Good thinking, ${name()}!`);
+      else if (f.saved) say(`🚿 Whoosh! Your sprinklers put out the fire before it could spread. Great call, ${name()}!`);
       else if (f.over <= 0) say(`💪 WOW! The ${hazLabel(f.ev.type, f.ev.power)} hit, and your building held strong, ${name()}!`);
       else {
         const ghost = f.ghost && S.people.find(p => p.key === f.ghost);
@@ -724,7 +727,7 @@ function showAbout() {
   overlay(`<div class="about">
     <h2>👷 About BuildCraft</h2>
     <p>BuildCraft puts kids in the builder's seat. Pick a site, test the soil, spend a budget wisely, and see whether your building
-      keeps its people safe and happy through a year of earthquakes, storms, floods and heat waves. Along the way you learn how
+      keeps its people safe and happy through a year of earthquakes, storms, floods, fires and heat waves. Along the way you learn how
       structure, architecture, building systems and sustainability work together.</p>
     <p class="event">🏆 Made at the <b>NCSEA Hackathon 2026</b></p>
     ${boardEnabled() ? `<p><a class="btn board" href="leaderboard.html" target="_blank" rel="noopener">🏆 See the leaderboard</a></p>` : ""}
