@@ -72,7 +72,7 @@ How to switch it on is in the [root README](../README.md#leaderboard). Scores ar
    - Drag to orbit, right-drag (two fingers) to pan. Orbit down past the grass to look under the ground at the foundation.
 5. **Run the year (forward only).** The design is locked once the year starts. The year is shown as 52 weeks and takes about 45 s at 1× (⏩ for 2× / 4×). Inside, the sim still counts 360 days.
    - People walk in fast and bouncy and earn coins. They say what they think in speech bubbles ("Nice view! 😍", "Heat wave! 🥵").
-   - Hazards come with a warning banner and an over-the-top shake, wind or flood.
+   - Hazards come with a warning banner and an over-the-top shake, wind, flood or fire.
    - When something breaks, tap **🔧** to fix that part. It costs coins, and the doors stay closed while the crew works (downtime).
    - A hazard that beats the building by 2 or more turns someone, or Biscuit the dog, into a floating ghost 👻 (🩹 in Gentle mode).
 6. **Report card or game over.**
@@ -102,7 +102,8 @@ How to switch it on is in the [root README](../README.md#leaderboard). Scores ar
   - At 0% the building falls down.
 - **Heat waves** never break anything. If cooling (heat pump, shade trees) is weaker than the heat, people get hot and less happy.
 - **Power outages.** A hazard of power 2 or more knocks out power for 20 days. A generator, or solar + battery, keeps the doors open. Solar without a battery switches off in a blackout, and the game teaches that.
-- **Fire sprinklers** (Inside → Fire Safety) add 🧯+2 fire strength, and a red pipe shows under each ceiling. No site has a fire yet (that comes with `PLAN.md` task S4), so for now they only cost coins.
+- **Fires** strike Prairie Plains (medium) and Mega City (BIG). They close the doors while they burn but do not cut the power.
+- **Fire sprinklers** (Inside → Fire Safety) add 🧯+2 fire strength, and a red pipe shows under each ceiling. Smoke alarms alone leave strength at 1, so a fire there causes damage, and a BIG one makes a ghost.
 - **People Systems** (2+ storeys only). A building without an elevator loses happiness: 4 points at 2 storeys, 10 at 3+. An elevator adds 4, or costs 4 during a blackout with no backup power. Extra restrooms add 2 per storey. See `systemsHappy()` in `js/sim.js`.
 - **Report card.** Weighted average: Safety 30, Happiness 25, Open Weeks 20 (doubled for the hospital), Eco 15, Budget 10.
   - Grade cutoffs: A+ ≥ 90, A ≥ 85, B ≥ 75, C ≥ 65, D ≥ 50.

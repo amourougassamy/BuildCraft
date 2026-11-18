@@ -54,6 +54,7 @@ export const HAZARDS = {
   wind: { name: "windstorm", ico: "🌪️", stat: "wind" },
   flood: { name: "flood", ico: "🌊", stat: "flood" },
   heat: { name: "heat wave", ico: "🥵", stat: "heat" },
+  fire: { name: "fire", ico: "🔥", stat: "fire" },
 };
 export const POWER_NAMES = ["", "small", "medium", "BIG", "MEGA"];
 
@@ -62,6 +63,7 @@ export const BREAKS = {
   quake: [{ part: "cracks", label: "Cracked walls", ico: "🧱", cost: 3 }, { part: "frame", label: "Bent frame", ico: "🏗️", cost: 5 }],
   wind: [{ part: "roof", label: "Roof torn up", ico: "🏠", cost: 3 }, { part: "windows", label: "Smashed windows", ico: "🪟", cost: 2 }],
   flood: [{ part: "floor", label: "Soggy floors", ico: "💧", cost: 3 }, { part: "power", label: "Wet wiring", ico: "🔌", cost: 2 }],
+  fire: [{ part: "scorch", label: "Burned rooms", ico: "🔥", cost: 4 }, { part: "smoke", label: "Smoke damage", ico: "💨", cost: 2 }],
   settle: [{ part: "found", label: "Sinking foundation", ico: "⬇️", cost: 4 }],
 };
 
@@ -161,9 +163,10 @@ export const LEVELS = [
     // A BIG windstorm beats Code Minimum by 2 (fail); one wind upgrade cuts that to 1 (pass).
     events: [["wind", 3, 3], ["heat", 1, 6], ["quake", 1, 9]] },
   { key: "prairie", name: "Prairie Plains", region: "Big Sky Farms", ico: "🌾", building: "School", bico: "🏫",
-    floors: 2, soil: "firm", budget: 32, shell: 11, visitors: 4, perCoin: 180, map: [-5, 13], windWord: "tornado",
+    floors: 2, soil: "firm", budget: 35, shell: 11, visitors: 4, perCoin: 180, map: [-5, 13], windWord: "tornado",
     brief: "the farm kids of Prairie Plains need a new school",
-    events: [["wind", 3, 4], ["heat", 2, 6], ["wind", 2, 9]] },
+    // The medium fire beats smoke alarms by 1 (damage, no ghost); sprinklers put it out.
+    events: [["fire", 2, 1], ["wind", 3, 4], ["heat", 2, 6], ["wind", 2, 9]] },
   { key: "breezy", name: "Breezy Bay", region: "Sunny Coast", ico: "🏖️", building: "Aquarium", bico: "🐠",
     floors: 2, soil: "clay", budget: 38, shell: 11, visitors: 4, perCoin: 180, map: [14, 15.5], windWord: "hurricane",
     brief: "the beach town of Breezy Bay wants an aquarium by the sea",
@@ -173,7 +176,8 @@ export const LEVELS = [
     brief: "Shaky Hills needs a hospital that stays open even after an earthquake",
     events: [["quake", 3, 2], ["wind", 1, 5], ["quake", 4, 9]] },
   { key: "mega", name: "Mega City", region: "Mega City", ico: "🏙️", building: "Apartment Tower", bico: "🏢",
-    floors: 3, soil: "clay", budget: 56, shell: 17, visitors: 5, perCoin: 220, map: [0, -10], tall: true, windWord: "hurricane",
+    floors: 3, soil: "clay", budget: 59, shell: 17, visitors: 5, perCoin: 220, map: [0, -10], tall: true, windWord: "hurricane",
     brief: "Mega City needs a tall apartment tower ready for anything",
-    events: [["quake", 3, 3], ["heat", 3, 6], ["wind", 3, 7], ["flood", 2, 8]] },
+    // The BIG fire beats smoke alarms by 2 (a ghost); a tall tower really needs sprinklers.
+    events: [["quake", 3, 3], ["heat", 3, 6], ["wind", 3, 7], ["flood", 2, 8], ["fire", 3, 10]] },
 ];

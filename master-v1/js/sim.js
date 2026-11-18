@@ -55,7 +55,7 @@ export function createRun(level, choice) {
     broken: [], nextId: 1, repairing: null, hazard: null, outage: 0, hot: 0, hotOver: 0,
     open: true, daysOpen: 0, brokeDays: 0, settled: 0,
     visitors: 0, visitorFrac: 0, earned: 0, repairSpent: 0, eco: 0,
-    ghosts: 0, shelvesTipped: 0, hits: { quake: 0, wind: 0, flood: 0, heat: 0, settle: 0, outage: 0 },
+    ghosts: 0, shelvesTipped: 0, hits: { quake: 0, wind: 0, flood: 0, heat: 0, fire: 0, settle: 0, outage: 0 },
     log: [], feed: [], over: null, done: false,
   };
   updateMoods(S);
@@ -106,8 +106,10 @@ function strike(S, ev) {
     emit(S, "hazard", { ev, over, ghost: ghost && ghost.key });
   } else {
     S.happy += 4;
-    log(S, `A ${powerName(ev)} ${hazWord(S, ev.type)} hit, and the building held strong 💪`);
-    emit(S, "hazard", { ev, over });
+    const saved = ev.type === "fire" && stats.fire > 0;
+    log(S, saved ? `A ${powerName(ev)} fire started, and the sprinklers put it out 🚿`
+      : `A ${powerName(ev)} ${hazWord(S, ev.type)} hit, and the building held strong 💪`);
+    emit(S, "hazard", { ev, over, saved });
   }
   if (ev.type === "quake" && !stats.bolted && ev.power >= 2) {
     S.shelvesTipped++;
@@ -115,14 +117,14 @@ function strike(S, ev) {
     log(S, "The shelves tipped over! Bolting them to the wall stops that.");
     emit(S, "shelves");
   }
-  if (ev.power >= 2) {
+  if (ev.power >= 2 && ev.type !== "fire") { // a fire stays indoors, so the power lines survive
     S.outage = OUTAGE_DAYS;
     if (!stats.power) { S.hits.outage++; log(S, "The power lines went down. No lights, so the doors closed 🔌"); }
     emit(S, "outage", { backed: stats.power });
   }
 }
 
-const HAZ_WORD = { quake: "earthquake", wind: "windstorm", flood: "flood" };
+const HAZ_WORD = { quake: "earthquake", wind: "windstorm", flood: "flood", fire: "fire" };
 const hazWord = (S, type) => (type === "wind" && S.level.windWord) || HAZ_WORD[type];
 const POWER = ["", "small", "medium", "BIG", "MEGA"];
 const powerName = ev => POWER[ev.power] || "huge";
@@ -295,6 +297,7 @@ export function lessons(S) {
   if (S.hits.wind) out.push("Wind: strap the roof down, use storm-proof windows, or brace the frame.");
   if (S.hits.flood) out.push("Floods: a raised floor lets the water flow underneath.");
   if (S.hits.heat) out.push("Heat waves: a heat pump and shade trees keep people cool.");
+  if (S.hits.fire) out.push("Fires: smoke alarms warn people, but fire sprinklers put the fire out.");
   if (S.hits.outage) out.push("When the power lines go down, a generator or solar + battery keeps the doors open.");
   if (S.shelvesTipped) out.push("Bolt the shelves to the wall so they can't tip over in an earthquake.");
   if (L.floors >= 2 && !S.choice.lift) out.push(`A ${L.floors}-storey building needs an elevator so everyone can reach every floor.`);

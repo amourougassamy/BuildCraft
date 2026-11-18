@@ -111,10 +111,10 @@ test("repairs cost coins and close the doors while the crew works", () => {
 test("every site can be passed", () => {
   const good = {
     rocky: { roof: 1, hvac: 1, garden: 1 },
-    prairie: { windows: 1, roof: 1, hvac: 1, trees: 1 },
+    prairie: { windows: 1, roof: 1, hvac: 1, trees: 1, sprinklers: 1 },
     breezy: { found: 1, windows: 1, roof: 1, raise: 1, hvac: 1 },
     shaky: { found: 2, frame: 1, iso: 1, shelves: 1, backup: 1 },
-    mega: { found: 2, iso: 1, windows: 1, roof: 1, raise: 1, hvac: 1, trees: 1 },
+    mega: { found: 2, iso: 1, windows: 1, roof: 1, raise: 1, hvac: 1, trees: 1, sprinklers: 1 },
   };
   for (const L of LEVELS) {
     const d = design(good[L.key]);
@@ -150,6 +150,47 @@ test("fire sprinklers add 2 fire strength and cost what data.js says", () => {
   assert.equal(designStats(spr).fire, 2);
   assert.equal(strength(lv("rocky"), designStats(spr), "fire"), 3);
   assert.equal(designCost(spr) - designCost(defaultChoice()), opts[yes].cost - opts[0].cost);
+});
+
+// Runs a site until its fire has struck, with no repairs, and returns the run and what the fire did.
+function untilFire(key, picks) {
+  const S = createRun(lv(key), design(picks)), fire = S.events.find(e => e.type === "fire");
+  while (!fire.done && !S.over && !S.done) advance(S, TICK);
+  return { S, fire, hit: S.feed.find(f => f.type === "hazard" && f.ev.type === "fire") };
+}
+
+test("Prairie fire: smoke alarms alone mean damage, sprinklers put it out", () => {
+  const alarms = untilFire("prairie", {});
+  assert.equal(alarms.S.hits.fire, 1);
+  assert.ok(alarms.S.broken.some(b => b.part === "scorch"));
+  assert.equal(alarms.S.ghosts, 0, "a fire that wins by 1 makes no ghost");
+  assert.ok(!alarms.hit.saved);
+  const spr = untilFire("prairie", { sprinklers: pick("sprinklers", "Fire Sprinklers") });
+  assert.equal(spr.S.hits.fire, 0);
+  assert.equal(spr.S.broken.length, 0);
+  assert.equal(spr.hit.saved, true);
+});
+
+test("Mega City fire: no sprinklers makes a ghost, sprinklers prevent it", () => {
+  // Strong enough to reach November, so only the fire can make a ghost here.
+  const strong = { found: 2, iso: 1, frame: 1, windows: 1, roof: 1, raise: 1, hvac: 1, trees: 1 };
+  const before = d => { const S = createRun(lv("mega"), design(d)); while (!S.events.at(-1).warned) advance(S, TICK); return S.ghosts; };
+  assert.equal(before(strong), 0);
+  const alarms = untilFire("mega", strong);
+  assert.equal(alarms.S.hits.fire, 1);
+  assert.equal(alarms.S.ghosts, 1);
+  const spr = untilFire("mega", { ...strong, sprinklers: pick("sprinklers", "Fire Sprinklers") });
+  assert.equal(spr.S.hits.fire, 0);
+  assert.equal(spr.S.ghosts, 0);
+});
+
+test("a fire closes the doors but doesn't knock out the power", () => {
+  const { S } = untilFire("prairie", {});
+  assert.equal(S.outage, 0);
+  assert.equal(S.hits.outage, 0);
+  assert.ok(!S.feed.some(f => f.type === "outage"));
+  advance(S, TICK);
+  assert.equal(S.open, false);
 });
 
 test("every soil has layers that fill the dig, and piles end in rock", () => {

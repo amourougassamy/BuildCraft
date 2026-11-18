@@ -500,6 +500,91 @@ export function createSite(container) {
     return g;
   }
 
+  // ----- fire (PLAN.md S4) -----
+  // The sim's hazard is over in half a second at 1x, so the flames run on their own clock.
+  const FIRE_SECS = 3.5, FIRE_HOLD_SECS = 0.6, FIRE_OUT_SECS = 1.6, SPRAY_SECS = 3;
+  // A teardrop: round at the bottom, curling to a point at the top.
+  const flameShape = (r, h) => new THREE.LatheGeometry(
+    [[0, 0], [0.7, 0.1], [1, 0.28], [0.82, 0.5], [0.42, 0.75], [0, 1]].map(([a, b]) => new THREE.Vector2(a * r, b * h)), 10);
+  const flameGeo = flameShape(0.62, 2);
+  const flameMidGeo = flameShape(0.42, 1.4);
+  const flameCoreGeo = flameShape(0.22, 0.8);
+  const smokeGeo = new THREE.SphereGeometry(0.7, 10, 8);
+  const dropGeo = new THREE.BoxGeometry(0.11, 0.42, 0.11);
+  // See-through outer layers let the bright core show, so a flame glows from the inside.
+  const flameMat = new THREE.MeshBasicMaterial({ color: 0xf4511e, transparent: true, opacity: 0.7, depthWrite: false, side: THREE.DoubleSide });
+  const flameMidMat = new THREE.MeshBasicMaterial({ color: 0xff9800, transparent: true, opacity: 0.85, depthWrite: false, side: THREE.DoubleSide });
+  const flameCoreMat = new THREE.MeshBasicMaterial({ color: 0xffe082, side: THREE.DoubleSide });
+  const dropMat = new THREE.MeshBasicMaterial({ color: 0x29b6f6 });
+  const smokeMat = new THREE.MeshStandardMaterial({ color: 0x4a4650, transparent: true, opacity: 0.55, depthWrite: false });
+  let fireT = -1, fireEv = null; // fireT: seconds since the fire started, -1 when there is none
+
+  function buildFire(floors, H, sprZ, sprinklers) {
+    const g = new THREE.Group(), flames = [], smoke = [], drops = new THREE.Group();
+    const addFlame = (x, y, z) => {
+      const f = new THREE.Group();
+      f.add(new THREE.Mesh(flameCoreGeo, flameCoreMat), new THREE.Mesh(flameMidGeo, flameMidMat), new THREE.Mesh(flameGeo, flameMat));
+      f.position.set(x, y, z);
+      f.userData = { rank: flames.length % 4, seed: flames.length * 1.3 }; // bigger fires light more ranks
+      flames.push(f);
+      g.add(f);
+    };
+    for (let i = 0; i < floors; i++) {
+      const y = i * FH + 0.75;
+      for (const x of [-3.2, 0, 3.2]) if (i || x) addFlame(x, y, D / 2 + 0.4); // keep the front door clear
+      for (const s of [-1, 1]) for (const z of [-1.8, 1.8]) addFlame(s * (W / 2 + 0.4), y, z);
+      // Water falls from each sprinkler head, and past the windows so it shows from outside
+      if (sprinklers) {
+        const spots = [-3.6, -1.2, 1.2, 3.6].flatMap(x => [[x, sprZ], [x, D / 2 + 0.55]]);
+        for (const s of [-1, 1]) for (const z of [-1.8, 1.8]) spots.push([s * (W / 2 + 0.55), z]);
+        spots.forEach(([x, z], k) => { for (let n = 0; n < 2; n++) {
+          const d = new THREE.Mesh(dropGeo, dropMat);
+          d.position.set(x, 0, z);
+          d.userData = { top: (i + 1) * FH - 0.3, seed: n / 2 + k * 0.17 };
+          drops.add(d);
+        } });
+      }
+    }
+    for (let i = 0; i < 10; i++) {
+      const s = new THREE.Mesh(smokeGeo, smokeMat);
+      s.userData = { seed: i / 10, x: Math.sin(i * 2.4) * (W / 2 - 1), z: Math.cos(i * 1.7) * (D / 2 - 1) };
+      smoke.push(s);
+      g.add(s);
+    }
+    g.add(drops);
+    g.visible = false;
+    g.userData = { flames, smoke, drops, H };
+    return g;
+  }
+
+  function tickFire(dt, t) {
+    if (!parts.fire) return;
+    parts.fire.visible = fireT >= 0;
+    if (fireT < 0) return;
+    fireT += dt;
+    if (fireT >= FIRE_SECS) { fireT = -1; parts.fire.visible = false; return; }
+    const { flames, smoke, drops, H } = parts.fire.userData, P = fireEv.power;
+    const fadeOut = Math.min(1, (FIRE_SECS - fireT) / 0.5);
+    // A fire the building beats flares up, then dies down; one that wins burns until the end.
+    const dying = fireEv.over <= 0 ? Math.max(0, 1 - Math.max(0, fireT - FIRE_HOLD_SECS) / FIRE_OUT_SECS) : fadeOut;
+    const amount = Math.min(1, fireT / 0.25) * dying;
+    flames.forEach(f => {
+      f.visible = f.userData.rank <= P && amount > 0;
+      const wave = reduceMotion ? 0 : Math.sin(t * 14 + f.userData.seed * 5);
+      const s = Math.max(0.001, amount * (0.75 + 0.18 * P));
+      f.scale.set(s * (1 - wave * 0.08), s * (1 + wave * 0.16), s * (1 - wave * 0.08));
+      f.rotation.z = reduceMotion ? 0 : Math.sin(t * 9 + f.userData.seed * 3) * 0.1;
+    });
+    smokeMat.opacity = 0.55 * fadeOut;
+    smoke.forEach(s => {
+      const k = (fireT * 0.35 + s.userData.seed) % 1;
+      s.position.set(s.userData.x + k * 1.5, H + 0.5 + k * 5, s.userData.z);
+      s.scale.setScalar(0.6 + k * 1.4);
+    });
+    drops.visible = fireT < SPRAY_SECS;
+    drops.children.forEach(d => { d.position.y = d.userData.top - ((t * 3 + d.userData.seed) % 1) * (FH - 0.6); });
+  }
+
   function buildBuilding(lv, choice) {
     world.remove(bld);
     bld = new THREE.Group();
@@ -617,6 +702,12 @@ export function createSite(container) {
     for (let i = 0; i < 4; i++) parts.puddles.add(rbox(1.8, 0.06, 1.2, clay(0x5aa9e6, { roughness: 0.2 }), -4 + i * 2.6, 0.04, 5.4 + (i % 2), 0.03));
     parts.puddles.visible = false;
     bld.add(parts.puddles);
+    parts.scorch = new THREE.Group();
+    for (let i = 0; i < floors; i++) for (const x of [-3.2, 3.2]) parts.scorch.add(rbox(1.9, 1.7, 0.08, 0x2f2a2e, x, i * FH + 1.7, D / 2 + 0.2, 0.04));
+    parts.scorch.visible = false;
+    body.add(parts.scorch);
+    parts.fire = buildFire(floors, H, sprZ, !!choice.sprinklers);
+    body.add(parts.fire);
     parts.repair = sprite("🚧", "#f0a43a", 1.8);
     parts.repair.position.set(0, H + base + 2.6, 0);
     parts.repair.visible = false;
@@ -869,6 +960,7 @@ export function createSite(container) {
     hazard = ev; hazardT = 0;
     water.visible = ev.type === "flood";
     debris.visible = ev.type === "wind";
+    if (ev.type === "fire") { fireT = 0; fireEv = ev; }
   }
   function endHazard() {
     hazard = null;
@@ -876,7 +968,7 @@ export function createSite(container) {
   }
   function doCollapse() { collapse = 0.001; }
   function reset() {
-    run = null; hazard = null; collapse = 0; water.visible = false; debris.visible = false;
+    run = null; hazard = null; collapse = 0; water.visible = false; debris.visible = false; fireT = -1;
     world.position.set(0, 0, 0);
     spawnPeople();
     cancelDelivery();
@@ -973,6 +1065,7 @@ export function createSite(container) {
       const broken = new Set(run.broken.map(b => b.part));
       parts.cracks.visible = broken.has("cracks") || broken.has("frame");
       parts.puddles.visible = broken.has("floor") || !!(hazard && hazard.type === "flood");
+      parts.scorch.visible = broken.has("scorch") || broken.has("smoke");
       parts.glass.forEach((w, i) => (w.material = broken.has("windows") && i % 2 === 0 ? brokenGlass : glassMat));
       parts.roof.rotation.z = broken.has("roof") ? 0.18 + Math.sin(t * 8) * (hazard && hazard.type === "wind" ? 0.15 : 0.02) : 0;
       parts.roof.position.x = broken.has("roof") ? 0.8 : 0;
@@ -985,6 +1078,7 @@ export function createSite(container) {
     lightMat.emissiveIntensity = dark ? 0 : parts.led ? 1.3 : 0.7;
     if (parts.hvac) parts.hvac.userData.fan.rotation.y += dt * (dark ? 0 : run ? 16 : 6);
     tickHeli(dt, t);
+    tickFire(dt, t);
     (parts.shelves || []).forEach(s => { if (s.userData.tip && s.rotation.x < 1.35) s.rotation.x = Math.min(1.35, s.rotation.x + dt * 4); });
 
     // Design "boing" when a choice changes

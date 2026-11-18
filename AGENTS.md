@@ -75,9 +75,9 @@ These patterns are already proven in the repo. Reuse them.
 - **Brief → design → year → results:** the loop every version shares. Master V1 adds a name prompt and the island map in front, and the leaderboard after.
 - **Hazard rules differ per game.**
   - **v0.1/v0.2:** each hazard (snow, wind, flood, hail, cold, heat) has a 0–10 rating set by the decisions in `GAME.governs`, and the weakest one wins. `damage = max(0, intensity − rating) × repair cost per point`.
-  - **Master V1:** hazards are quake, wind, flood and heat, with power 1–4 against a strength that starts at 1 and grows with upgrades.
+  - **Master V1:** hazards are quake, wind, flood, heat and fire, with power 1–4 against a strength that starts at 1 and grows with upgrades.
     - Each point the hazard wins by costs 25% of the building's health.
-    - Fire strength exists for sprinklers, but the fire event itself is still a `PLAN.md` task.
+    - Fire strength comes from sprinklers. Fires close the doors but do not cut the power.
     - The sim counts 360 days; players see 52 weeks.
 - **Squads** (mainline file ownership): 1 Lead and integration, 2 Game logic (`sim.js`), 3 Content (`data.js`), 4 UI, 5 Art.
 - **D/C:** demand over capacity (see "Speak demand/capacity" above).
